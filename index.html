@@ -480,16 +480,30 @@
         let orderCounter = 1;
         let isOwnerMode = true;
 
+        // INVENTARIO ACTUALIZADO CON TUS LIBRETAS (Jarabes, Líquidos y Polvos)
         let inventoryDB = [
-            { id: 1, name: 'Vasos 12 oz + Tapa', stock: 250, unit: 'Pzas' },
-            { id: 2, name: 'Vasos 16 oz + Tapa', stock: 300, unit: 'Pzas' },
-            { id: 3, name: 'Perlas de Tapioca', stock: 5, unit: 'Kilos' },
-            { id: 4, name: 'Polvo Base Taro', stock: 3, unit: 'Kilos' },
-            { id: 5, name: 'Polvo Fresas con Crema', stock: 4, unit: 'Kilos' },
-            { id: 6, name: 'Popotes Gruesos', stock: 500, unit: 'Pzas' },
-            { id: 7, name: 'Cajeta / Caramelo', stock: 2, unit: 'Litros' },
-            { id: 8, name: 'Chocolate / Avellana', stock: 3, unit: 'Litros' },
-            { id: 9, name: 'Preparado Michelada', stock: 5, unit: 'Litros' }
+            { id: 1, name: 'Jarabe Avellana', stock: 2, unit: 'Litros' },
+            { id: 2, name: 'Jarabe Mora', stock: 2, unit: 'Litros' },
+            { id: 3, name: 'Jarabe Maracuyá', stock: 1760, unit: 'ml' },
+            { id: 4, name: 'Jarabe Frutos Rojos', stock: 1, unit: 'Litros' },
+            { id: 5, name: 'Jarabe Fresa', stock: 1930, unit: 'ml' },
+            { id: 6, name: 'Jarabe Manzana Verde', stock: 809, unit: 'ml' },
+            { id: 7, name: 'Jarabe Cereza', stock: 801, unit: 'ml' },
+            { id: 8, name: 'Jarabe Mango', stock: 796, unit: 'ml' },
+            { id: 9, name: 'Polvos Dubái', stock: 556, unit: 'g' },
+            { id: 10, name: 'Chocolate Negro', stock: 2, unit: 'Kilos' },
+            { id: 11, name: 'Chocolate Blanco', stock: 2, unit: 'Kilos' },
+            { id: 12, name: 'Taro', stock: 6, unit: 'Kilos' },
+            { id: 13, name: 'Caramelo', stock: 3, unit: 'Kilos' },
+            { id: 14, name: 'Te Chai', stock: 670, unit: 'g' },
+            { id: 15, name: 'Lychee', stock: 344, unit: 'g' },
+            { id: 16, name: 'Fresas c/ crema', stock: 646, unit: 'g' },
+            { id: 17, name: 'Cookies and Cream', stock: 1586, unit: 'g' },
+            { id: 18, name: 'Chai Negro', stock: 1573, unit: 'g' },
+            { id: 19, name: 'Cap. Vainilla', stock: 1613, unit: 'g' },
+            { id: 20, name: 'Moka', stock: 507, unit: 'g' },
+            { id: 21, name: 'Matcha', stock: 916, unit: 'g' },
+            { id: 22, name: 'Chai Latte', stock: 854, unit: 'g' }
         ];
 
         const dailyPromos = {
@@ -688,282 +702,4 @@
 
         function openCategoryProducts(cat) {
             document.getElementById('categories-grid').classList.add('hidden');
-            document.getElementById('products-desglose-grid').classList.remove('hidden');
-            document.getElementById('btn-back-categories').classList.remove('hidden');
-            document.getElementById('current-view-title').innerText = `Menú: ${cat.toUpperCase()}`;
-            
-            const grid = document.getElementById('products-desglose-grid');
-            grid.innerHTML = '';
-            
-            const filtered = productsDB.filter(p => p.category === cat);
-            filtered.forEach(p => {
-                const div = document.createElement('div');
-                div.className = "bg-white p-3 rounded-2xl border border-gray-100 shadow-sm hover:border-pink-300 transition cursor-pointer flex flex-col justify-between";
-                div.onclick = () => openCustomModal(p);
-                div.innerHTML = `
-                    <h4 class="font-bold text-xs text-gray-800">${p.name}</h4>
-                    <div class="mt-2 flex justify-between items-center pt-2 border-t">
-                        <span class="font-bold text-brand-pink text-xs">$${p.price.toFixed(2)}</span>
-                        <span class="w-5 h-5 rounded-full bg-pink-100 text-brand-pink font-bold flex items-center justify-center text-xs">+</span>
-                    </div>
-                `;
-                grid.appendChild(div);
-            });
-        }
-
-        function showCategoriesView() {
-            document.getElementById('categories-grid').classList.remove('hidden');
-            document.getElementById('products-desglose-grid').classList.add('hidden');
-            document.getElementById('btn-back-categories').classList.add('hidden');
-            document.getElementById('current-view-title').innerText = 'Categorías del Menú';
-        }
-
-        function openCustomModal(product) {
-            activeProduct = product;
-            document.getElementById('modal-product-name').innerText = product.name;
-            document.getElementById('modal-product-price-tag').innerText = `$${product.price.toFixed(2)}`;
-            
-            const cat = product.category;
-            const hasSugar = ['cafe_frio', 'cafe_caliente', 'temporada'].includes(cat);
-            const hasIce = ['soda', 'cafe_frio', 'tizana', 'temporada'].includes(cat);
-            const hasToppings = ['boba', 'xolot', 'soda', 'frappe', 'smoothie', 'temporada'].includes(cat);
-            
-            document.getElementById('sugar-section').style.display = hasSugar ? 'block' : 'none';
-            document.getElementById('ice-section').style.display = hasIce ? 'block' : 'none';
-            document.getElementById('base-topping-section').style.display = ['boba', 'xolot', 'soda', 'temporada'].includes(cat) ? 'block' : 'none';
-            document.getElementById('extra-toppings-section').style.display = hasToppings ? 'block' : 'none';
-
-            document.querySelectorAll('.extra-cb').forEach(cb => cb.checked = false);
-
-            updateModalTotal();
-            document.getElementById('custom-modal').classList.remove('hidden');
-        }
-
-        function selectOpt(btn, group) {
-            document.querySelectorAll(`.opt-${group}`).forEach(b => {
-                b.classList.remove('bg-pink-50', 'text-brand-pink', 'border-brand-pink', 'font-bold');
-            });
-            btn.classList.add('bg-pink-50', 'text-brand-pink', 'border-brand-pink', 'font-bold');
-        }
-
-        function updateModalTotal() {
-            if (!activeProduct) return;
-            let total = activeProduct.price;
-            document.querySelectorAll('.extra-cb:checked').forEach(cb => {
-                total += parseFloat(cb.dataset.price);
-            });
-            document.getElementById('modal-calculated-total').innerText = `$${total.toFixed(2)}`;
-        }
-
-        function closeCustomModal() {
-            document.getElementById('custom-modal').classList.add('hidden');
-        }
-
-        function confirmCustomProductAdd() {
-            if (!activeProduct) return;
-            let finalPrice = activeProduct.price;
-            let optionsArr = [];
-
-            const cat = activeProduct.category;
-            if (['boba', 'xolot', 'soda', 'temporada'].includes(cat)) {
-                const topping = document.getElementById('modal-base-topping-select').value;
-                optionsArr.push(`Topping: ${topping}`);
-            }
-
-            document.querySelectorAll('.extra-cb:checked').forEach(cb => {
-                finalPrice += parseFloat(cb.dataset.price);
-                optionsArr.push(cb.value);
-            });
-
-            currentCart.push({
-                name: activeProduct.name,
-                price: finalPrice,
-                category: activeProduct.category,
-                options: optionsArr.join(' • ')
-            });
-
-            closeCustomModal();
-            renderCart();
-        }
-
-        function applyEcoDiscount() {
-            discountVal = discountVal === 10 ? 0 : 10;
-            const btnEco = document.getElementById('btn-eco-discount');
-            if(discountVal > 0) {
-                btnEco.className = "px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-xl border border-emerald-700 transition shadow-sm";
-            } else {
-                btnEco.className = "px-3 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-300 transition shadow-sm";
-            }
-            renderCart();
-        }
-
-        function checkAndToggleHappyHour(checkbox) {
-            const currentHour = new Date().getHours();
-            if (currentHour < 20 || currentHour >= 21) {
-                alert("⚠️ Aún no es la Hora Feliz. La Hora Feliz en Fortuna es de 8:00 PM a 9:00 PM.");
-                checkbox.checked = false;
-            }
-            renderCart();
-        }
-
-        function renderCart() {
-            const container = document.getElementById('cart-items-container');
-            const storeLocation = document.getElementById('store-location').value;
-            const isHappyHour = document.getElementById('happy-hour-toggle').checked;
-
-            if (currentCart.length === 0) {
-                container.innerHTML = `<div id="empty-cart-msg" class="h-full flex flex-col items-center justify-center text-gray-400 py-12"><i class="fa-solid fa-basket-shopping text-4xl mb-2 text-gray-300"></i><p class="text-xs font-medium">Carrito vacío. Selecciona una categoría.</p></div>`;
-                document.getElementById('cart-subtotal').innerText = '$0.00';
-                document.getElementById('cart-discount').innerText = '-$0.00';
-                document.getElementById('cart-total').innerText = '$0.00';
-                return;
-            }
-
-            container.innerHTML = '';
-            let subtotal = 0;
-            let happyHourDiscount = 0;
-
-            currentCart.forEach((item, idx) => {
-                let itemPrice = item.price;
-                let isFreeByHappyHour = (storeLocation === 'fortuna' && isHappyHour && item.category === 'fortuna');
-
-                if (isFreeByHappyHour) {
-                    happyHourDiscount += itemPrice;
-                    itemPrice = 0;
-                }
-
-                subtotal += item.price;
-                const div = document.createElement('div');
-                div.className = "p-2 bg-gray-50 border rounded-xl flex justify-between items-center text-xs";
-                div.innerHTML = `
-                    <div>
-                        <p class="font-bold text-gray-800">${item.name} ${isFreeByHappyHour ? '<span class="text-amber-600 font-bold">(¡Gratis Hora Feliz!)</span>' : ''}</p>
-                        ${item.options ? `<p class="text-[10px] text-gray-400">${item.options}</p>` : ''}
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="font-bold text-gray-700">$${itemPrice.toFixed(2)}</span>
-                        <button onclick="currentCart.splice(${idx},1); renderCart();" class="text-red-500 font-bold">✕</button>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-
-            let totalDiscount = discountVal + happyHourDiscount;
-            let finalTotal = Math.max(0, subtotal - totalDiscount);
-
-            document.getElementById('cart-subtotal').innerText = `$${subtotal.toFixed(2)}`;
-            document.getElementById('cart-discount').innerText = `-$${totalDiscount.toFixed(2)}`;
-            document.getElementById('cart-total').innerText = `$${finalTotal.toFixed(2)}`;
-        }
-
-        function clearCart() { currentCart = []; discountVal = 0; renderCart(); }
-
-        function setPaymentMethod(method) {
-            selectedPaymentMethod = method;
-            const btnCash = document.getElementById('btn-pay-cash');
-            const btnCard = document.getElementById('btn-pay-card');
-            const cashSec = document.getElementById('cash-payment-section');
-            const cardSec = document.getElementById('card-payment-section');
-
-            if (method === 'efectivo') {
-                btnCash.className = "py-2.5 bg-brand-pink text-white font-bold rounded-xl text-xs shadow transition";
-                btnCard.className = "py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition";
-                cashSec.classList.remove('hidden');
-                cardSec.classList.add('hidden');
-            } else {
-                btnCard.className = "py-2.5 bg-purple-600 text-white font-bold rounded-xl text-xs shadow transition";
-                btnCash.className = "py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition";
-                cardSec.classList.remove('hidden');
-                cashSec.classList.add('hidden');
-            }
-        }
-
-        function openCheckoutModal() {
-            if (currentCart.length === 0) return alert('El carrito está vacío');
-            const total = document.getElementById('cart-total').innerText;
-            document.getElementById('checkout-total-display').innerText = total;
-            document.getElementById('cash-received-input').value = '';
-            document.getElementById('cash-change-display').innerText = '$0.00';
-            setPaymentMethod('efectivo');
-            document.getElementById('checkout-modal').classList.remove('hidden');
-        }
-
-        function closeCheckoutModal() {
-            document.getElementById('checkout-modal').classList.add('hidden');
-        }
-
-        function calculateChange() {
-            const totalDisplay = document.getElementById('checkout-total-display').innerText;
-            const total = parseFloat(totalDisplay.replace('$','')) || 0;
-            const rec = parseFloat(document.getElementById('cash-received-input').value || 0);
-            document.getElementById('cash-change-display').innerText = `$${Math.max(0, rec - total).toFixed(2)}`;
-        }
-
-        function processFinalPayment() {
-            const total = parseFloat(document.getElementById('checkout-total-display').innerText.replace('$','')) || 0;
-            let rec = 0;
-            let change = 0;
-
-            if (selectedPaymentMethod === 'efectivo') {
-                rec = parseFloat(document.getElementById('cash-received-input').value || 0);
-                if (rec < total) {
-                    return alert('El efectivo recibido es menor al total del pedido.');
-                }
-                change = rec - total;
-            }
-
-            const orderNum = document.getElementById('order-id-display').innerText;
-            const orderMode = document.getElementById('order-mode').options[document.getElementById('order-mode').selectedIndex].text;
-            
-            document.getElementById('rec-order-num').innerText = orderNum;
-            document.getElementById('rec-order-mode').innerText = orderMode;
-            document.getElementById('receipt-date').innerText = new Date().toLocaleString();
-
-            const subtotalText = document.getElementById('cart-subtotal').innerText;
-            const discountText = document.getElementById('cart-discount').innerText;
-            const totalText = document.getElementById('cart-total').innerText;
-
-            document.getElementById('rec-subtotal').innerText = subtotalText;
-            document.getElementById('rec-discount').innerText = discountText;
-            document.getElementById('rec-total').innerText = totalText;
-            document.getElementById('rec-payment').innerText = selectedPaymentMethod.toUpperCase();
-
-            if(selectedPaymentMethod === 'efectivo') {
-                document.getElementById('rec-change-line').style.display = 'block';
-                document.getElementById('rec-change').innerText = `$${change.toFixed(2)}`;
-            } else {
-                document.getElementById('rec-change-line').style.display = 'none';
-            }
-
-            const recItemsList = document.getElementById('rec-items-list');
-            recItemsList.innerHTML = '';
-            currentCart.forEach(item => {
-                const p = document.createElement('div');
-                p.className = "flex justify-between text-[10px]";
-                p.innerHTML = `<span>1x ${item.name} ${item.options ? '('+item.options+')' : ''}</span><span>$${item.price.toFixed(2)}</span>`;
-                recItemsList.appendChild(p);
-            });
-
-            document.getElementById('checkout-modal').classList.add('hidden');
-            document.getElementById('receipt-modal').classList.remove('hidden');
-
-            orderCounter++;
-            document.getElementById('order-id-display').innerText = String(orderCounter).padStart(4, '0');
-        }
-
-        function printReceiptTicket() {
-            window.print();
-        }
-
-        function closeReceiptModal() {
-            document.getElementById('receipt-modal').classList.add('hidden');
-            clearCart();
-        }
-
-        function savePrinterIP() {
-            PRINTER_IP = document.getElementById('printer-ip-input').value;
-            alert('IP Guardada: ' + PRINTER_IP);
-        }
-    </script>
-</body>
-</html>
+            document.getElementById('products-desglose-
