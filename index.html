@@ -265,7 +265,7 @@
                         <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-cash-register text-brand-pink mr-2"></i> Módulo de Corte de Caja y Arqueo</h2>
                         <p class="text-xs text-gray-500">Control de fondo inicial, ventas, gastos de turno y arqueo de efectivo.</p>
                     </div>
-                    <span id="current-shift-badge" class="bg-pink-100 text-brand-pink text-xs font-bold px-3 py-1 rounded-xl">Turno Mañana (0805)</span>
+                    <span id="current-shift-badge" class="bg-pink-100 text-brand-pink text-xs font-bold px-3 py-1 rounded-xl">Turno Mañana</span>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
@@ -338,10 +338,10 @@
                 <div class="flex justify-between items-center border-b pb-4">
                     <div>
                         <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-boxes-stacked text-brand-pink mr-2"></i> Inventario & Control de Recetas</h2>
-                        <p id="mode-subtitle" class="text-xs text-gray-500">Bloqueado para empleadas (Requiere PIN de Dueña: 2107)</p>
+                        <p id="mode-subtitle" class="text-xs text-gray-500">Bloqueado para empleadas (Requiere PIN de Dueña)</p>
                     </div>
                     <button onclick="promptSecurityPin()" class="px-3 py-1.5 bg-pink-100 text-brand-pink font-bold text-xs rounded-xl">
-                        🔑 Ingresar PIN de Dueña
+                        🔑 Ingresar PIN de Acceso
                     </button>
                 </div>
 
@@ -538,7 +538,7 @@
         let selectedPaymentMethod = 'efectivo';
         let orderCounter = 1;
         let isOwnerMode = false;
-        let currentShiftName = 'Turno Mañana (0805)';
+        let currentShiftName = 'Turno Mañana';
 
         let shiftData = { cashSales: 0, cardSales: 0, totalSales: 0, expenses: [] };
 
@@ -793,9 +793,9 @@
             if(id === 'inventory') { renderInventoryTable(); }
         }
 
-        // SISTEMA DE SEGURIDAD CON CÓDIGOS OFICIALES
+        // SISTEMA DE SEGURIDAD CORREGIDO (SIN FILTRAR LOS CÓDIGOS EN EL TEXTO)
         function promptSecurityPin() {
-            const pin = prompt("🔐 Ingrese su código de acceso (Mañana: 0805 | Tarde: 3240 | Dueña: 2107):");
+            const pin = prompt("🔐 Ingrese su código de acceso autorizado:");
             if (pin === "2107") {
                 isOwnerMode = true;
                 currentShiftName = "Modo Propietaria (Dueña)";
@@ -807,7 +807,7 @@
                 renderInventoryTable();
             } else if (pin === "0805") {
                 isOwnerMode = false;
-                currentShiftName = "Turno Mañana (0805)";
+                currentShiftName = "Turno Mañana";
                 document.getElementById('current-user-role').innerText = "Turno Mañana";
                 document.getElementById('mode-subtitle').innerText = "Vista de Empleada (Solo Rectificar Insumos)";
                 document.getElementById('owner-add-section').classList.add('hidden');
@@ -816,7 +816,7 @@
                 renderInventoryTable();
             } else if (pin === "3240") {
                 isOwnerMode = false;
-                currentShiftName = "Turno Tarde (3240)";
+                currentShiftName = "Turno Tarde";
                 document.getElementById('current-user-role').innerText = "Turno Tarde";
                 document.getElementById('mode-subtitle').innerText = "Vista de Empleada (Solo Rectificar Insumos)";
                 document.getElementById('owner-add-section').classList.add('hidden');
