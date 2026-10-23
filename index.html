@@ -43,8 +43,8 @@
 </head>
 <body class="h-screen overflow-hidden flex text-gray-800">
 
-    <!-- MENÚ LATERAL ESTILO TPV (LOYVERSE STYLE) -->
-    <aside class="w-64 bg-gray-900 text-gray-300 flex flex-col justify-between shrink-0 shadow-xl z-30">
+    <!-- MENÚ LATERAL ESTILO TPV (CON OPCIÓN DE ESCONDERSE) -->
+    <aside id="sidebar-menu" class="w-64 bg-gray-900 text-gray-300 flex flex-col justify-between shrink-0 shadow-xl z-30 transition-all duration-300">
         <div>
             <!-- Header de Perfil / Negocio -->
             <div class="p-4 bg-gray-950 border-b border-gray-800 flex items-center justify-between">
@@ -72,7 +72,7 @@
         </div>
 
         <div class="p-3 border-t border-gray-800 text-[11px] text-gray-500 text-center">
-            Boba Haus POS v3.5
+            Boba Haus POS v3.6
         </div>
     </aside>
 
@@ -82,6 +82,9 @@
         <!-- HEADER SUPERIOR -->
         <header class="bg-white border-b border-gray-200 px-4 py-2.5 flex items-center justify-between shadow-sm z-20 shrink-0">
             <div class="flex items-center space-x-3">
+                <button onclick="toggleSidebar()" class="p-2 text-gray-600 hover:text-brand-pink bg-gray-100 rounded-xl text-xs font-bold" title="Mostrar/Esconder Menú">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
                 <h1 id="header-section-title" class="text-base font-bold text-gray-800">Punto de Venta</h1>
             </div>
             <div class="flex items-center space-x-3">
@@ -259,30 +262,33 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 pt-1">
-                            <button onclick="openCheckoutModal()" class="py-3 bg-brand-pink hover:bg-pink-600 text-white rounded-xl font-bold text-sm shadow transition col-span-2">
+                            <button onclick="openCheckoutModal()" class="py-2.5 bg-brand-pink hover:bg-pink-600 text-white rounded-xl font-bold text-xs shadow transition col-span-2">
                                 💵 Cobrar Pedido
+                            </button>
+                            <button onclick="openStaffModal()" class="py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs shadow transition col-span-2">
+                                🎁 Cortesía Personal (Izel, Agustín, Nicolás, Chepis, Clementito)
                             </button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- TAB 2: CORTE Y TURNO (ESTILO LOYVERSE TESORERÍA) -->
+            <!-- TAB 2: CORTE Y TURNO -->
             <section id="tab-shift" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
                 <div class="max-w-3xl mx-auto bg-white p-6 rounded-3xl shadow-sm space-y-6">
                     <div class="flex justify-between items-center border-b pb-4">
                         <div>
                             <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-cash-register text-brand-pink mr-2"></i> Gestión de Tesorería y Turno</h2>
-                            <p class="text-xs text-gray-500">Control de fondo inicial, cajón de efectivo, ventas netas y cierre[cite: 19].</p>
+                            <p class="text-xs text-gray-500">Control de fondo inicial, cajón de efectivo, ventas netas y cierre.</p>
                         </div>
                         <div class="space-x-2">
                             <button onclick="openTurnModal()" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow hover:bg-emerald-700 transition">
-                                <i class="fa-solid fa-play mr-1"></i> Abrir / Cerrar Turno[cite: 19]
+                                <i class="fa-solid fa-play mr-1"></i> Abrir / Cerrar Turno
                             </button>
                         </div>
                     </div>
 
-                    <!-- CAJÓN DE EFECTIVO (ESTILO FOTO 3) -->
+                    <!-- CAJÓN DE EFECTIVO -->
                     <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-3">
                         <h3 class="font-bold text-sm text-gray-800"><i class="fa-solid fa-vault mr-1 text-brand-pink"></i> Cajón de efectivo</h3>
                         <div class="space-y-2 text-xs divide-y divide-gray-200">
@@ -295,7 +301,7 @@
                         </div>
                     </div>
 
-                    <!-- RESUMEN DE VENTAS (ESTILO FOTO 3) -->
+                    <!-- RESUMEN DE VENTAS -->
                     <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-3">
                         <h3 class="font-bold text-sm text-gray-800"><i class="fa-solid fa-chart-line mr-1 text-brand-pink"></i> Resumen de ventas</h3>
                         <div class="space-y-2 text-xs divide-y divide-gray-200">
@@ -321,7 +327,7 @@
                 </div>
             </section>
 
-            <!-- TAB 3: INVENTARIO & RECETAS (ESCANDALLO) -->
+            <!-- TAB 3: INVENTARIO & RECETAS -->
             <section id="tab-inventory" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
                 <div class="max-w-4xl mx-auto bg-white p-6 rounded-3xl shadow-sm space-y-6">
                     <div class="flex justify-between items-center border-b pb-4">
@@ -363,11 +369,39 @@
         </div>
     </main>
 
-    <!-- VENTANA EMERGENTE: TECLADO NUMÉRICO TÁCTIL (ESTILO FOTO 1) -->
+    <!-- MODAL: CORTESÍA PERSONAL (IZEL, AGUSTÍN, NICOLÁS, CHEPIS, CLEMENTITO) -->
+    <div id="staff-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
+            <h3 class="font-bold text-base text-gray-800 text-center">🎁 Registrar Consumo de Personal</h3>
+            <p class="text-xs text-gray-500 text-center">El producto no se cobrará, pero se descontará automáticamente de los insumos del inventario.</p>
+            
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-gray-700 block">Selecciona quién toma el producto:</label>
+                <select id="staff-name-select" class="w-full p-2.5 border rounded-xl text-xs bg-gray-50 font-semibold outline-none">
+                    <option value="Izel">Izel</option>
+                    <option value="Agustín">Agustín</option>
+                    <option value="Nicolás">Nicolás</option>
+                    <option value="Chepis">Chepis</option>
+                    <option value="Clementito">Clementito</option>
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-2">
+                <button onclick="processStaffConsumption()" class="py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs shadow transition">
+                    Registrar y Descontar
+                </button>
+                <button onclick="closeStaffModal()" class="py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl text-xs transition">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VENTANA EMERGENTE: TECLADO NUMÉRICO TÁCTIL (PIN) -->
     <div id="pinpad-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-gray-900 rounded-3xl max-w-sm w-full p-6 text-white space-y-6 shadow-2xl border border-gray-800">
             <div class="text-center space-y-2">
-                <h3 class="text-lg font-bold">Introduzca el PIN[cite: 17]</h3>
+                <h3 class="text-lg font-bold">Introduzca el PIN</h3>
                 <div id="pin-dots" class="flex justify-center space-x-3 text-2xl tracking-widest text-brand-pink">
                     ○ ○ ○ ○
                 </div>
@@ -385,7 +419,7 @@
                 <button type="button" onclick="pressPinNum(9)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">9</button>
                 <button type="button" onclick="clearPin()" class="p-5 bg-red-900/40 hover:bg-red-900/60 text-red-300 rounded-2xl text-xs font-bold transition">Limpiar</button>
                 <button type="button" onclick="pressPinNum(0)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">0</button>
-                <button type="button" onclick="backspacePin()" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xs font-bold transition">Borrar[cite: 17]</button>
+                <button type="button" onclick="backspacePin()" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xs font-bold transition">Borrar</button>
             </div>
 
             <button onclick="closePinPadModal()" class="w-full py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-2xl font-bold text-xs transition">
@@ -394,20 +428,20 @@
         </div>
     </div>
 
-    <!-- VENTANA EMERGENTE: APERTURA DE TURNO (ESTILO FOTO 2) -->
+    <!-- VENTANA EMERGENTE: APERTURA DE TURNO -->
     <div id="turn-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-gray-900 rounded-3xl max-w-md w-full p-6 text-white space-y-5 shadow-2xl border border-gray-800">
             <h3 class="text-base font-bold text-gray-200">Apertura de Turno</h3>
-            <p class="text-xs text-gray-400">Especifique la cantidad de efectivo de la caja con el que empezará su turno[cite: 18].</p>
+            <p class="text-xs text-gray-400">Especifique la cantidad de efectivo de la caja con el que empezará su turno.</p>
             
             <div class="space-y-1">
-                <label class="text-xs text-gray-400 font-semibold">Cantidad[cite: 18]:</label>
+                <label class="text-xs text-gray-400 font-semibold">Cantidad:</label>
                 <input type="number" id="input-turn-fund" value="500" class="w-full text-xl font-bold p-3 bg-gray-800 border border-gray-700 rounded-2xl text-brand-pink outline-none">
             </div>
 
             <div class="grid grid-cols-2 gap-3 pt-2">
                 <button onclick="confirmOpenTurn()" class="py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl text-xs shadow transition">
-                    ABRIR EL TURNO[cite: 18]
+                    ABRIR EL TURNO
                 </button>
                 <button onclick="closeTurnModal()" class="py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold rounded-2xl text-xs transition">
                     Cerrar
@@ -735,7 +769,7 @@
             document.getElementById("daily-promo-banner").innerText = dailyPromos[todayDayIndex] || "¡Disfruta tus bebidas!";
             document.getElementById("order-id-display").innerText = String(orderCounter).padStart(4, '0');
             renderInventoryTable();
-            updateShiftDisplay();
+            updateTreasuryDisplay();
         });
 
         const productsDB = [
@@ -849,6 +883,13 @@
         let activeProduct = null;
         let discountVal = 0;
 
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar-menu');
+            sidebar.classList.toggle('w-64');
+            sidebar.classList.toggle('w-0');
+            sidebar.classList.toggle('overflow-hidden');
+        }
+
         function switchTab(id) {
             ['pos', 'shift', 'inventory'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
@@ -866,7 +907,6 @@
             if(id === 'inventory') { renderInventoryTable(); }
         }
 
-        // CONTROL DE TECLADO NUMÉRICO TÁCTIL (PIN)
         function openPinPadModal() {
             currentPinInput = "";
             updatePinDots();
@@ -944,7 +984,6 @@
             openPinPadModal();
         }
 
-        // APERTURA DE TURNO (ESTILO FOTO 2)
         function openTurnModal() {
             document.getElementById('turn-modal').classList.remove('hidden');
         }
@@ -1152,6 +1191,44 @@
             currentCart.push({ name: activeProduct.name, price: finalPrice, category: activeProduct.category, options: optionsArr.join(' • ') });
             closeCustomModal();
             renderCart();
+        }
+
+        // FUNCIONES DE CORTESÍA PARA PERSONAL (IZEL, AGUSTÍN, NICOLÁS, CHEPIS, CLEMENTITO)
+        function openStaffModal() {
+            if (currentCart.length === 0) return alert('El carrito está vacío. Agrega los productos que tomará el personal.');
+            document.getElementById('staff-modal').classList.remove('hidden');
+        }
+
+        function closeStaffModal() {
+            document.getElementById('staff-modal').classList.add('hidden');
+        }
+
+        function processStaffConsumption() {
+            const staffName = document.getElementById('staff-name-select').value;
+            
+            // Descontar inventario automáticamente
+            currentCart.forEach(item => {
+                const recipe = recipeMapping[item.name];
+                if (recipe) {
+                    recipe.forEach(ingredient => {
+                        const insumo = inventoryDB.find(i => i.key === ingredient.key);
+                        if (insumo) {
+                            insumo.stock -= ingredient.qty;
+                            if (insumo.stock < 0) insumo.stock = 0;
+                        }
+                    });
+                }
+            });
+
+            const hieloInsumo = inventoryDB.find(i => i.key === 'hielo');
+            if (hieloInsumo) {
+                hieloInsumo.stock -= 0.1;
+                if (hieloInsumo.stock < 0) hieloInsumo.stock = 0;
+            }
+
+            alert(`✅ Consumo registrado para ${staffName} como Cortesía. Se han descontado los insumos del inventario sin cobro en caja.`);
+            closeStaffModal();
+            clearCart();
         }
 
         function applyEcoDiscount() {
