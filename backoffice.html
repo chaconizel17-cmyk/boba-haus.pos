@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boba Haus - Back Office (Gerencia)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            pink: '#e84393',
+                            lightpink: '#fd79a8',
+                            softpink: '#f8a5c2',
+                            cream: '#fdfbfe',
+                            bg: '#f5f0eb',
+                            dark: '#2d3436'
+                        }
+                    },
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        quicksand: ['Quicksand', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Quicksand', sans-serif; background-color: #f5f0eb; }
+        h1, h2, h3, h4 { font-family: 'Fredoka', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: #f8a5c2; border-radius: 10px; }
+    </style>
+</head>
+<body class="h-screen overflow-hidden flex text-gray-800">
+
+    <!-- MENÚ LATERAL ESTILO LOYVERSE BACK OFFICE -->
+    <aside class="w-64 bg-gray-900 text-gray-300 flex flex-col justify-between shrink-0 shadow-xl z-30">
+        <div>
+            <div class="p-4 bg-gray-950 border-b border-gray-800 flex items-center justify-between">
+                <div>
+                    <h2 class="font-bold text-white text-sm">Boba Haus Back Office</h2>
+                    <p class="text-[11px] text-gray-400">Panel Gerencial • Izel Chacon</p>
+                </div>
+                <span class="p-2 bg-emerald-600 text-white rounded-xl text-xs font-bold">Admin</span>
+            </div>
+
+            <nav class="p-2 space-y-1 text-xs font-semibold">
+                <button onclick="switchBoTab('sales')" id="nav-sales" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl bg-brand-pink text-white transition">
+                    <i class="fa-solid fa-chart-line text-base w-5"></i> <span>Resumen de ventas</span>
+                </button>
+                <button onclick="switchBoTab('items')" id="nav-items" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800 hover:text-white transition">
+                    <i class="fa-solid fa-list text-base w-5"></i> <span>Lista de artículos</span>
+                </button>
+                <button onclick="switchBoTab('inventory')" id="nav-inventory" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800 hover:text-white transition">
+                    <i class="fa-solid fa-boxes-stacked text-base w-5"></i> <span>Inventario avanzado</span>
+                </button>
+                <button onclick="switchBoTab('shifts')" id="nav-shifts" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800 hover:text-white transition">
+                    <i class="fa-solid fa-cash-register text-base w-5"></i> <span>Cierres de Turno / Arqueos</span>
+                </button>
+                <button onclick="switchBoTab('settings')" id="nav-settings" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800 hover:text-white transition">
+                    <i class="fa-solid fa-gear text-base w-5"></i> <span>Configuración</span>
+                </button>
+            </nav>
+        </div>
+
+        <div class="p-3 border-t border-gray-800 text-[11px] text-gray-500 text-center">
+            Conectado al TPV Boba Haus
+        </div>
+    </aside>
+
+    <!-- CUERPO PRINCIPAL BACK OFFICE -->
+    <main class="flex-1 overflow-y-auto relative flex flex-col h-full bg-gray-100">
+
+        <!-- HEADER -->
+        <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-20">
+            <h1 id="bo-header-title" class="text-lg font-bold text-gray-800">Resumen de ventas</h1>
+            <div class="flex items-center space-x-3">
+                <span class="text-xs font-semibold bg-pink-100 text-brand-pink px-3 py-1.5 rounded-xl">📅 Periodo: Hoy / Activo</span>
+                <button onclick="location.reload()" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-bold rounded-xl">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> Sincronizar Datos
+                </button>
+            </div>
+        </header>
+
+        <!-- CONTENIDO DE PESTAÑAS -->
+        <div class="p-6 space-y-6 flex-1">
+
+            <!-- TAB 1: RESUMEN DE VENTAS (TIPO LOYVERSE) -->
+            <section id="bo-tab-sales" class="space-y-6">
+                <!-- TARJETAS SUPERIORES -->
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+                        <span class="text-[11px] text-gray-500 font-semibold block">Ventas brutas</span>
+                        <h3 id="bo-gross-sales" class="text-lg font-bold text-gray-900 mt-1">$0.00</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+                        <span class="text-[11px] text-gray-500 font-semibold block">Reembolsos</span>
+                        <h3 class="text-lg font-bold text-gray-900 mt-1">$0.00</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+                        <span class="text-[11px] text-gray-500 font-semibold block">Descuentos</span>
+                        <h3 id="bo-discounts" class="text-lg font-bold text-emerald-600 mt-1">$0.00</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+                        <span class="text-[11px] text-gray-500 font-semibold block">Ventas netas</span>
+                        <h3 id="bo-net-sales" class="text-lg font-bold text-brand-pink mt-1">$0.00</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 col-span-2 md:col-span-1">
+                        <span class="text-[11px] text-gray-500 font-semibold block">Beneficio bruto (Utilidad)</span>
+                        <h3 id="bo-gross-profit" class="text-lg font-bold text-purple-600 mt-1">$0.00</h3>
+                    </div>
+                </div>
+
+                <!-- TABLA DE EXPORTACIÓN / HISTORIAL -->
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-gray-800 text-sm">Desglose de Operaciones del Turno Actual</h3>
+                        <button onclick="window.print()" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-xl font-bold text-gray-700">🖨️ Exportar / Imprimir</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-600 border-b">
+                                    <th class="p-3">Estado / Canal</th>
+                                    <th class="p-3">Método de Pago</th>
+                                    <th class="p-3 text-right">Ventas Brutas</th>
+                                    <th class="p-3 text-right">Descuentos</th>
+                                    <th class="p-3 text-right rounded-r-xl">Ventas Netas</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bo-sales-table-body" class="divide-y divide-gray-100">
+                                <tr>
+                                    <td class="p-3 font-semibold">Boba Haus - Sucursal Principal</td>
+                                    <td class="p-3 text-gray-500">Efectivo y Tarjeta</td>
+                                    <td id="bo-table-gross" class="p-3 text-right font-bold">$0.00</td>
+                                    <td id="bo-table-desc" class="p-3 text-right font-bold text-emerald-600">$0.00</td>
+                                    <td id="bo-table-net" class="p-3 text-right font-bold text-brand-pink">$0.00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: LISTA DE ARTÍCULOS -->
+            <section id="bo-tab-items" class="space-y-4 hidden">
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-gray-800 text-sm">Catálogo de Artículos y Precios de Venta</h3>
+                        <span class="text-xs text-gray-500">Sincronizado con TPV Boba Haus</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-600 border-b">
+                                    <th class="p-3">Artículo</th>
+                                    <th class="p-3">Categoría</th>
+                                    <th class="p-3 text-right">Precio de Venta</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bo-items-table-body" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: INVENTARIO AVANZADO -->
+            <section id="bo-tab-inventory" class="space-y-4 hidden">
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-gray-800 text-sm">Control de Almacén e Insumos en Vivo</h3>
+                        <span class="text-xs text-brand-pink font-bold">Descuento automático por receta (BOM)</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-600 border-b">
+                                    <th class="p-3">Insumo</th>
+                                    <th class="p-3">Stock en Almacén</th>
+                                    <th class="p-3">Unidad</th>
+                                    <th class="p-3 text-center">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bo-inventory-table-body" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: CIERRES DE TURNO Y ARQUEOS -->
+            <section id="bo-tab-shifts" class="space-y-4 hidden">
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4">
+                    <h3 class="font-bold text-gray-800 text-sm">Historial de Cierres de Turno y Auditoría de Caja</h3>
+                    <div id="bo-shift-history-container" class="space-y-3">
+                        <p class="text-gray-400 text-xs italic">No hay cierres registrados aún.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: CONFIGURACIÓN -->
+            <section id="bo-tab-settings" class="space-y-4 hidden">
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4 max-w-xl">
+                    <h3 class="font-bold text-gray-800 text-sm">Configuración General del Sistema</h3>
+                    <div class="space-y-3 text-xs">
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <span>Notificaciones de stock bajo:</span>
+                            <span class="font-bold text-emerald-600">Activado (≤ Mínimo)</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <span>Cierres de caja por turnos:</span>
+                            <span class="font-bold text-emerald-600">Habilitado (PIN Activo)</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <span>Versión del Back Office:</span>
+                            <span class="font-bold text-gray-700">v1.0 Pro (Estilo Loyverse)</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        function switchBoTab(tabId) {
+            ['sales', 'items', 'inventory', 'shifts', 'settings'].forEach(t => {
+                document.getElementById(`bo-tab-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`nav-${t}`);
+                if(btn) btn.className = "w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800 hover:text-white transition";
+            });
+            document.getElementById(`bo-tab-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if(activeBtn) activeBtn.className = "w-full flex items-center space-x-3 px-3 py-3 rounded-xl bg-brand-pink text-white transition";
+
+            const titles = {
+                sales: 'Resumen de ventas',
+                items: 'Lista de artículos',
+                inventory: 'Inventario avanzado',
+                shifts: 'Cierres de Turno / Arqueos',
+                settings: 'Configuración'
+            };
+            document.getElementById('bo-header-title').innerText = titles[tabId];
+
+            if(tabId === 'sales') loadSalesData();
+            if(tabId === 'items') loadItemsData();
+            if(tabId === 'inventory') loadInventoryData();
+            if(tabId === 'shifts') loadShiftsData();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadSalesData();
+        });
+
+        function loadSalesData() {
+            // Cargar datos guardados en LocalStorage del POS
+            const shiftHistory = JSON.parse(localStorage.getItem('boba_shift_history')) || [];
+            let totalCash = 0, totalCard = 0;
+            shiftHistory.forEach(sh => {
+                totalCash += sh.cashSales;
+                totalCard += sh.cardSales;
+            });
+
+            let gross = totalCash + totalCard;
+            let discounts = 0; // Descuentos y promos
+            let net = Math.max(0, gross - discounts);
+            let estimatedProfit = net * 0.75; // Estimado bruto considerando COGS promedio
+
+            document.getElementById('bo-gross-sales').innerText = `$${gross.toFixed(2)}`;
+            document.getElementById('bo-discounts').innerText = `-$${discounts.toFixed(2)}`;
+            document.getElementById('bo-net-sales').innerText = `$${net.toFixed(2)}`;
+            document.getElementById('bo-gross-profit').innerText = `$${estimatedProfit.toFixed(2)}`;
+
+            document.getElementById('bo-table-gross').innerText = `$${gross.toFixed(2)}`;
+            document.getElementById('bo-table-desc').innerText = `-$${discounts.toFixed(2)}`;
+            document.getElementById('bo-table-net').innerText = `$${net.toFixed(2)}`;
+        }
+
+        function loadItemsData() {
+            // Lista simulada / espejo de productos del POS
+            const productsDB = [
+                { name: 'Otoño Caramelo (Especial)', price: 75, category: 'Temporada' },
+                { name: 'Boba Taro', price: 70, category: 'Boba' },
+                { name: 'Boba Matcha', price: 70, category: 'Boba' },
+                { name: 'Xolot Piña', price: 70, category: 'Xolot' },
+                { name: 'Cerveza Victoria', price: 45, category: 'Fortuna' },
+                { name: 'Soda Italiana Fresa', price: 45, category: 'Soda Italiana' },
+                { name: 'Frappé Cap. Moka', price: 75, category: 'Frappé' },
+                { name: 'Smoothie Mango', price: 70, category: 'Smoothie' },
+                { name: 'Bowl Chico', price: 65, category: 'Bowl' },
+                { name: 'Crepa Nutella', price: 55, category: 'Crepas' },
+                { name: 'Banderilla Ramen Crunch', price: 65, category: 'Banderillas' }
+            ];
+
+            const tbody = document.getElementById('bo-items-table-body');
+            tbody.innerHTML = '';
+            productsDB.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-gray-800">${p.name}</td>
+                    <td class="p-3 text-gray-500">${p.category}</td>
+                    <td class="p-3 text-right font-bold text-brand-pink">$${p.price.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function loadInventoryData() {
+            const inventoryDB = JSON.parse(localStorage.getItem('boba_inventory_db')) || [];
+            const tbody = document.getElementById('bo-inventory-table-body');
+            tbody.innerHTML = '';
+            
+            if(inventoryDB.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 italic">No hay datos de inventario sincronizados aún. Abre el POS primero.</td></tr>`;
+                return;
+            }
+
+            inventoryDB.forEach(item => {
+                const isLow = item.stock <= (item.min || 0);
+                const tr = document.createElement('tr');
+                tr.className = isLow ? "bg-red-50 border-b" : "border-b hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-gray-800">${item.name}</td>
+                    <td class="p-3 font-bold ${isLow ? 'text-red-600' : 'text-gray-700'}">${item.stock}</td>
+                    <td class="p-3 text-gray-500">${item.unit}</td>
+                    <td class="p-3 text-center">
+                        ${isLow ? '<span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">⚠️ Stock Bajo</span>' : '<span class="text-emerald-600 font-bold text-[10px]">Normal ✅</span>'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function loadShiftsData() {
+            const shiftHistory = JSON.parse(localStorage.getItem('boba_shift_history')) || [];
+            const container = document.getElementById('bo-shift-history-container');
+            if (shiftHistory.length === 0) {
+                container.innerHTML = `<p class="text-gray-400 text-xs italic">No hay cierres de turno registrados todavía.</p>`;
+                return;
+            }
+            container.innerHTML = '';
+            shiftHistory.forEach((sh, idx) => {
+                const div = document.createElement('div');
+                div.className = "p-4 bg-gray-50 border rounded-2xl space-y-2";
+                div.innerHTML = `
+                    <div class="flex justify-between font-bold text-gray-800 text-xs">
+                        <span>Cierre de Turno #${shiftHistory.length - idx} — ${sh.date}</span>
+                        <span class="text-brand-pink">Netas: $${(sh.cashSales + sh.cardSales - sh.expenses).toFixed(2)}</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 text-gray-600 text-[11px] gap-2">
+                        <div>Fondo Inicial: <strong>$${sh.fund.toFixed(2)}</strong></div>
+                        <div>Ventas Efectivo: <strong class="text-emerald-600">$${sh.cashSales.toFixed(2)}</strong></div>
+                        <div>Gastos de Turno: <strong class="text-red-600">$${sh.expenses.toFixed(2)}</strong></div>
+                        <div>Diferencia Arqueo: <strong class="${sh.diff === 0 ? 'text-emerald-600' : 'text-blue-600'}">$${sh.diff.toFixed(2)}</strong></div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>
