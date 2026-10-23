@@ -63,6 +63,9 @@
                 <button onclick="switchTab('shift')" id="nav-shift" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800 hover:text-white transition">
                     <i class="fa-solid fa-clock-rotate-left text-base w-5"></i> <span>Turno / Caja</span>
                 </button>
+                <button onclick="switchTab('customers')" id="nav-customers" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800 hover:text-white transition">
+                    <i class="fa-solid fa-users text-base w-5"></i> <span>Clientes Frecuentes</span>
+                </button>
                 <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800 hover:text-white transition">
                     <i class="fa-solid fa-boxes-stacked text-base w-5"></i> <span>Artículos / Inventario</span>
                 </button>
@@ -330,6 +333,37 @@
                 </div>
             </section>
 
+            <!-- TAB: CLIENTES FRECUENTES -->
+            <section id="tab-customers" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
+                <div class="max-w-4xl mx-auto bg-white p-6 rounded-3xl shadow-sm space-y-6">
+                    <div class="flex justify-between items-center border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-users text-brand-pink mr-2"></i> Directorio de Clientes y Puntos ⭐</h2>
+                            <p class="text-xs text-gray-500">Gestión de lealtad, visitas y acumulación de puntos por consumo.</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="text" id="search-customer-input" onkeyup="renderCustomersTable()" placeholder="Buscar por nombre o teléfono..." class="p-2 border rounded-xl text-xs bg-gray-50 outline-none w-60">
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-700">
+                                    <th class="p-3 rounded-l-xl">Nombre del Cliente</th>
+                                    <th class="p-3">Teléfono</th>
+                                    <th class="p-3 text-center">Visitas</th>
+                                    <th class="p-3 text-right">Gasto Total</th>
+                                    <th class="p-3 text-center">Puntos ⭐</th>
+                                    <th class="p-3 rounded-r-xl text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customers-table-body" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
             <!-- TAB 3: INVENTARIO & RECETAS -->
             <section id="tab-inventory" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
                 <div class="max-w-4xl mx-auto bg-white p-6 rounded-3xl shadow-sm space-y-6">
@@ -585,6 +619,13 @@
                 <p class="text-xs text-purple-800 font-semibold"><i class="fa-solid fa-credit-card mr-1"></i> Cobro seleccionado mediante Terminal / Tarjeta.</p>
             </div>
 
+            <div class="space-y-1 pt-2 border-t">
+                <label class="text-xs font-bold text-gray-700 block">Asignar a Cliente Frecuente (Acumula Puntos):</label>
+                <select id="checkout-customer-select" class="w-full p-2.5 border rounded-xl text-xs bg-gray-50 font-semibold outline-none">
+                    <option value="">-- Venta General / Sin Cliente --</option>
+                </select>
+            </div>
+
             <button onclick="processFinalPayment()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow transition">
                 Confirmar y Registrar Venta
             </button>
@@ -656,7 +697,134 @@
 
         let shiftData = { cashSales: 0, cardSales: 0, totalSales: 0, expenses: [] };
 
-        // Inventario con persistencia local (LocalStorage)
+        let defaultCustomersDB = [
+    { id: 9095687, nombre: "Pancho Cañongo", telefono: "2751002424", puntos: 0, visitas: 1, gastoTotal: 455.0 },
+    { id: 1916400, nombre: "Alina", telefono: "S/N", puntos: 0, visitas: 1, gastoTotal: 400.0 },
+    { id: 9315743, nombre: "Izel Chacón", telefono: "2751093396", puntos: 0, visitas: 3, gastoTotal: 345.0 },
+    { id: 3735456, nombre: "Lupita", telefono: "2431129499", puntos: 0, visitas: 1, gastoTotal: 285.0 },
+    { id: 1750933, nombre: "Fidel Morales", telefono: "224479603", puntos: 0, visitas: 1, gastoTotal: 260.0 },
+    { id: 2006738, nombre: "Eduardo zotano.", telefono: "2223051008", puntos: 0, visitas: 1, gastoTotal: 245.0 },
+    { id: 5447961, nombre: "angel eumaña", telefono: "S/N", puntos: 0, visitas: 1, gastoTotal: 160.0 },
+    { id: 9394029, nombre: "Angel", telefono: "7352089876", puntos: 0, visitas: 1, gastoTotal: 160.0 },
+    { id: 1421847, nombre: "Erick Zuñiga", telefono: "2751027949", puntos: 0, visitas: 1, gastoTotal: 140.0 },
+    { id: 8485586, nombre: "Jose Angel", telefono: "2223668521", puntos: 0, visitas: 1, gastoTotal: 120.0 },
+    { id: 7846493, nombre: "angel", telefono: "735131409", puntos: 0, visitas: 1, gastoTotal: 120.0 },
+    { id: 6811978, nombre: "daniel", telefono: "2751203941", puntos: 0, visitas: 1, gastoTotal: 120.0 },
+    { id: 9244012, nombre: "roberto", telefono: "S/N", puntos: 0, visitas: 3, gastoTotal: 110.0 },
+    { id: 8747798, nombre: "Andrea Elias Cañongo", telefono: "2751038091", puntos: 0, visitas: 1, gastoTotal: 100.0 },
+    { id: 2554801, nombre: "Angelica Acevedo", telefono: "2751004439", puntos: 0, visitas: 3, gastoTotal: 90.0 },
+    { id: 4429200, nombre: "ashley", telefono: "16125930548", puntos: 0, visitas: 1, gastoTotal: 80.0 },
+    { id: 6743297, nombre: "luis amador", telefono: "S/N", puntos: 0, visitas: 1, gastoTotal: 80.0 },
+    { id: 8337296, nombre: "javier", telefono: "2751204575", puntos: 0, visitas: 1, gastoTotal: 80.0 },
+    { id: 1271444, nombre: "agustin cañongo", telefono: "2751128355", puntos: 0, visitas: 1, gastoTotal: 80.0 },
+    { id: 9744029, nombre: "Eduardo  zotano.", telefono: "2223051008", puntos: 0, visitas: 0, gastoTotal: 0.0 },
+    { id: 9478096, nombre: "guty", telefono: "2751128355", puntos: 0, visitas: 0, gastoTotal: 0.0 },
+    { id: 4205478, nombre: "Deysi", telefono: "2751128353", puntos: 0, visitas: 0, gastoTotal: 0.0 },
+    { id: 8420889, nombre: "clemente", telefono: "S/N", puntos: 0, visitas: 2, gastoTotal: 0.0 },
+    { id: 1860025, nombre: "sara franco", telefono: "2751088840", puntos: 0, visitas: 2, gastoTotal: 0.0 },
+    { id: 4775283, nombre: "dylan rivera", telefono: "7351207478", puntos: 0, visitas: 0, gastoTotal: 0.0 }
+];
+
+let customersDB = JSON.parse(localStorage.getItem('boba_customers_db')) || defaultCustomersDB;
+
+function saveCustomersToStorage() {
+    localStorage.setItem('boba_customers_db', JSON.stringify(customersDB));
+}
+
+const originalSwitchTab = switchTab;
+switchTab = function(id) {
+    originalSwitchTab(id);
+    ['pos', 'customers', 'shift', 'inventory'].forEach(t => {
+        let tabEl = document.getElementById(`tab-${t}`);
+        if(tabEl) tabEl.classList.toggle('hidden', t !== id);
+        let navBtn = document.getElementById(`nav-${t}`);
+        if(navBtn) navBtn.className = t === id ? "w-full flex items-center space-x-3 px-3 py-3 rounded-xl bg-brand-pink text-white transition" : "w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800 hover:text-white transition";
+    });
+    
+    if(id === 'customers') { renderCustomersTable(); }
+};
+
+function renderCustomersTable() {
+    const tbody = document.getElementById('customers-table-body');
+    const searchInput = document.getElementById('search-customer-input');
+    if(!tbody || !searchInput) return;
+    const filter = searchInput.value.toLowerCase();
+    tbody.innerHTML = '';
+    
+    let filtered = customersDB.filter(c => c.nombre.toLowerCase().includes(filter) || c.telefono.includes(filter));
+    
+    filtered.forEach((cust, idx) => {
+        const realIdx = customersDB.findIndex(c => c.id === cust.id);
+        const tr = document.createElement('tr');
+        tr.className = "border-b hover:bg-gray-50";
+        tr.innerHTML = `
+            <td class="p-3 font-bold text-gray-800">${cust.nombre}</td>
+            <td class="p-3 text-gray-600">${cust.telefono}</td>
+            <td class="p-3 text-center">${cust.visitas}</td>
+            <td class="p-3 text-right font-semibold">$${cust.gastoTotal.toFixed(2)}</td>
+            <td class="p-3 text-center font-bold text-brand-pink">${cust.puntos} ⭐</td>
+            <td class="p-3 text-center space-x-1">
+                <button onclick="addPointsDirect(${realIdx}, 10)" class="px-2 py-1 bg-pink-100 text-brand-pink rounded-lg text-[10px] font-bold">+10 Pts</button>
+                <button onclick="redeemPoints(${realIdx}, 50)" class="px-2 py-1 bg-amber-100 text-amber-800 rounded-lg text-[10px] font-bold">Canjear (50)</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function addPointsDirect(idx, pts) {
+    customersDB[idx].puntos += pts;
+    saveCustomersToStorage();
+    renderCustomersTable();
+    alert(`✅ Se sumaron ${pts} puntos a ${customersDB[idx].nombre}. Total: ${customersDB[idx].puntos}⭐`);
+}
+
+function redeemPoints(idx, pts) {
+    if (customersDB[idx].puntos >= pts) {
+        customersDB[idx].puntos -= pts;
+        saveCustomersToStorage();
+        renderCustomersTable();
+        alert(`🎁 ¡Canje exitoso! Puntos restantes de ${customersDB[idx].nombre}: ${customersDB[idx].puntos}⭐`);
+    } else {
+        alert("❌ Puntos insuficientes para este canje.");
+    }
+}
+
+function populateCustomerSelect() {
+    const select = document.getElementById('checkout-customer-select');
+    if(!select) return;
+    select.innerHTML = `<option value="">-- Venta General / Sin Cliente --</option>`;
+    customersDB.forEach((c, idx) => {
+        let opt = document.createElement('option');
+        opt.value = idx;
+        opt.innerText = `${c.nombre} (${c.telefono})`;
+        select.appendChild(opt);
+    });
+}
+
+const originalOpenCheckoutModal = openCheckoutModal;
+openCheckoutModal = function() {
+    originalOpenCheckoutModal();
+    populateCustomerSelect();
+};
+
+const originalProcessFinalPayment = processFinalPayment;
+processFinalPayment = function() {
+    const customerSelect = document.getElementById('checkout-customer-select');
+    const total = parseFloat(document.getElementById('checkout-total-display').innerText.replace('$','')) || 0;
+    
+    if (customerSelect && customerSelect.value !== "") {
+        let cust = customersDB[customerSelect.value];
+        let puntosGanados = Math.floor(total / 10); // 1 punto por cada $10 de compra
+        cust.puntos += puntosGanados;
+        cust.visitas += 1;
+        cust.gastoTotal += total;
+        saveCustomersToStorage();
+    }
+    
+    originalProcessFinalPayment();
+};
+
         let defaultInventory = [
             { key: 'avellana', name: 'Jarabe Avellana', stock: 2000, unit: 'ml', min: 200 },
             { key: 'mora', name: 'Jarabe Mora', stock: 2000, unit: 'ml', min: 200 },
