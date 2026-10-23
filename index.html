@@ -80,7 +80,7 @@
         <div class="flex items-center space-x-3 border-l border-pink-400/50 pl-3">
             <div class="text-right">
                 <p id="current-user-role" class="text-xs font-bold leading-tight">Izel (Dueña)</p>
-                <button onclick="toggleOwnerMode()" class="text-[10px] bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-lg mt-0.5 font-bold">Cambiar Modo</button>
+                <button onclick="promptSecurityPin()" class="text-[10px] bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-lg mt-0.5 font-bold">Ingresar Código</button>
             </div>
         </div>
     </header>
@@ -265,7 +265,7 @@
                         <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-cash-register text-brand-pink mr-2"></i> Módulo de Corte de Caja y Arqueo</h2>
                         <p class="text-xs text-gray-500">Control de fondo inicial, ventas del turno y arqueo de efectivo.</p>
                     </div>
-                    <span class="bg-pink-100 text-brand-pink text-xs font-bold px-3 py-1 rounded-xl">Turno Activo</span>
+                    <span id="current-shift-badge" class="bg-pink-100 text-brand-pink text-xs font-bold px-3 py-1 rounded-xl">Turno Mañana (0805)</span>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -321,14 +321,14 @@
                 <div class="flex justify-between items-center border-b pb-4">
                     <div>
                         <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-boxes-stacked text-brand-pink mr-2"></i> Inventario & Control de Recetas</h2>
-                        <p id="mode-subtitle" class="text-xs text-gray-500">Vista de Dueña (Descuento automático configurado por receta)</p>
+                        <p id="mode-subtitle" class="text-xs text-gray-500">Bloqueado para empleadas (Requiere PIN de Dueña: 2107)</p>
                     </div>
-                    <button onclick="toggleOwnerMode()" class="px-3 py-1.5 bg-pink-100 text-brand-pink font-bold text-xs rounded-xl">
-                        🔒 Cambiar a Vista Empleada
+                    <button onclick="promptSecurityPin()" class="px-3 py-1.5 bg-pink-100 text-brand-pink font-bold text-xs rounded-xl">
+                        🔑 Ingresar PIN de Dueña
                     </button>
                 </div>
 
-                <div id="owner-add-section" class="bg-pink-50 p-4 rounded-2xl border border-pink-200 space-y-3">
+                <div id="owner-add-section" class="bg-pink-50 p-4 rounded-2xl border border-pink-200 space-y-3 hidden">
                     <h3 class="font-bold text-xs text-brand-pink uppercase tracking-wide">➕ Añadir Nuevo Insumo al Almacén</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <input type="text" id="new-item-key" placeholder="Clave id (ej. taro)" class="p-2 border rounded-xl text-xs bg-white">
@@ -520,94 +520,132 @@
     <script>
         let selectedPaymentMethod = 'efectivo';
         let orderCounter = 1;
-        let isOwnerMode = true;
+        let isOwnerMode = false;
+        let currentShiftName = 'Turno Mañana (0805)';
 
         let shiftData = { cashSales: 0, cardSales: 0, totalSales: 0 };
 
-        // INVENTARIO ACTUALIZADO CON TUS DATOS EXACTOS
+        // INVENTARIO COMPLETO CON RECETAS EXACTAS, HIELO Y LECHE
         let inventoryDB = [
-            { key: 'avellana', name: 'Jarabe Avellana', stock: 2000, unit: 'ml' },
-            { key: 'mora', name: 'Jarabe Mora', stock: 2000, unit: 'ml' },
-            { key: 'maracuya', name: 'Jarabe Maracuyá', stock: 1760, unit: 'ml' },
-            { key: 'frutos_rojos', name: 'Jarabe Frutos Rojos', stock: 1000, unit: 'ml' },
-            { key: 'fresa', name: 'Jarabe Fresa', stock: 1930, unit: 'ml' },
-            { key: 'manzana_verde', name: 'Jarabe Manzana Verde', stock: 809, unit: 'ml' },
-            { key: 'cereza', name: 'Jarabe Cereza', stock: 801, unit: 'ml' },
-            { key: 'mango', name: 'Jarabe Mango', stock: 796, unit: 'ml' },
-            { key: 'dubai', name: 'Polvos Dubái', stock: 556, unit: 'g' },
-            { key: 'choco_negro', name: 'Chocolate Negro', stock: 2000, unit: 'g' },
-            { key: 'blanco', name: 'Chocolate Blanco', stock: 2000, unit: 'g' },
-            { key: 'taro', name: 'Taro', stock: 6000, unit: 'g' },
-            { key: 'caramelo', name: 'Caramelo', stock: 3000, unit: 'g' },
-            { key: 'techai', name: 'Te Chai', stock: 670, unit: 'g' },
-            { key: 'lychee', name: 'Lychee', stock: 344, unit: 'g' },
-            { key: 'fresa_crema', name: 'Fresas c/ crema', stock: 646, unit: 'g' },
-            { key: 'cookies_cream', name: 'Cookies and Cream', stock: 1586, unit: 'g' },
-            { key: 'chai_negro', name: 'Chai Negro', stock: 1573, unit: 'g' },
-            { key: 'cap_vainilla', name: 'Cap. Vainilla', stock: 1613, unit: 'g' },
-            { key: 'moka', name: 'Moka', stock: 507, unit: 'g' },
-            { key: 'matcha', name: 'Matcha', stock: 916, unit: 'g' },
-            { key: 'chai_latte', name: 'Chai Latte', stock: 854, unit: 'g' },
-            // PERLAS EXPLOSIVAS Y OTROS
-            { key: 'pop_mora', name: 'Perlas Explosivas Mora Azul', stock: 1785, unit: 'g' },
-            { key: 'pop_fresa', name: 'Perlas Explosivas Fresa', stock: 2380, unit: 'g' },
-            { key: 'pop_arcoiris', name: 'Perlas Explosivas Arcoíris', stock: 900, unit: 'g' },
-            { key: 'yogurth_boba', name: 'Yogurth', stock: 1200, unit: 'g' },
-            { key: 'pop_manzana', name: 'Perlas Explosivas Manzana Verde', stock: 509, unit: 'g' },
-            { key: 'pop_mango', name: 'Perlas Explosivas Mango', stock: 1190, unit: 'g' },
-            { key: 'leche', name: 'Leche', stock: 3, unit: 'Litros' },
-            { key: 'grano_cafe', name: 'Grano de Café', stock: 747, unit: 'g' },
-            { key: 'galleta_oreo', name: 'Galleta Oreo', stock: 21, unit: 'pzas' },
-            { key: 'tizana_fresa_kiwi', name: 'Tizana Fresa Kiwi', stock: 191, unit: 'g' },
-            { key: 'tizana_mora', name: 'Tizana Mora', stock: 188, unit: 'g' },
-            // VASOS
-            { key: 'vaso_boba', name: 'Vasos Boba', stock: 83, unit: 'pzas' },
-            { key: 'vaso_frappe', name: 'Vasos Frappé', stock: 33, unit: 'pzas' },
-            { key: 'vaso_smoothie', name: 'Vasos Smoothie', stock: 33, unit: 'pzas' },
-            { key: 'vaso_soda', name: 'Vasos Soda Italiana', stock: 31, unit: 'pzas' },
-            { key: 'vaso_especial', name: 'Vasos Especial', stock: 29, unit: 'pzas' },
-            { key: 'vaso_cafe_frio', name: 'Vasos Café Frío', stock: 21, unit: 'pzas' },
-            { key: 'vaso_cafe_12oz', name: 'Vasos Café Caliente 12 oz', stock: 16, unit: 'pzas' },
-            { key: 'vaso_cafe_16oz', name: 'Vasos Café Caliente 16 oz', stock: 42, unit: 'pzas' },
-            { key: 'vaso_michelada', name: 'Vasos Michelada', stock: 89, unit: 'pzas' },
-            { key: 'vaso_helado_chico', name: 'Vaso Helado Chico', stock: 16, unit: 'pzas' },
-            { key: 'vaso_helado_grande', name: 'Vaso Helado Grande', stock: 20, unit: 'pzas' },
-            // TAPAS
-            { key: 'tapa_caliente', name: 'Tapas Café Caliente', stock: 98, unit: 'pzas' },
-            { key: 'tapa_frio_especial', name: 'Tapas Café Frío / Especial', stock: 48, unit: 'pzas' },
-            { key: 'tapa_frappe', name: 'Tapas Frappé', stock: 170, unit: 'pzas' },
-            { key: 'tapa_bowl_grande', name: 'Tapas Bowl Grande', stock: 12, unit: 'pzas' },
-            // PLATOS
-            { key: 'plato_bowl_grande', name: 'Platos Bowl Grande', stock: 12, unit: 'pzas' },
-            { key: 'plato_bowl_chico', name: 'Platos Bowl Chico', stock: 11, unit: 'pzas' },
-            { key: 'plato_pastel', name: 'Platos Pastel Cheesecake', stock: 19, unit: 'pzas' }
+            { key: 'avellana', name: 'Jarabe Avellana', stock: 2000, unit: 'ml', min: 200 },
+            { key: 'mora', name: 'Jarabe Mora', stock: 2000, unit: 'ml', min: 200 },
+            { key: 'maracuya', name: 'Jarabe Maracuyá', stock: 1760, unit: 'ml', min: 200 },
+            { key: 'frutos_rojos', name: 'Jarabe Frutos Rojos', stock: 1000, unit: 'ml', min: 200 },
+            { key: 'fresa', name: 'Jarabe Fresa', stock: 1930, unit: 'ml', min: 200 },
+            { key: 'manzana_verde', name: 'Jarabe Manzana Verde', stock: 809, unit: 'ml', min: 200 },
+            { key: 'cereza', name: 'Jarabe Cereza', stock: 801, unit: 'ml', min: 200 },
+            { key: 'mango', name: 'Jarabe Mango', stock: 796, unit: 'ml', min: 200 },
+            { key: 'dubai', name: 'Polvos Dubái', stock: 556, unit: 'g', min: 100 },
+            { key: 'choco_negro', name: 'Chocolate Negro', stock: 2000, unit: 'g', min: 300 },
+            { key: 'blanco', name: 'Chocolate Blanco', stock: 2000, unit: 'g', min: 300 },
+            { key: 'taro', name: 'Taro', stock: 6000, unit: 'g', min: 500 },
+            { key: 'caramelo', name: 'Caramelo', stock: 3000, unit: 'g', min: 300 },
+            { key: 'techai', name: 'Te Chai', stock: 670, unit: 'g', min: 100 },
+            { key: 'lychee', name: 'Lychee', stock: 344, unit: 'g', min: 100 },
+            { key: 'fresa_crema', name: 'Fresas c/ crema', stock: 646, unit: 'g', min: 100 },
+            { key: 'cookies_cream', name: 'Cookies and Cream', stock: 1586, unit: 'g', min: 200 },
+            { key: 'chai_negro', name: 'Chai Negro', stock: 1573, unit: 'g', min: 200 },
+            { key: 'cap_vainilla', name: 'Cap. Vainilla', stock: 1613, unit: 'g', min: 200 },
+            { key: 'moka', name: 'Moka', stock: 507, unit: 'g', min: 100 },
+            { key: 'matcha', name: 'Matcha', stock: 916, unit: 'g', min: 150 },
+            { key: 'chai_latte', name: 'Chai Latte', stock: 854, unit: 'g', min: 150 },
+            { key: 'base_cristal', name: 'Base Cristal / Neutra', stock: 2000, unit: 'g', min: 300 },
+            // PERLAS Y COMPLEMENTOS
+            { key: 'pop_mora', name: 'Perlas Explosivas Mora Azul', stock: 1785, unit: 'g', min: 300 },
+            { key: 'pop_fresa', name: 'Perlas Explosivas Fresa', stock: 2380, unit: 'g', min: 300 },
+            { key: 'pop_arcoiris', name: 'Perlas Explosivas Arcoíris', stock: 900, unit: 'g', min: 200 },
+            { key: 'yogurth_boba', name: 'Yogurth', stock: 1200, unit: 'g', min: 200 },
+            { key: 'pop_manzana', name: 'Perlas Explosivas Manzana Verde', stock: 509, unit: 'g', min: 150 },
+            { key: 'pop_mango', name: 'Perlas Explosivas Mango', stock: 1190, unit: 'g', min: 200 },
+            { key: 'tapioca', name: 'Tapioca', stock: 2000, unit: 'g', min: 300 },
+            { key: 'leche', name: 'Leche', stock: 3, unit: 'Litros', min: 1 },
+            { key: 'hielo', name: 'Hielo (Bolsas 5kg)', stock: 20, unit: 'kg', min: 4 },
+            { key: 'grano_cafe', name: 'Grano de Café', stock: 747, unit: 'g', min: 150 },
+            { key: 'galleta_oreo', name: 'Galleta Oreo', stock: 21, unit: 'pzas', min: 5 },
+            { key: 'tizana_fresa_kiwi', name: 'Tizana Fresa Kiwi', stock: 191, unit: 'g', min: 50 },
+            { key: 'tizana_mora', name: 'Tizana Mora', stock: 188, unit: 'g', min: 50 },
+            // VASOS Y DESECHABLES
+            { key: 'vaso_boba', name: 'Vasos Boba', stock: 83, unit: 'pzas', min: 15 },
+            { key: 'vaso_frappe', name: 'Vasos Frappé', stock: 33, unit: 'pzas', min: 10 },
+            { key: 'vaso_smoothie', name: 'Vasos Smoothie', stock: 33, unit: 'pzas', min: 10 },
+            { key: 'vaso_soda', name: 'Vasos Soda Italiana', stock: 31, unit: 'pzas', min: 10 },
+            { key: 'vaso_especial', name: 'Vasos Especial', stock: 29, unit: 'pzas', min: 10 },
+            { key: 'vaso_cafe_frio', name: 'Vasos Café Frío', stock: 21, unit: 'pzas', min: 5 },
+            { key: 'vaso_cafe_12oz', name: 'Vasos Café Caliente 12 oz', stock: 16, unit: 'pzas', min: 5 },
+            { key: 'vaso_cafe_16oz', name: 'Vasos Café Caliente 16 oz', stock: 42, unit: 'pzas', min: 10 },
+            { key: 'vaso_michelada', name: 'Vasos Michelada', stock: 89, unit: 'pzas', min: 15 },
+            { key: 'vaso_helado_chico', name: 'Vaso Helado Chico', stock: 16, unit: 'pzas', min: 5 },
+            { key: 'vaso_helado_grande', name: 'Vaso Helado Grande', stock: 20, unit: 'pzas', min: 5 },
+            { key: 'tapa_caliente', name: 'Tapas Café Caliente', stock: 98, unit: 'pzas', min: 20 },
+            { key: 'tapa_frio_especial', name: 'Tapas Café Frío / Especial', stock: 48, unit: 'pzas', min: 10 },
+            { key: 'tapa_frappe', name: 'Tapas Frappé', stock: 170, unit: 'pzas', min: 30 },
+            { key: 'tapa_bowl_grande', name: 'Tapas Bowl Grande', stock: 12, unit: 'pzas', min: 3 },
+            { key: 'plato_bowl_grande', name: 'Platos Bowl Grande', stock: 12, unit: 'pzas', min: 3 },
+            { key: 'plato_bowl_chico', name: 'Platos Bowl Chico', stock: 11, unit: 'pzas', min: 3 },
+            { key: 'plato_pastel', name: 'Platos Pastel Cheesecake', stock: 19, unit: 'pzas', min: 5 }
         ];
 
+        // MAPA DE RECETAS EXACTO SEGÚN TUS NOTAS
         const recipeMapping = {
-            'Boba Taro': { key: 'taro', qty: 50 },
-            'Boba Fresas c/ crema': { key: 'fresa_crema', qty: 50 },
-            'Boba Caramelo': { key: 'caramelo', qty: 50 },
-            'Boba Matcha': { key: 'matcha', qty: 45 },
-            'Boba Chocolate Blanco': { key: 'blanco', qty: 50 },
-            'Boba Chocolate': { key: 'choco_negro', qty: 50 },
-            'Boba Chai Latte': { key: 'chai_latte', qty: 50 },
-            'Boba Lychee': { key: 'lychee', qty: 40 },
-            'Boba Chai Negro': { key: 'chai_negro', qty: 50 },
-            'Boba Chocolate de dubai': { key: 'dubai', qty: 50 },
-            'Xolot Frutos Rojos': { key: 'frutos_rojos', qty: 40 },
-            'Xolot Fresa': { key: 'fresa', qty: 40 },
-            'Soda Italiana Mora Azul': { key: 'mora', qty: 40 },
-            'Soda Italiana Mango': { key: 'mango', qty: 40 },
-            'Soda Italiana Fresa': { key: 'fresa', qty: 40 },
-            'Soda Italiana Frutos Rojos': { key: 'frutos_rojos', qty: 40 },
-            'Soda Italiana Maracuyá': { key: 'maracuya', qty: 40 },
-            'Soda Italiana Manzana Verde': { key: 'manzana_verde', qty: 40 },
-            'Soda Italiana Cereza': { key: 'cereza', qty: 40 },
-            'Frappé Cap. Vainilla': { key: 'cap_vainilla', qty: 60 },
-            'Frappé Cap. Moka': { key: 'moka', qty: 60 },
-            'Frappé Chocolate': { key: 'choco_negro', qty: 60 },
-            'Frappé Cookies and cream': { key: 'cookies_cream', qty: 60 },
-            'Frappé Chocolate de dubai': { key: 'dubai', qty: 60 }
+            'Boba Taro': [ {key:'taro', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Fresas c/ crema': [ {key:'fresa_crema', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Caramelo': [ {key:'caramelo', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Matcha': [ {key:'matcha', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Chocolate Blanco': [ {key:'blanco', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Chocolate': [ {key:'choco_negro', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Chai Latte': [ {key:'chai_latte', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Lychee': [ {key:'lychee', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Chai Negro': [ {key:'chai_negro', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Chocolate de dubai': [ {key:'dubai', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Ferrero': [ {key:'choco_negro', qty:40}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            
+            'Xolot Piña': [ {key:'manzana_verde', qty:60}, {key:'hielo', qty:0.1} ],
+            'Xolot Frutos Rojos': [ {key:'frutos_rojos', qty:60}, {key:'hielo', qty:0.1} ],
+            'Xolot Fresa': [ {key:'fresa', qty:60}, {key:'hielo', qty:0.1} ],
+
+            'Soda Italiana Mora Azul': [ {key:'mora', qty:60}, {key:'hielo', qty:0.25} ],
+            'Soda Italiana Mango': [ {key:'mango', qty:60}, {key:'hielo', qty:0.25} ],
+            'Soda Italiana Fresa': [ {key:'fresa', qty:60}, {key:'hielo', qty:0.25} ],
+            'Soda Italiana Frutos Rojos': [ {key:'frutos_rojos', qty:60}, {key:'hielo', qty:0.25} ],
+            'Soda Italiana Maracuyá': [ {key:'maracuya', qty:60}, {key:'hielo', qty:0.25} ],
+            'Soda Italiana Manzana Verde': [ {key:'manzana_verde', qty:60}, {key:'hielo', qty:0.25} ],
+            'Soda Italiana Durazno': [ {key:'mango', qty:60}, {key:'hielo', qty:0.25} ],
+            'Soda Italiana Cereza': [ {key:'cereza', qty:60}, {key:'hielo', qty:0.25} ],
+            'Soda Italiana Frambuesa': [ {key:'fresa', qty:60}, {key:'hielo', qty:0.25} ],
+
+            'Frappé Cap. Vainilla': [ {key:'cap_vainilla', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Cap. Moka': [ {key:'moka', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Ferrero': [ {key:'choco_negro', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Chocolate': [ {key:'choco_negro', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Oreo': [ {key:'cookies_cream', qty:58}, {key:'base_cristal', qty:29}, {key:'galleta_oreo', qty:2}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Chocolate blanco': [ {key:'blanco', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Cookies and cream': [ {key:'cookies_cream', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Chocolate de dubai': [ {key:'dubai', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+
+            'Smoothie Mora Azul': [ {key:'mora', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+            'Smoothie Mango': [ {key:'mango', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+            'Smoothie Fresa': [ {key:'fresa', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+            'Smoothie Frutos Rojos': [ {key:'frutos_rojos', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+            'Smoothie Maracuyá': [ {key:'maracuya', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+            'Smoothie Manzana Verde': [ {key:'manzana_verde', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+            'Smoothie Durazno': [ {key:'mango', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+            'Smoothie Frambuesa': [ {key:'fresa', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+            'Smoothie Piña': [ {key:'manzana_verde', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+
+            'Americano 12 oz (Frío)': [ {key:'grano_cafe', qty:18}, {key:'hielo', qty:0.1} ],
+            'Americano 16 oz (Frío)': [ {key:'grano_cafe', qty:27}, {key:'hielo', qty:0.15} ],
+            'Espresso': [ {key:'grano_cafe', qty:9} ],
+            'Espresso Doble': [ {key:'grano_cafe', qty:18} ],
+            'Capuchino Sencillo': [ {key:'grano_cafe', qty:18}, {key:'leche', qty:0.15} ],
+            'Latte Sencillo': [ {key:'grano_cafe', qty:18}, {key:'leche', qty:0.2} ],
+            'Moka Extra 12 oz (Caliente)': [ {key:'grano_cafe', qty:18}, {key:'choco_negro', qty:58}, {key:'leche', qty:0.1} ],
+            'Moka Extra 16 oz (Caliente)': [ {key:'grano_cafe', qty:18}, {key:'choco_negro', qty:58}, {key:'leche', qty:0.15} ],
+            'Matcha Mango (Frío)': [ {key:'matcha', qty:20}, {key:'mango', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.2} ],
+
+            'Tizana Fusión de Moras 12 oz': [ {key:'tizana_mora', qty:18} ],
+            'Tizana Fusión de Moras 16 oz': [ {key:'tizana_mora', qty:25} ],
+            'Tizana Esencia Fresa Kiwi 12 oz': [ {key:'tizana_fresa_kiwi', qty:18} ],
+            'Tizana Esencia Fresa Kiwi 16 oz': [ {key:'tizana_fresa_kiwi', qty:25} ]
         };
 
         const dailyPromos = {
@@ -738,12 +776,39 @@
             if(id === 'inventory') { renderInventoryTable(); }
         }
 
-        function toggleOwnerMode() {
-            isOwnerMode = !isOwnerMode;
-            document.getElementById('current-user-role').innerText = isOwnerMode ? "Izel (Dueña)" : "Barista (Empleada)";
-            document.getElementById('mode-subtitle').innerText = isOwnerMode ? "Vista de Dueña (Edición y Control Total)" : "Vista de Barista (Solo Rectificar Insumos)";
-            document.getElementById('owner-add-section').style.display = isOwnerMode ? 'block' : 'none';
-            renderInventoryTable();
+        // SISTEMA DE SEGURIDAD CON CÓDIGOS OFICIALES
+        function promptSecurityPin() {
+            const pin = prompt("🔐 Ingrese su código de acceso (Mañana: 0805 | Tarde: 3240 | Dueña: 2107):");
+            if (pin === "2107") {
+                isOwnerMode = true;
+                currentShiftName = "Modo Propietaria (Dueña)";
+                document.getElementById('current-user-role').innerText = "Izel (Dueña)";
+                document.getElementById('mode-subtitle').innerText = "Acceso Total Autorizado (Dueña)";
+                document.getElementById('owner-add-section').classList.remove('hidden');
+                document.getElementById('current-shift-badge').innerText = currentShiftName;
+                alert("✅ Acceso de Propietaria concedido.");
+                renderInventoryTable();
+            } else if (pin === "0805") {
+                isOwnerMode = false;
+                currentShiftName = "Turno Mañana (0805)";
+                document.getElementById('current-user-role').innerText = "Turno Mañana";
+                document.getElementById('mode-subtitle').innerText = "Vista de Empleada (Solo Rectificar Insumos)";
+                document.getElementById('owner-add-section').classList.add('hidden');
+                document.getElementById('current-shift-badge').innerText = currentShiftName;
+                alert("☀️ Turno Mañana activado.");
+                renderInventoryTable();
+            } else if (pin === "3240") {
+                isOwnerMode = false;
+                currentShiftName = "Turno Tarde (3240)";
+                document.getElementById('current-user-role').innerText = "Turno Tarde";
+                document.getElementById('mode-subtitle').innerText = "Vista de Empleada (Solo Rectificar Insumos)";
+                document.getElementById('owner-add-section').classList.add('hidden');
+                document.getElementById('current-shift-badge').innerText = currentShiftName;
+                alert("🌙 Turno Tarde activado.");
+                renderInventoryTable();
+            } else if (pin !== null) {
+                alert("❌ Código incorrecto.");
+            }
         }
 
         function updateShiftDisplay() {
@@ -788,10 +853,15 @@
             const tbody = document.getElementById('inventory-table-body');
             tbody.innerHTML = '';
             inventoryDB.forEach((item, idx) => {
+                const isLowStock = item.stock <= (item.min || 0);
                 const tr = document.createElement('tr');
-                tr.className = "border-b hover:bg-gray-50";
+                tr.className = isLowStock ? "bg-red-50 border-b hover:bg-red-100" : "border-b hover:bg-gray-50";
                 tr.innerHTML = `
-                    <td class="p-3 font-bold text-gray-800">${item.name} <span class="text-[10px] text-gray-400 font-mono">(${item.key})</span></td>
+                    <td class="p-3 font-bold text-gray-800">
+                        ${item.name} 
+                        <span class="text-[10px] text-gray-400 font-mono">(${item.key})</span>
+                        ${isLowStock ? '<span class="ml-2 bg-red-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">⚠️ ¡Stock Bajo!</span>' : ''}
+                    </td>
                     <td class="p-3"><input type="number" id="stock-input-${idx}" value="${item.stock}" ${isOwnerMode ? '' : 'readonly'} class="w-24 p-1 border rounded-lg text-xs font-bold ${isOwnerMode ? 'bg-white' : 'bg-gray-100 text-gray-600'}"></td>
                     <td class="p-3 text-gray-500">${item.unit}</td>
                     <td class="p-3 text-center space-x-1">
@@ -808,12 +878,13 @@
         }
 
         function addNewInventoryItem() {
+            if (!isOwnerMode) return alert("Acción restringida. Ingrese el PIN de Dueña.");
             const key = document.getElementById('new-item-key').value.trim();
             const name = document.getElementById('new-item-name').value;
             const stock = parseFloat(document.getElementById('new-item-stock').value);
             const unit = document.getElementById('new-item-unit').value;
             if(!key || !name || isNaN(stock) || !unit) return alert('Por favor llena todos los campos.');
-            inventoryDB.push({ key, name, stock, unit });
+            inventoryDB.push({ key, name, stock, unit, min: 10 });
             document.getElementById('new-item-key').value = '';
             document.getElementById('new-item-name').value = '';
             document.getElementById('new-item-stock').value = '';
@@ -831,6 +902,7 @@
         }
 
         function deleteInventoryItem(idx) {
+            if (!isOwnerMode) return alert("Acción restringida.");
             if(confirm('¿Eliminar insumo?')) { inventoryDB.splice(idx, 1); renderInventoryTable(); }
         }
 
@@ -846,7 +918,7 @@
             document.getElementById('categories-grid').classList.add('hidden');
             document.getElementById('products-desglose-grid').classList.remove('hidden');
             document.getElementById('btn-back-categories').classList.remove('hidden');
-            document.getElementById('current-view-title').innerText = `Menú: ${cat.toUpperCase()}`;
+            document.getElementById('current-view-title', cat).innerText = `Menú: ${cat.toUpperCase()}`;
             
             const grid = document.getElementById('products-desglose-grid');
             grid.innerHTML = '';
@@ -1024,16 +1096,26 @@
             }
             shiftData.totalSales += total;
 
+            // APLICAR ESCANDALLO Y DESCUENTO AUTOMÁTICO DE INGREDIENTES + CONSUMO DIARIO DE HIELO (10kg)
             currentCart.forEach(item => {
-                const receta = recipeMapping[item.name];
-                if (receta) {
-                    const insumo = inventoryDB.find(i => i.key === receta.key);
-                    if (insumo) {
-                        insumo.stock -= receta.qty;
-                        if (insumo.stock < 0) insumo.stock = 0;
-                    }
+                const recipe = recipeMapping[item.name];
+                if (recipe) {
+                    recipe.forEach(ingredient => {
+                        const insumo = inventoryDB.find(i => i.key === ingredient.key);
+                        if (insumo) {
+                            insumo.stock -= ingredient.qty;
+                            if (insumo.stock < 0) insumo.stock = 0;
+                        }
+                    });
                 }
             });
+
+            // Descuento automático de hielo por venta (porción proporcional de las 2 bolsas de 5kg)
+            const hieloInsumo = inventoryDB.find(i => i.key === 'hielo');
+            if (hieloInsumo) {
+                hieloInsumo.stock -= 0.1; // Descuento dinámico por producto
+                if (hieloInsumo.stock < 0) hieloInsumo.stock = 0;
+            }
 
             document.getElementById('rec-order-num').innerText = document.getElementById('order-id-display').innerText;
             document.getElementById('rec-order-mode').innerText = document.getElementById('order-mode').options[document.getElementById('order-mode').selectedIndex].text;
