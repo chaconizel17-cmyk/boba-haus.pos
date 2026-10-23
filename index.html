@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boba Haus - Back Office Pro (Gerencia)</title>
+    <title>Boba Haus - POS & Control de Inventarios</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -12,12 +12,13 @@
             theme: {
                 extend: {
                     colors: {
-                        fig: {
-                            dark: '#412e53',    /* Morado oscuro tipo higo */
-                            purple: '#6e336d',  /* Púrpura principal */
-                            amber: '#d4832c',   /* Naranja ámbar cálido */
-                            cream: '#e6cb9d',   /* Crema / Beige dorado */
-                            bg: '#fbf8f3'       /* Fondo general cálido */
+                        brand: {
+                            pink: '#e84393',
+                            lightpink: '#fd79a8',
+                            softpink: '#f8a5c2',
+                            cream: '#fdfbfe',
+                            bg: '#f5f0eb',
+                            dark: '#2d3436'
                         }
                     },
                     fontFamily: {
@@ -29,439 +30,1491 @@
         }
     </script>
     <style>
-        body { font-family: 'Quicksand', sans-serif; background-color: #fbf8f3; }
+        body { font-family: 'Quicksand', sans-serif; background-color: #f5f0eb; user-select: none; }
         h1, h2, h3, h4 { font-family: 'Fredoka', sans-serif; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-thumb { background: #6e336d; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #f8a5c2; border-radius: 10px; }
+        @media print {
+            body * { visibility: hidden; }
+            #receipt-print-area, #receipt-print-area * { visibility: visible; }
+            #receipt-print-area { position: absolute; left: 0; top: 0; width: 100%; }
+        }
     </style>
 </head>
 <body class="h-screen overflow-hidden flex text-gray-800">
 
-    <!-- MENÚ LATERAL ESTILO LOYVERSE (PALETA DE HIGOS) -->
-    <aside class="w-64 bg-fig-dark text-gray-200 flex flex-col justify-between shrink-0 shadow-xl z-30">
+    <!-- MENÚ LATERAL ESTILO TPV -->
+    <aside id="sidebar-menu" class="w-64 bg-gray-900 text-gray-300 flex flex-col justify-between shrink-0 shadow-xl z-30 transition-all duration-300">
         <div>
-            <div class="p-4 bg-[#32233f] border-b border-purple-900/40 flex items-center justify-between">
+            <div class="p-4 bg-gray-950 border-b border-gray-800 flex items-center justify-between">
                 <div>
-                    <h2 class="font-bold text-white text-sm">Boba Haus Back Office</h2>
-                    <p class="text-[11px] text-fig-cream">Panel Gerencial • Izel</p>
+                    <h2 id="sidebar-role-title" class="font-bold text-white text-sm">Propietario</h2>
+                    <p class="text-[11px] text-gray-400">TPV 1 • Boba Haus</p>
                 </div>
-                <span class="p-2 bg-fig-amber text-white rounded-xl text-xs font-bold shadow">Pro</span>
+                <button onclick="lockSystem()" class="p-2 text-gray-400 hover:text-white bg-gray-800 rounded-xl" title="Bloquear TPV">
+                    <i class="fa-solid fa-lock"></i>
+                </button>
             </div>
 
-            <nav class="p-2 space-y-1 text-xs font-semibold overflow-y-auto max-h-[calc(100vh-100px)]">
-                <button onclick="switchBoTab('sales')" id="nav-sales" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-fig-purple text-white transition shadow-sm">
-                    <i class="fa-solid fa-chart-line text-base w-5"></i> <span>Resumen de ventas</span>
+            <nav class="p-2 space-y-1 text-xs font-semibold">
+                <button onclick="switchTab('pos')" id="nav-pos" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl bg-brand-pink text-white transition">
+                    <i class="fa-solid fa-store text-base w-5"></i> <span>Ventas</span>
                 </button>
-                <button onclick="switchBoTab('items')" id="nav-items" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
-                    <i class="fa-solid fa-list text-base w-5"></i> <span>Lista de artículos (Editable)</span>
+                <button onclick="switchTab('shift')" id="nav-shift" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800 hover:text-white transition">
+                    <i class="fa-solid fa-clock-rotate-left text-base w-5"></i> <span>Turno / Caja</span>
                 </button>
-                <button onclick="switchBoTab('inventory')" id="nav-inventory" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
-                    <i class="fa-solid fa-boxes-stacked text-base w-5"></i> <span>Inventario avanzado</span>
-                </button>
-                <button onclick="switchBoTab('purchases')" id="nav-purchases" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
-                    <i class="fa-solid fa-truck-ramp-box text-base w-5"></i> <span>Órdenes de Compra</span>
-                </button>
-                <button onclick="switchBoTab('shifts')" id="nav-shifts" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
-                    <i class="fa-solid fa-cash-register text-base w-5"></i> <span>Cierres de Turno / Arqueos</span>
-                </button>
-                <button onclick="switchBoTab('employees')" id="nav-employees" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
-                    <i class="fa-solid fa-users text-base w-5"></i> <span>Empleados y Accesos</span>
-                </button>
-                <button onclick="switchBoTab('settings')" id="nav-settings" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
-                    <i class="fa-solid fa-gear text-base w-5"></i> <span>Configuración</span>
+                <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800 hover:text-white transition">
+                    <i class="fa-solid fa-boxes-stacked text-base w-5"></i> <span>Artículos / Inventario</span>
                 </button>
             </nav>
         </div>
 
-        <div class="p-3 border-t border-purple-900/40 text-[11px] text-fig-cream/70 text-center">
-            Ecosistema Boba Haus 2026
+        <div class="p-3 border-t border-gray-800 text-[11px] text-gray-500 text-center">
+            Boba Haus POS v3.8 (Pro)
         </div>
     </aside>
 
-    <!-- CUERPO PRINCIPAL BACK OFFICE -->
-    <main class="flex-1 overflow-y-auto relative flex flex-col h-full bg-fig-bg">
+    <!-- MAIN BODY -->
+    <main class="flex-1 overflow-hidden relative flex flex-col h-full">
 
-        <!-- HEADER -->
-        <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-20">
-            <h1 id="bo-header-title" class="text-lg font-bold text-fig-dark">Resumen de ventas</h1>
+        <header class="bg-white border-b border-gray-200 px-4 py-2.5 flex items-center justify-between shadow-sm z-20 shrink-0">
             <div class="flex items-center space-x-3">
-                <span class="text-xs font-semibold bg-fig-cream/40 text-fig-dark px-3 py-1.5 rounded-xl border border-fig-cream">📅 Sincronizado en Vivo</span>
-                <button onclick="location.reload()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">
-                    <i class="fa-solid fa-rotate-right mr-1"></i> Actualizar
+                <button onclick="toggleSidebar()" class="p-2 text-gray-600 hover:text-brand-pink bg-gray-100 rounded-xl text-xs font-bold" title="Mostrar/Esconder Menú">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <h1 id="header-section-title" class="text-base font-bold text-gray-800">Punto de Venta</h1>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="openTurnModal()" class="px-3 py-1 bg-amber-100 text-amber-900 text-xs font-bold rounded-xl border border-amber-300">
+                    ⏱️ <span id="header-turn-status">Turno Cerrado</span>
+                </button>
+                <button onclick="openPinPadModal()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl flex items-center space-x-1">
+                    <i class="fa-solid fa-key text-brand-pink"></i>
+                    <span>Cambiar Usuario / PIN</span>
                 </button>
             </div>
         </header>
 
-        <!-- CONTENIDO DE PESTAÑAS -->
-        <div class="p-6 space-y-6 flex-1">
+        <div class="flex-1 overflow-hidden relative flex flex-col">
 
-            <!-- TAB 1: RESUMEN DE VENTAS Y CLASIFICACIONES -->
-            <section id="bo-tab-sales" class="space-y-6">
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-                        <span class="text-[11px] text-gray-500 font-semibold block">Ventas brutas</span>
-                        <h3 id="bo-gross-sales" class="text-lg font-bold text-gray-900 mt-1">$0.00</h3>
+            <!-- TAB 1: POS -->
+            <section id="tab-pos" class="h-full flex flex-col md:flex-row">
+                <div class="flex-1 flex flex-col h-full bg-brand-bg border-r border-gray-200 overflow-hidden">
+                    <div class="p-3 bg-white border-b border-gray-200 flex items-center justify-between shrink-0 shadow-sm">
+                        <div class="flex items-center space-x-2">
+                            <button id="btn-back-categories" onclick="showCategoriesView()" class="hidden px-3 py-1.5 bg-pink-100 hover:bg-pink-200 text-brand-pink font-bold text-xs rounded-xl flex items-center space-x-1">
+                                <i class="fa-solid fa-arrow-left"></i>
+                                <span>Volver a Categorías</span>
+                            </button>
+                            <h2 id="current-view-title" class="font-bold text-gray-800 text-base">Categorías del Menú</h2>
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                            <button id="btn-eco-discount" onclick="applyEcoDiscount()" class="px-3 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-300">
+                                🌱 Vaso Reutilizable (-$10)
+                            </button>
+                        </div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-                        <span class="text-[11px] text-gray-500 font-semibold block">Efectivo en Caja</span>
-                        <h3 id="bo-cash-sales-card" class="text-lg font-bold text-emerald-600 mt-1">$0.00</h3>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-                        <span class="text-[11px] text-gray-500 font-semibold block">Cobros con Tarjeta</span>
-                        <h3 id="bo-card-sales-card" class="text-lg font-bold text-purple-600 mt-1">$0.00</h3>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-                        <span class="text-[11px] text-gray-500 font-semibold block">Ventas netas</span>
-                        <h3 id="bo-net-sales" class="text-lg font-bold text-fig-purple mt-1">$0.00</h3>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 col-span-2 md:col-span-1">
-                        <span class="text-[11px] text-gray-500 font-semibold block">Beneficio bruto (Utilidad)</span>
-                        <h3 id="bo-gross-profit" class="text-lg font-bold text-fig-dark mt-1">$0.00</h3>
+
+                    <div class="flex-1 p-4 overflow-y-auto">
+                        <div class="mb-4 bg-gradient-to-r from-pink-500 to-brand-lightpink text-white p-3 rounded-2xl shadow-sm flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid fa-gift text-xl"></i>
+                                <div>
+                                    <p class="text-xs font-bold">Promoción de la Semana:</p>
+                                    <p id="daily-promo-banner" class="text-[11px] text-pink-100 font-semibold">Lunes a Miércoles: ¡3x2 en Smoothies!</p>
+                                </div>
+                            </div>
+                            <span id="day-indicator-badge" class="bg-white/20 px-2 py-1 rounded-lg text-[10px] font-bold">Hoy</span>
+                        </div>
+
+                        <div id="categories-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div onclick="openCategoryProducts('temporada')" class="bg-amber-50 p-5 rounded-3xl border border-amber-200 shadow-sm hover:shadow-md hover:border-amber-400 transition flex flex-col items-center text-center cursor-pointer relative">
+                                <span class="absolute top-2 right-2 bg-amber-200 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full">🍂 Otoño</span>
+                                <span class="text-4xl mb-2">☕</span>
+                                <h3 class="font-bold text-amber-900 text-base">TEMPORADA</h3>
+                                <span class="text-xs text-amber-700 mt-1">Otoño Caramelo • $75</span>
+                            </div>
+                            <div onclick="openCategoryProducts('boba')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🧋</span>
+                                <h3 class="font-bold text-gray-800 text-base">BOBA</h3>
+                                <span class="text-xs text-gray-400 mt-1">Sabores • $70 - $75</span>
+                            </div>
+                            <div onclick="openCategoryProducts('xolot')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🥤</span>
+                                <h3 class="font-bold text-gray-800 text-base">XOLOT</h3>
+                                <span class="text-xs text-gray-400 mt-1">Piña, Frutos, Fresa • $70</span>
+                            </div>
+                            <div onclick="openCategoryProducts('fortuna')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer relative">
+                                <span class="absolute top-2 right-2 bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">🍻 H. Feliz</span>
+                                <span class="text-4xl mb-2">🍺</span>
+                                <h3 class="font-bold text-gray-800 text-base">FORTUNA</h3>
+                                <span class="text-xs text-gray-400 mt-1">Cerveza, Copeo, Michelada</span>
+                            </div>
+                            <div onclick="openCategoryProducts('soda')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🍹</span>
+                                <h3 class="font-bold text-gray-800 text-base">SODA ITALIANA</h3>
+                                <span class="text-xs text-gray-400 mt-1">9 Sabores • $45</span>
+                            </div>
+                            <div onclick="openCategoryProducts('frappe')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🥤</span>
+                                <h3 class="font-bold text-gray-800 text-base">FRAPPÉ</h3>
+                                <span class="text-xs text-gray-400 mt-1">Todos los Sabores • $70 - $80</span>
+                            </div>
+                            <div onclick="openCategoryProducts('smoothie')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🥭</span>
+                                <h3 class="font-bold text-gray-800 text-base">SMOOTHIE</h3>
+                                <span class="text-xs text-gray-400 mt-1">Sabores • $70</span>
+                            </div>
+                            <div onclick="openCategoryProducts('cafe_frio')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🧊</span>
+                                <h3 class="font-bold text-gray-800 text-base">CAFÉ FRÍO</h3>
+                                <span class="text-xs text-gray-400 mt-1">Capuchinos, Americano</span>
+                            </div>
+                            <div onclick="openCategoryProducts('cafe_caliente')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">☕</span>
+                                <h3 class="font-bold text-gray-800 text-base">CAFÉ CALIENTE</h3>
+                                <span class="text-xs text-gray-400 mt-1">Espresso, Latte, Olla...</span>
+                            </div>
+                            <div onclick="openCategoryProducts('tizana')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🫖</span>
+                                <h3 class="font-bold text-gray-800 text-base">TIZANA</h3>
+                                <span class="text-xs text-gray-400 mt-1">12 oz y 16 oz • $50 - $65</span>
+                            </div>
+                            <div onclick="openCategoryProducts('bowl')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🥗</span>
+                                <h3 class="font-bold text-gray-800 text-base">BOWL</h3>
+                                <span class="text-xs text-gray-400 mt-1">Chico / Grande • $65 - $95</span>
+                            </div>
+                            <div onclick="openCategoryProducts('crepas')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🥞</span>
+                                <h3 class="font-bold text-gray-800 text-base">CREPAS</h3>
+                                <span class="text-xs text-gray-400 mt-1">Dulces y Saladas • $50 - $80</span>
+                            </div>
+                            <div onclick="openCategoryProducts('banderillas')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🌭</span>
+                                <h3 class="font-bold text-gray-800 text-base">BANDERILLAS</h3>
+                                <span class="text-xs text-gray-400 mt-1">Ramen, Papa, Panko • $55 - $65</span>
+                            </div>
+                            <div onclick="openCategoryProducts('pasteles')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🍰</span>
+                                <h3 class="font-bold text-gray-800 text-base">PASTELES</h3>
+                                <span class="text-xs text-gray-400 mt-1">Matilde, Cheesecakes • $45 - $50</span>
+                            </div>
+                            <div onclick="openCategoryProducts('comida')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🥪</span>
+                                <h3 class="font-bold text-gray-800 text-base">COMIDA</h3>
+                                <span class="text-xs text-gray-400 mt-1">Sandwiches, Waffles, Hot Cakes</span>
+                            </div>
+                        </div>
+
+                        <div id="products-desglose-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 hidden"></div>
                     </div>
                 </div>
 
-                <!-- SECCIÓN DE REPORTES CLASIFICADOS -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Ventas por Artículo -->
-                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-3">
-                        <h3 class="font-bold text-fig-dark text-sm"><i class="fa-solid fa-chart-bar mr-1 text-fig-purple"></i> Ventas por Artículo</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs">
-                                <thead><tr class="border-b text-gray-500"><th class="pb-2">Artículo</th><th class="pb-2 text-right">Cantidad</th><th class="pb-2 text-right">Total</th></tr></thead>
-                                <tbody id="sales-by-item-body" class="divide-y divide-gray-100">
-                                    <tr><td colspan="3" class="py-3 text-center text-gray-400 italic">Sin ventas registradas en este turno.</td></tr>
-                                </tbody>
-                            </table>
+                <!-- CART -->
+                <div class="w-full md:w-96 lg:w-[400px] bg-white flex flex-col h-full shadow-lg shrink-0">
+                    <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between shrink-0">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-gray-700 text-base">Orden #<span id="order-id-display">0001</span></span>
+                            <select id="order-mode" class="text-xs bg-white border border-gray-300 rounded-lg px-2 py-1 font-semibold text-brand-pink outline-none">
+                                <option value="local">🍽️ Comer Aquí</option>
+                                <option value="llevar">🛍️ Para Llevar</option>
+                                <option value="domicilio">🛵 Domicilio</option>
+                            </select>
+                        </div>
+                        <button onclick="clearCart()" class="text-xs text-red-500 font-bold hover:underline">Vaciar</button>
+                    </div>
+
+                    <div class="p-2 bg-amber-50 border-b border-amber-200 text-xs space-y-1">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-amber-800">Establecimiento:</span>
+                            <select id="store-location" onchange="renderCart()" class="bg-white border border-amber-300 rounded px-2 py-0.5 font-semibold text-amber-900 outline-none">
+                                <option value="boba_haus">Boba Haus</option>
+                                <option value="fortuna">Fortuna 🍻</option>
+                            </select>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-amber-700">Hora Feliz (8 PM - 9 PM):</span>
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="checkbox" id="happy-hour-toggle" onchange="checkAndToggleHappyHour(this)" class="rounded text-amber-600 focus:ring-amber-500">
+                                <span class="font-semibold text-amber-800">Aplicar Gratis (Solo Fortuna)</span>
+                            </label>
                         </div>
                     </div>
 
-                    <!-- Ventas por Categoría -->
-                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-3">
-                        <h3 class="font-bold text-fig-dark text-sm"><i class="fa-solid fa-pie-chart mr-1 text-fig-amber"></i> Ventas por Categoría</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs">
-                                <thead><tr class="border-b text-gray-500"><th class="pb-2">Categoría</th><th class="pb-2 text-right">Participación</th></tr></thead>
-                                <tbody id="sales-by-category-body" class="divide-y divide-gray-100">
-                                    <tr><td colspan="2" class="py-3 text-center text-gray-400 italic">Sin datos de categorías.</td></tr>
-                                </tbody>
-                            </table>
+                    <div id="cart-items-container" class="flex-1 overflow-y-auto p-3 space-y-2">
+                        <div id="empty-cart-msg" class="h-full flex flex-col items-center justify-center text-gray-400 py-12">
+                            <i class="fa-solid fa-basket-shopping text-4xl mb-2 text-gray-300"></i>
+                            <p class="text-xs font-medium">Carrito vacío. Selecciona una categoría.</p>
                         </div>
                     </div>
 
-                    <!-- Ventas por Empleado -->
-                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-3">
-                        <h3 class="font-bold text-fig-dark text-sm"><i class="fa-solid fa-user-tie mr-1 text-fig-dark"></i> Ventas por Empleado / Turno</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs">
-                                <thead><tr class="border-b text-gray-500"><th class="pb-2">Colaborador / Turno</th><th class="pb-2 text-right">Ventas Totales</th></tr></thead>
-                                <tbody id="sales-by-employee-body" class="divide-y divide-gray-100">
-                                    <tr><td colspan="2" class="py-3 text-center text-gray-400 italic">Sin turnos cerrados aún.</td></tr>
-                                </tbody>
-                            </table>
+                    <div class="p-3 bg-gray-50 border-t border-gray-200 shrink-0 space-y-2">
+                        <div class="space-y-1 text-xs text-gray-600">
+                            <div class="flex justify-between"><span>Subtotal:</span><span id="cart-subtotal">$0.00</span></div>
+                            <div class="flex justify-between text-emerald-600 font-semibold"><span>Descuento / Promo:</span><span id="cart-discount">-$0.00</span></div>
+                            <div class="flex justify-between text-gray-800 font-bold text-lg border-t pt-1"><span>Total:</span><span id="cart-total" class="text-brand-pink">$0.00</span></div>
                         </div>
-                    </div>
 
-                    <!-- Ventas por Tipo de Pago -->
-                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-3">
-                        <h3 class="font-bold text-fig-dark text-sm"><i class="fa-solid fa-wallet mr-1 text-emerald-600"></i> Ventas por Tipo de Pago</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs">
-                                <thead><tr class="border-b text-gray-500"><th class="pb-2">Método</th><th class="pb-2 text-right">Monto</th></tr></thead>
-                                <tbody class="divide-y divide-gray-100">
-                                    <tr><td class="py-2 font-semibold">💵 Efectivo (Gaveta)</td><td id="bo-pay-cash" class="py-2 text-right font-bold text-emerald-600">$0.00</td></tr>
-                                    <tr><td class="py-2 font-semibold">💳 Tarjeta / Terminal</td><td id="bo-pay-card" class="py-2 text-right font-bold text-purple-600">$0.00</td></tr>
-                                </tbody>
-                            </table>
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <button onclick="openCheckoutModal()" class="py-2.5 bg-brand-pink hover:bg-pink-600 text-white font-bold rounded-xl text-xs shadow transition col-span-2">
+                                💵 Cobrar Pedido
+                            </button>
+                            <button onclick="openStaffModal()" class="py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs shadow transition col-span-2">
+                                🎁 Cortesía Personal (Izel, Agustín, Nicolás, Chepis, Clementito)
+                            </button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- TAB 2: LISTA DE ARTÍCULOS (EDITABLE ESTILO LOYVERSE) -->
-            <section id="bo-tab-items" class="space-y-4 hidden">
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4">
-                    <div class="flex justify-between items-center">
+            <!-- TAB 2: CORTE Y TURNO -->
+            <section id="tab-shift" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
+                <div class="max-w-3xl mx-auto bg-white p-6 rounded-3xl shadow-sm space-y-6">
+                    <div class="flex justify-between items-center border-b pb-4">
                         <div>
-                            <h3 class="font-bold text-fig-dark text-sm">Lista de Artículos y Precios Editables</h3>
-                            <p class="text-xs text-gray-500">Modifica los precios directamente aquí y se actualizarán en el POS.</p>
+                            <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-cash-register text-brand-pink mr-2"></i> Gestión de Tesorería y Turno</h2>
+                            <p class="text-xs text-gray-500">Control de fondo inicial, cajón de efectivo, ventas netas, apertura y cierre.</p>
                         </div>
-                        <button onclick="saveCatalogChanges()" class="px-4 py-2 bg-fig-purple text-white text-xs font-bold rounded-xl shadow hover:bg-fig-dark transition">
-                            💾 Guardar Cambios en el Menú
+                        <div class="space-x-2">
+                            <button onclick="openTurnModal()" class="px-3 py-2 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow hover:bg-emerald-700 transition">
+                                <i class="fa-solid fa-play mr-1"></i> Abrir Turno
+                            </button>
+                            <button onclick="openCloseTurnModal()" class="px-3 py-2 bg-red-600 text-white font-bold rounded-xl text-xs shadow hover:bg-red-700 transition">
+                                <i class="fa-solid fa-stop mr-1"></i> Cerrar Turno
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-3">
+                        <h3 class="font-bold text-sm text-gray-800"><i class="fa-solid fa-vault mr-1 text-brand-pink"></i> Cajón de efectivo</h3>
+                        <div class="space-y-2 text-xs divide-y divide-gray-200">
+                            <div class="flex justify-between pt-1"><span>Fondo de caja anterior:</span><strong id="rep-fund">$0.00</strong></div>
+                            <div class="flex justify-between pt-1"><span>Cobros en efectivo:</span><strong id="rep-cash-sales" class="text-emerald-600">$0.00</strong></div>
+                            <div class="flex justify-between pt-1"><span>Reembolsos en efectivo:</span><strong id="rep-refunds">$0.00</strong></div>
+                            <div class="flex justify-between pt-1"><span>Depositado:</span><strong>$0.00</strong></div>
+                            <div class="flex justify-between pt-1"><span>Pagos / Salidas (Gastos):</span><strong id="rep-expenses" class="text-red-600">$0.00</strong></div>
+                            <div class="flex justify-between pt-2 text-sm font-bold text-gray-900 border-t border-gray-300"><span>Efectivo teórico en caja:</span><span id="rep-expected-cash">$0.00</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-3">
+                        <h3 class="font-bold text-sm text-gray-800"><i class="fa-solid fa-chart-line mr-1 text-brand-pink"></i> Resumen de ventas</h3>
+                        <div class="space-y-2 text-xs divide-y divide-gray-200">
+                            <div class="flex justify-between pt-1"><span>Ventas brutas:</span><strong id="rep-gross-sales">$0.00</strong></div>
+                            <div class="flex justify-between pt-1"><span>Reembolsos:</span><strong>$0.00</strong></div>
+                            <div class="flex justify-between pt-1"><span>Descuentos:</span><strong id="rep-discounts" class="text-emerald-600">$0.00</strong></div>
+                            <div class="flex justify-between pt-2 text-sm font-bold text-brand-pink border-t border-gray-300"><span>Ventas netas:</span><span id="rep-net-sales">$0.00</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-red-50/50 p-4 rounded-2xl border border-red-200 space-y-3">
+                        <h3 class="font-bold text-xs text-red-700 uppercase tracking-wide"><i class="fa-solid fa-receipt mr-1"></i> Registrar Gasto / Salida de Efectivo en Turno</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <input type="text" id="expense-reason" placeholder="Concepto (Ej. Compra hielo)" class="p-2 border rounded-xl text-xs bg-white">
+                            <input type="number" id="expense-amount" placeholder="Monto (Ej. 60)" class="p-2 border rounded-xl text-xs bg-white">
+                            <button onclick="registerExpense()" class="py-2 bg-red-600 text-white font-bold rounded-xl text-xs shadow hover:bg-red-700 transition">Registrar Gasto</button>
+                        </div>
+                        <div id="expenses-list-container" class="space-y-1 text-xs text-gray-600 pt-1">
+                            <p class="text-[11px] italic text-gray-400">No hay gastos registrados en este turno.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-3">
+                        <h3 class="font-bold text-sm text-gray-800"><i class="fa-solid history mr-1 text-brand-pink"></i> Historial de Cierres de Turno</h3>
+                        <div id="shift-history-container" class="space-y-2 text-xs">
+                            <p class="text-gray-400 italic">No hay turnos cerrados registrados todavía en este historial.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: INVENTARIO & RECETAS -->
+            <section id="tab-inventory" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
+                <div class="max-w-4xl mx-auto bg-white p-6 rounded-3xl shadow-sm space-y-6">
+                    <div class="flex justify-between items-center border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-boxes-stacked text-brand-pink mr-2"></i> Inventario & Control de Recetas</h2>
+                            <p id="mode-subtitle" class="text-xs text-gray-500">Gestión de artículos y stock en tiempo real</p>
+                        </div>
+                        <button onclick="openPinPadModal()" class="px-3 py-1.5 bg-pink-100 text-brand-pink font-bold text-xs rounded-xl">
+                            🔑 Validar PIN Dueña
                         </button>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="bg-fig-cream/20 text-fig-dark border-b">
-                                    <th class="p-3 rounded-l-xl">Artículo</th>
-                                    <th class="p-3">Categoría</th>
-                                    <th class="p-3 text-right">Precio de Venta ($)</th>
-                                    <th class="p-3 text-right rounded-r-xl">Costo Estimado</th>
-                                </tr>
-                            </thead>
-                            <tbody id="bo-editable-items-body" class="divide-y divide-gray-100"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
 
-            <!-- TAB 3: INVENTARIO AVANZADO -->
-            <section id="bo-tab-inventory" class="space-y-4 hidden">
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4">
-                    <h3 class="font-bold text-fig-dark text-sm">Control de Almacén e Insumos en Vivo</h3>
+                    <div id="owner-add-section" class="bg-pink-50 p-4 rounded-2xl border border-pink-200 space-y-3 hidden">
+                        <h3 class="font-bold text-xs text-brand-pink uppercase tracking-wide">➕ Añadir Nuevo Insumo al Almacén</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <input type="text" id="new-item-key" placeholder="Clave id (ej. taro)" class="p-2 border rounded-xl text-xs bg-white">
+                            <input type="text" id="new-item-name" placeholder="Nombre (Ej. Polvo Taro)" class="p-2 border rounded-xl text-xs bg-white">
+                            <input type="number" id="new-item-stock" placeholder="Stock Inicial" class="p-2 border rounded-xl text-xs bg-white">
+                            <input type="text" id="new-item-unit" placeholder="Unidad (g, ml, Litros, Kilos, pzas)" class="p-2 border rounded-xl text-xs bg-white">
+                        </div>
+                        <button onclick="addNewInventoryItem()" class="w-full py-2 bg-brand-pink text-white font-bold rounded-xl text-xs shadow">Guardar Nuevo Insumo</button>
+                    </div>
+
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs border-collapse">
                             <thead>
-                                <tr class="bg-fig-cream/20 text-fig-dark border-b">
-                                    <th class="p-3 rounded-l-xl">Insumo</th>
-                                    <th class="p-3">Stock en Almacén</th>
+                                <tr class="bg-gray-100 text-gray-700">
+                                    <th class="p-3 rounded-l-xl">Insumo / Artículo</th>
+                                    <th class="p-3">Stock Actual</th>
                                     <th class="p-3">Unidad</th>
-                                    <th class="p-3 text-center rounded-r-xl">Estado</th>
+                                    <th class="p-3 rounded-r-xl text-center">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id="bo-inventory-table-body" class="divide-y divide-gray-100"></tbody>
+                            <tbody id="inventory-table-body" class="divide-y divide-gray-100"></tbody>
                         </table>
                     </div>
                 </div>
             </section>
-
-            <!-- TAB 4: ÓRDENES DE COMPRA (PROVEEDORES) -->
-            <section id="bo-tab-purchases" class="space-y-4 hidden">
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4 max-w-xl">
-                    <h3 class="font-bold text-fig-dark text-sm"><i class="fa-solid fa-truck-ramp-box mr-1"></i> Recepción de Mercancía / Proveedores</h3>
-                    <div class="space-y-3 text-xs">
-                        <div>
-                            <label class="font-bold block text-gray-700 mb-1">Seleccionar Insumo:</label>
-                            <select id="po-item-select" class="w-full p-2.5 border rounded-xl bg-gray-50 font-semibold outline-none"></select>
-                        </div>
-                        <div>
-                            <label class="font-bold block text-gray-700 mb-1">Cantidad a Sumar al Stock:</label>
-                            <input type="number" id="po-qty-input" placeholder="Ej. 2000 (g) o 5 (Litros)" class="w-full p-2.5 border rounded-xl outline-none">
-                        </div>
-                        <button onclick="receivePurchaseOrder()" class="w-full py-3 bg-fig-purple hover:bg-fig-dark text-white font-bold rounded-xl shadow transition">
-                            📥 Registrar Entrada al Almacén
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 5: CIERRES DE TURNO -->
-            <section id="bo-tab-shifts" class="space-y-4 hidden">
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4">
-                    <h3 class="font-bold text-fig-dark text-sm">Historial de Cierres de Turno y Arqueos</h3>
-                    <div id="bo-shift-history-container" class="space-y-3">
-                        <p class="text-gray-400 text-xs italic">No hay cierres registrados aún.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 6: EMPLEADOS Y ACCESOS -->
-            <section id="bo-tab-employees" class="space-y-4 hidden">
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4 max-w-2xl">
-                    <h3 class="font-bold text-fig-dark text-sm">Lista de Empleados y Permisos de TPV</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="bg-fig-cream/20 text-fig-dark border-b">
-                                    <th class="p-3 rounded-l-xl">Colaborador</th>
-                                    <th class="p-3">PIN de Acceso</th>
-                                    <th class="p-3 text-right rounded-r-xl">Rol / Nivel</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100 text-xs">
-                                <tr><td class="p-3 font-bold">Izel Chacon</td><td class="p-3 font-mono">2107</td><td class="p-3 text-right font-bold text-fig-purple">Propietario (Acceso Total)</td></tr>
-                                <tr><td class="p-3 font-bold">Turno Mañana</td><td class="p-3 font-mono">0805</td><td class="p-3 text-right text-gray-600">Cajero Operativo</td></tr>
-                                <tr><td class="p-3 font-bold">Turno Tarde</td><td class="p-3 font-mono">3240</td><td class="p-3 text-right text-gray-600">Cajero Operativo</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 7: CONFIGURACIÓN -->
-            <section id="bo-tab-settings" class="space-y-4 hidden">
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4 max-w-xl">
-                    <h3 class="font-bold text-fig-dark text-sm">Configuración General del Sistema</h3>
-                    <div class="space-y-3 text-xs">
-                        <div class="flex justify-between items-center border-b pb-2">
-                            <span>Sincronización LocalStorage:</span>
-                            <span class="font-bold text-emerald-600">Activa (Conectado con TPV)</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
         </div>
     </main>
 
+    <!-- MODAL: CORTESÍA PERSONAL -->
+    <div id="staff-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
+            <h3 class="font-bold text-base text-gray-800 text-center">🎁 Registrar Consumo de Personal</h3>
+            <p class="text-xs text-gray-500 text-center">El producto no se cobrará, pero se descontará automáticamente de los insumos del inventario.</p>
+            
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-gray-700 block">Selecciona quién toma el producto:</label>
+                <select id="staff-name-select" class="w-full p-2.5 border rounded-xl text-xs bg-gray-50 font-semibold outline-none">
+                    <option value="Izel">Izel</option>
+                    <option value="Agustín">Agustín</option>
+                    <option value="Nicolás">Nicolás</option>
+                    <option value="Chepis">Chepis</option>
+                    <option value="Clementito">Clementito</option>
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-2">
+                <button onclick="processStaffConsumption()" class="py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs shadow transition">
+                    Registrar y Descontar
+                </button>
+                <button onclick="closeStaffModal()" class="py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl text-xs transition">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: CIERRE DE TURNO Y ARQUEO -->
+    <div id="close-turn-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <h3 class="font-bold text-base text-gray-800 text-center">🔒 Cierre de Turno y Arqueo de Caja</h3>
+            <p class="text-xs text-gray-500 text-center">Cuenta el efectivo físico en gaveta para validar sobrantes o faltantes.</p>
+            
+            <div class="bg-gray-50 p-3 rounded-xl space-y-2 text-xs">
+                <div class="flex justify-between"><span>Efectivo Teórico Esperado:</span><strong id="close-expected-cash" class="text-brand-pink">$0.00</strong></div>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-gray-700 block">Efectivo Físico Contado en Gaveta:</label>
+                <input type="number" id="close-counted-cash" placeholder="Ej. 1250" onkeyup="calculateCloseDifference()" class="w-full p-3 border rounded-xl text-base font-bold text-center text-brand-pink outline-none">
+            </div>
+
+            <div class="bg-emerald-50 p-3 rounded-xl text-center">
+                <span class="text-xs text-emerald-700 block">Diferencia / Resultado:</span>
+                <span id="close-diff-display" class="text-base font-bold text-emerald-700">$0.00</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-2">
+                <button onclick="confirmCloseTurn()" class="py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs shadow transition">
+                    Confirmar Cierre de Turno
+                </button>
+                <button onclick="closeCloseTurnModal()" class="py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl text-xs transition">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VENTANA EMERGENTE: TECLADO NUMÉRICO TÁCTIL (PIN) -->
+    <div id="pinpad-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-gray-900 rounded-3xl max-w-sm w-full p-6 text-white space-y-6 shadow-2xl border border-gray-800">
+            <div class="text-center space-y-2">
+                <h3 class="text-lg font-bold">Introduzca el PIN</h3>
+                <div id="pin-dots" class="flex justify-center space-x-3 text-2xl tracking-widest text-brand-pink">
+                    ○ ○ ○ ○
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+                <button type="button" onclick="pressPinNum(1)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">1</button>
+                <button type="button" onclick="pressPinNum(2)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">2</button>
+                <button type="button" onclick="pressPinNum(3)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">3</button>
+                <button type="button" onclick="pressPinNum(4)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">4</button>
+                <button type="button" onclick="pressPinNum(5)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">5</button>
+                <button type="button" onclick="pressPinNum(6)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">6</button>
+                <button type="button" onclick="pressPinNum(7)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">7</button>
+                <button type="button" onclick="pressPinNum(8)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">8</button>
+                <button type="button" onclick="pressPinNum(9)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">9</button>
+                <button type="button" onclick="clearPin()" class="p-5 bg-red-900/40 hover:bg-red-900/60 text-red-300 rounded-2xl text-xs font-bold transition">Limpiar</button>
+                <button type="button" onclick="pressPinNum(0)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">0</button>
+                <button type="button" onclick="backspacePin()" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xs font-bold transition">Borrar</button>
+            </div>
+
+            <button onclick="closePinPadModal()" class="w-full py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-2xl font-bold text-xs transition">
+                Cancelar
+            </button>
+        </div>
+    </div>
+
+    <!-- VENTANA EMERGENTE: APERTURA DE TURNO -->
+    <div id="turn-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-gray-900 rounded-3xl max-w-md w-full p-6 text-white space-y-5 shadow-2xl border border-gray-800">
+            <h3 class="text-base font-bold text-gray-200">Apertura de Turno</h3>
+            <p class="text-xs text-gray-400">Especifique la cantidad de efectivo de la caja con el que empezará su turno.</p>
+            
+            <div class="space-y-1">
+                <label class="text-xs text-gray-400 font-semibold">Cantidad:</label>
+                <input type="number" id="input-turn-fund" value="500" class="w-full text-xl font-bold p-3 bg-gray-800 border border-gray-700 rounded-2xl text-brand-pink outline-none">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button onclick="confirmOpenTurn()" class="py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl text-xs shadow transition">
+                    ABRIR EL TURNO
+                </button>
+                <button onclick="closeTurnModal()" class="py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold rounded-2xl text-xs transition">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM PRODUCT MODAL -->
+    <div id="custom-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-2">
+                <div>
+                    <h3 id="modal-product-name" class="font-bold text-base text-gray-800">Producto</h3>
+                    <span id="modal-product-price-tag" class="text-xs font-bold text-brand-pink">$0.00</span>
+                </div>
+                <button onclick="closeCustomModal()" class="text-gray-400 font-bold">✕</button>
+            </div>
+
+            <div id="base-topping-section" style="display: none;">
+                <label class="text-xs font-bold block mb-1 text-gray-700">Topping Incluido:</label>
+                <select id="modal-base-topping-select" class="w-full p-2 border rounded-xl text-xs bg-gray-50 font-semibold">
+                    <option value="Tapioca">Perlas Tapioca</option>
+                    <option value="POP Fresa">POP Fresa</option>
+                    <option value="POP Mango">POP Mango</option>
+                    <option value="POP Blue Berry">POP Blue Berry</option>
+                    <option value="POP Arcoíris">POP Arcoíris</option>
+                    <option value="POP Manzana Verde">POP Manzana Verde</option>
+                    <option value="POP Yogurth">POP Yogurth</option>
+                </select>
+            </div>
+
+            <div id="sugar-section" style="display: none;">
+                <label class="text-xs font-bold block mb-1 text-gray-700">Nivel de Azúcar:</label>
+                <div class="grid grid-cols-4 gap-1">
+                    <button type="button" onclick="selectOpt(this, 'azucar')" class="opt-azucar p-2 border rounded-xl font-bold bg-pink-50 text-brand-pink border-brand-pink text-xs">100%</button>
+                    <button type="button" onclick="selectOpt(this, 'azucar')" class="opt-azucar p-2 border rounded-xl font-semibold text-xs">75%</button>
+                    <button type="button" onclick="selectOpt(this, 'azucar')" class="opt-azucar p-2 border rounded-xl font-semibold text-xs">50%</button>
+                    <button type="button" onclick="selectOpt(this, 'azucar')" class="opt-azucar p-2 border rounded-xl font-semibold text-xs">Sin Azúcar</button>
+                </div>
+            </div>
+
+            <div id="ice-section" style="display: none;">
+                <label class="text-xs font-bold block mb-1 text-gray-700">Nivel de Hielo:</label>
+                <div class="grid grid-cols-3 gap-1">
+                    <button type="button" onclick="selectOpt(this, 'hielo')" class="opt-hielo p-2 border rounded-xl font-bold bg-pink-50 text-brand-pink border-brand-pink text-xs">Normal</button>
+                    <button type="button" onclick="selectOpt(this, 'hielo')" class="opt-hielo p-2 border rounded-xl font-semibold text-xs">Poco Hielo</button>
+                    <button type="button" onclick="selectOpt(this, 'hielo')" class="opt-hielo p-2 border rounded-xl font-semibold text-xs">Sin Hielo</button>
+                </div>
+            </div>
+
+            <div id="extra-toppings-section" style="display: none;">
+                <label class="text-xs font-bold block mb-1 text-gray-700">Toppings Extras (+$10 c/u):</label>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <label class="flex items-center space-x-1 border p-2 rounded-xl cursor-pointer">
+                        <input type="checkbox" value="Extra Tapioca" data-price="10" class="extra-cb text-brand-pink" onchange="updateModalTotal()">
+                        <span>Extra Tapioca (+$10)</span>
+                    </label>
+                    <label class="flex items-center space-x-1 border p-2 rounded-xl cursor-pointer">
+                        <input type="checkbox" value="Base Yogurth" data-price="10" class="extra-cb text-brand-pink" onchange="updateModalTotal()">
+                        <span>Base Yogurth (+$10)</span>
+                    </label>
+                    <label class="flex items-center space-x-1 border p-2 rounded-xl cursor-pointer">
+                        <input type="checkbox" value="POP Extra" data-price="10" class="extra-cb text-brand-pink" onchange="updateModalTotal()">
+                        <span>POP Extra (+$10)</span>
+                    </label>
+                    <label class="flex items-center space-x-1 border p-2 rounded-xl cursor-pointer">
+                        <input type="checkbox" value="Combinación" data-price="10" class="extra-cb text-brand-pink" onchange="updateModalTotal()">
+                        <span>Combinación (+$10)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-2 border-t">
+                <span id="modal-calculated-total" class="font-bold text-brand-pink text-base">$0.00</span>
+                <button onclick="confirmCustomProductAdd()" class="px-4 py-2 bg-brand-pink text-white font-bold rounded-xl text-xs">Añadir al Carrito</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHECKOUT MODAL -->
+    <div id="checkout-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-5 space-y-4 relative">
+            <button onclick="closeCheckoutModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 font-bold text-base">✕</button>
+            
+            <h3 class="font-bold text-lg text-center mt-2">Cobrar Pedido</h3>
+            <span id="checkout-total-display" class="text-2xl font-bold text-brand-pink block text-center">$0.00</span>
+            
+            <div class="grid grid-cols-2 gap-2">
+                <button type="button" onclick="setPaymentMethod('efectivo')" id="btn-pay-cash" class="py-2.5 bg-brand-pink text-white font-bold rounded-xl text-xs shadow transition">
+                    💵 Efectivo
+                </button>
+                <button type="button" onclick="setPaymentMethod('tarjeta')" id="btn-pay-card" class="py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition">
+                    💳 Tarjeta
+                </button>
+            </div>
+
+            <div id="cash-payment-section" class="space-y-2">
+                <input type="number" id="cash-received-input" onkeyup="calculateChange()" placeholder="Efectivo recibido..." class="w-full text-lg font-bold p-2 border rounded-xl text-center outline-none focus:border-brand-pink">
+                <div class="bg-emerald-50 p-2 rounded-xl text-center">
+                    <span class="text-xs text-emerald-700 block">Cambio:</span>
+                    <span id="cash-change-display" class="text-lg font-bold text-emerald-700">$0.00</span>
+                </div>
+            </div>
+
+            <div id="card-payment-section" class="bg-purple-50 p-3 rounded-xl text-center hidden">
+                <p class="text-xs text-purple-800 font-semibold"><i class="fa-solid fa-credit-card mr-1"></i> Cobro seleccionado mediante Terminal / Tarjeta.</p>
+            </div>
+
+            <button onclick="processFinalPayment()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow transition">
+                Confirmar y Registrar Venta
+            </button>
+        </div>
+    </div>
+
+    <!-- TICKET MODAL -->
+    <div id="receipt-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-xs w-full p-5 space-y-3 shadow-2xl">
+            <div id="receipt-print-area" class="font-mono text-[11px] text-gray-800 space-y-2 bg-gray-50 p-3 rounded-xl border text-center">
+                <div class="flex justify-center mb-1">
+                    <div class="w-10 h-10 bg-brand-pink rounded-xl p-1 shadow flex items-center justify-center">
+                        <svg viewBox="0 0 200 200" class="w-full h-full">
+                            <circle cx="100" cy="50" r="18" fill="#ffffff" stroke="#3a2318" stroke-dasharray="3,3" stroke-width="2"/>
+                            <circle cx="75" cy="80" r="18" fill="#ffffff" stroke="#3a2318" stroke-dasharray="3,3" stroke-width="2"/>
+                            <circle cx="125" cy="80" r="18" fill="#ffffff" stroke="#3a2318" stroke-dasharray="3,3" stroke-width="2"/>
+                            <text x="100" y="130" font-family="'Fredoka', sans-serif" font-weight="700" font-size="28" fill="#ffffff" text-anchor="middle">boba haus</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="border-b pb-2">
+                    <h4 class="font-bold text-sm tracking-wide">BOBA HAUS</h4>
+                    <p class="text-[9px] text-pink-600 italic font-semibold">"Hecho con cariño, servido con pasión"</p>
+                    <p class="text-[9px] text-gray-500 mt-1">Tel: 275 105 73 79</p>
+                    <p class="text-[9px] text-gray-500">Chiautla de Tapia, Puebla</p>
+                    <p id="receipt-date" class="text-[9px] text-gray-500"></p>
+                </div>
+
+                <div class="space-y-0.5 border-b pb-2 text-left">
+                    <p><strong>Orden #:</strong> <span id="rec-order-num">0001</span></p>
+                    <p><strong>Tipo:</strong> <span id="rec-order-mode">Comer Aquí</span></p>
+                </div>
+
+                <div id="rec-items-list" class="space-y-1 border-b pb-2 text-left"></div>
+
+                <div class="space-y-0.5 text-right font-bold">
+                    <p>Subtotal: <span id="rec-subtotal" class="font-normal">$0.00</span></p>
+                    <p>Descuento/Promo: <span id="rec-discount" class="font-normal text-emerald-600">-$0.00</span></p>
+                    <p class="text-sm">TOTAL: <span id="rec-total" class="text-brand-pink">$0.00</span></p>
+                    <p class="text-[10px] font-normal">Pago: <span id="rec-payment">Efectivo</span></p>
+                    <p class="text-[10px] font-normal" id="rec-change-line">Cambio: <span id="rec-change">$0.00</span></p>
+                </div>
+
+                <div class="text-center pt-2 text-[9px] text-gray-500 border-t space-y-1">
+                    <p class="font-semibold text-brand-pink">Comparte tu experiencia y etiqueta a Boba Haus. ¡Nos encanta verte disfrutar tu bebida!</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-1">
+                <button onclick="printReceiptTicket()" class="py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs shadow transition">
+                    🖨️ Imprimir Ticket
+                </button>
+                <button onclick="closeReceiptModal()" class="py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl text-xs transition">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        function switchBoTab(tabId) {
-            ['sales', 'items', 'inventory', 'purchases', 'shifts', 'employees', 'settings'].forEach(t => {
-                const sec = document.getElementById(`bo-tab-${t}`);
-                if(sec) sec.classList.add('hidden');
-                const btn = document.getElementById(`nav-${t}`);
-                if(btn) btn.className = "w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition";
+        let selectedPaymentMethod = 'efectivo';
+        let orderCounter = 1;
+        let isOwnerMode = false;
+        let currentPinInput = "";
+        let initialFund = 500;
+        let shiftOpen = false;
+        let shiftHistory = JSON.parse(localStorage.getItem('boba_shift_history')) || [];
+
+        let shiftData = { cashSales: 0, cardSales: 0, totalSales: 0, expenses: [] };
+
+        // Inventario con persistencia local (LocalStorage)
+        let defaultInventory = [
+            { key: 'avellana', name: 'Jarabe Avellana', stock: 2000, unit: 'ml', min: 200 },
+            { key: 'mora', name: 'Jarabe Mora', stock: 2000, unit: 'ml', min: 200 },
+            { key: 'maracuya', name: 'Jarabe Maracuyá', stock: 1760, unit: 'ml', min: 200 },
+            { key: 'frutos_rojos', name: 'Jarabe Frutos Rojos', stock: 1000, unit: 'ml', min: 200 },
+            { key: 'fresa', name: 'Jarabe Fresa', stock: 1930, unit: 'ml', min: 200 },
+            { key: 'manzana_verde', name: 'Jarabe Manzana Verde', stock: 809, unit: 'ml', min: 200 },
+            { key: 'cereza', name: 'Jarabe Cereza', stock: 801, unit: 'ml', min: 200 },
+            { key: 'mango', name: 'Jarabe Mango', stock: 796, unit: 'ml', min: 200 },
+            { key: 'dubai', name: 'Polvos Dubái', stock: 556, unit: 'g', min: 100 },
+            { key: 'choco_negro', name: 'Chocolate Negro', stock: 2000, unit: 'g', min: 300 },
+            { key: 'blanco', name: 'Chocolate Blanco', stock: 2000, unit: 'g', min: 300 },
+            { key: 'taro', name: 'Taro', stock: 6000, unit: 'g', min: 500 },
+            { key: 'caramelo', name: 'Caramelo', stock: 3000, unit: 'g', min: 300 },
+            { key: 'techai', name: 'Te Chai', stock: 670, unit: 'g', min: 100 },
+            { key: 'lychee', name: 'Lychee', stock: 344, unit: 'g', min: 100 },
+            { key: 'fresa_crema', name: 'Fresas c/ crema', stock: 646, unit: 'g', min: 100 },
+            { key: 'cookies_cream', name: 'Cookies and Cream', stock: 1586, unit: 'g', min: 200 },
+            { key: 'chai_negro', name: 'Chai Negro', stock: 1573, unit: 'g', min: 200 },
+            { key: 'cap_vainilla', name: 'Cap. Vainilla', stock: 1613, unit: 'g', min: 200 },
+            { key: 'moka', name: 'Moka', stock: 507, unit: 'g', min: 100 },
+            { key: 'matcha', name: 'Matcha', stock: 916, unit: 'g', min: 150 },
+            { key: 'chai_latte', name: 'Chai Latte', stock: 854, unit: 'g', min: 150 },
+            { key: 'mazapan', name: 'Mazapán', stock: 1000, unit: 'g', min: 150 },
+            { key: 'cajeta', name: 'Cajeta', stock: 1000, unit: 'g', min: 150 },
+            { key: 'base_cristal', name: 'Base Cristal / Neutra', stock: 2000, unit: 'g', min: 300 },
+            { key: 'pop_mora', name: 'Perlas Explosivas Mora Azul', stock: 1785, unit: 'g', min: 300 },
+            { key: 'pop_fresa', name: 'Perlas Explosivas Fresa', stock: 2380, unit: 'g', min: 300 },
+            { key: 'pop_arcoiris', name: 'Perlas Explosivas Arcoíris', stock: 900, unit: 'g', min: 200 },
+            { key: 'yogurth_boba', name: 'Yogurth', stock: 1200, unit: 'g', min: 200 },
+            { key: 'pop_manzana', name: 'Perlas Explosivas Manzana Verde', stock: 509, unit: 'g', min: 150 },
+            { key: 'pop_mango', name: 'Perlas Explosivas Mango', stock: 1190, unit: 'g', min: 200 },
+            { key: 'tapioca', name: 'Tapioca', stock: 2000, unit: 'g', min: 300 },
+            { key: 'leche', name: 'Leche', stock: 3, unit: 'Litros', min: 1 },
+            { key: 'hielo', name: 'Hielo (Bolsas 5kg)', stock: 20, unit: 'kg', min: 4 },
+            { key: 'grano_cafe', name: 'Grano de Café', stock: 747, unit: 'g', min: 150 },
+            { key: 'galleta_oreo', name: 'Galleta Oreo', stock: 21, unit: 'pzas', min: 5 },
+            { key: 'tizana_fresa_kiwi', name: 'Tizana Fresa Kiwi', stock: 191, unit: 'g', min: 50 },
+            { key: 'tizana_mora', name: 'Tizana Mora', stock: 188, unit: 'g', min: 50 },
+            { key: 'vaso_boba', name: 'Vasos Boba', stock: 83, unit: 'pzas', min: 15 },
+            { key: 'vaso_frappe', name: 'Vasos Frappé', stock: 33, unit: 'pzas', min: 10 },
+            { key: 'vaso_smoothie', name: 'Vasos Smoothie', stock: 33, unit: 'pzas', min: 10 },
+            { key: 'vaso_soda', name: 'Vasos Soda Italiana', stock: 31, unit: 'pzas', min: 10 },
+            { key: 'vaso_especial', name: 'Vasos Especial', stock: 29, unit: 'pzas', min: 10 },
+            { key: 'vaso_cafe_frio', name: 'Vasos Café Frío', stock: 21, unit: 'pzas', min: 5 },
+            { key: 'vaso_cafe_12oz', name: 'Vasos Café Caliente 12 oz', stock: 16, unit: 'pzas', min: 5 },
+            { key: 'vaso_cafe_16oz', name: 'Vasos Café Caliente 16 oz', stock: 42, unit: 'pzas', min: 10 },
+            { key: 'vaso_michelada', name: 'Vasos Michelada', stock: 89, unit: 'pzas', min: 15 },
+            { key: 'vaso_helado_chico', name: 'Vaso Helado Chico', stock: 16, unit: 'pzas', min: 5 },
+            { key: 'vaso_helado_grande', name: 'Vaso Helado Grande', stock: 20, unit: 'pzas', min: 5 },
+            { key: 'tapa_caliente', name: 'Tapas Café Caliente', stock: 98, unit: 'pzas', min: 20 },
+            { key: 'tapa_frio_especial', name: 'Tapas Café Frío / Especial', stock: 48, unit: 'pzas', min: 10 },
+            { key: 'tapa_frappe', name: 'Tapas Frappé', stock: 170, unit: 'pzas', min: 30 },
+            { key: 'tapa_bowl_grande', name: 'Tapas Bowl Grande', stock: 12, unit: 'pzas', min: 3 },
+            { key: 'plato_bowl_grande', name: 'Platos Bowl Grande', stock: 12, unit: 'pzas', min: 3 },
+            { key: 'plato_bowl_chico', name: 'Platos Bowl Chico', stock: 11, unit: 'pzas', min: 3 },
+            { key: 'plato_pastel', name: 'Platos Pastel Cheesecake', stock: 19, unit: 'pzas', min: 5 }
+        ];
+
+        let inventoryDB = JSON.parse(localStorage.getItem('boba_inventory_db')) || defaultInventory;
+
+        function saveInventoryToStorage() {
+            localStorage.setItem('boba_inventory_db', JSON.stringify(inventoryDB));
+        }
+
+        const recipeMapping = {
+            'Boba Taro': [ {key:'taro', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Fresas c/ crema': [ {key:'fresa_crema', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Caramelo': [ {key:'caramelo', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Matcha': [ {key:'matcha', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Chocolate Blanco': [ {key:'blanco', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Chocolate': [ {key:'choco_negro', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Chai Latte': [ {key:'chai_latte', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Lychee': [ {key:'lychee', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Chai Negro': [ {key:'chai_negro', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Chocolate de dubai': [ {key:'dubai', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Ferrero': [ {key:'choco_negro', qty:40}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Mazapán': [ {key:'mazapan', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Cajeta': [ {key:'cajeta', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Oreo': [ {key:'cookies_cream', qty:58}, {key:'galleta_oreo', qty:2}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            
+            'Xolot Piña': [ {key:'manzana_verde', qty:60}, {key:'hielo', qty:0.1} ],
+            'Xolot Frutos Rojos': [ {key:'frutos_rojos', qty:60}, {key:'hielo', qty:0.1} ],
+            'Xolot Fresa': [ {key:'fresa', qty:60}, {key:'hielo', qty:0.1} ],
+
+            'Soda Italiana Mora Azul': [ {key:'mora', qty:60}, {key:'hielo', qty:0.25} ],
+            'Soda Italiana Mango': [ {key:'mango', qty:60}, {key:'hielo', qty:0.25} ],
+            'Soda Italiana Fresa': [ {key:'fresa', qty:60}, {key:'hielo', qty:0.25} ],
+            'Soda Italiana Frutos Rojos': [ {key:'frutos_rojos', qty:60}, {key:'hielo', qty:0.25} ],
+            'Soda Italiana Maracuyá': [ {key:'maracuya', qty:60}, {key:'hielo', qty:0.25} ],
+            'Soda Italiana Manzana Verde': [ {key:'manzana_verde', qty:60}, {key:'hielo', qty:0.25} ],
+            'Soda Italiana Durazno': [ {key:'mango', qty:60}, {key:'hielo', qty:0.25} ],
+            'Soda Italiana Cereza': [ {key:'cereza', qty:60}, {key:'hielo', qty:0.25} ],
+            'Soda Italiana Frambuesa': [ {key:'fresa', qty:60}, {key:'hielo', qty:0.25} ],
+
+            'Frappé Cap. Vainilla': [ {key:'cap_vainilla', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Cap. Moka': [ {key:'moka', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Ferrero': [ {key:'choco_negro', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Chocolate': [ {key:'choco_negro', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Oreo': [ {key:'cookies_cream', qty:58}, {key:'base_cristal', qty:29}, {key:'galleta_oreo', qty:2}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Chocolate blanco': [ {key:'blanco', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Cookies and cream': [ {key:'cookies_cream', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Chocolate de dubai': [ {key:'dubai', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Fresas c/ crema': [ {key:'fresa_crema', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Taro': [ {key:'taro', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Caramelo': [ {key:'caramelo', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Matcha': [ {key:'matcha', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Mazapán': [ {key:'mazapan', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Cajeta': [ {key:'cajeta', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Chai Latte': [ {key:'chai_latte', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Lychee': [ {key:'lychee', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Chai Negro': [ {key:'chai_negro', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+
+            'Smoothie Mora Azul': [ {key:'mora', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+            'Smoothie Mango': [ {key:'mango', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+            'Smoothie Fresa': [ {key:'fresa', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+            'Smoothie Frutos Rojos': [ {key:'frutos_rojos', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+            'Smoothie Maracuyá': [ {key:'maracuya', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+            'Smoothie Manzana Verde': [ {key:'manzana_verde', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+            'Smoothie Durazno': [ {key:'mango', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+            'Smoothie Frambuesa': [ {key:'fresa', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+            'Smoothie Piña': [ {key:'manzana_verde', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
+
+            'Americano 12 oz (Frío)': [ {key:'grano_cafe', qty:18}, {key:'hielo', qty:0.1} ],
+            'Americano 16 oz (Frío)': [ {key:'grano_cafe', qty:27}, {key:'hielo', qty:0.15} ],
+            'Espresso': [ {key:'grano_cafe', qty:9} ],
+            'Espresso Doble': [ {key:'grano_cafe', qty:18} ],
+            'Capuchino Sencillo': [ {key:'grano_cafe', qty:18}, {key:'leche', qty:0.15} ],
+            'Latte Sencillo': [ {key:'grano_cafe', qty:18}, {key:'leche', qty:0.2} ],
+            'Moka Extra 12 oz (Caliente)': [ {key:'grano_cafe', qty:18}, {key:'choco_negro', qty:58}, {key:'leche', qty:0.1} ],
+            'Moka Extra 16 oz (Caliente)': [ {key:'grano_cafe', qty:18}, {key:'choco_negro', qty:58}, {key:'leche', qty:0.15} ],
+            'Matcha Mango (Frío)': [ {key:'matcha', qty:20}, {key:'mango', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.2} ],
+
+            'Tizana Fusión de Moras 12 oz': [ {key:'tizana_mora', qty:18} ],
+            'Tizana Fusión de Moras 16 oz': [ {key:'tizana_mora', qty:25} ],
+            'Tizana Esencia Fresa Kiwi 12 oz': [ {key:'tizana_fresa_kiwi', qty:18} ],
+            'Tizana Esencia Fresa Kiwi 16 oz': [ {key:'tizana_fresa_kiwi', qty:25} ]
+        };
+
+        const dailyPromos = {
+            1: "Lunes: ¡3x2 en Smoothies!",
+            2: "Martes: ¡3x2 en Smoothies!",
+            3: "Miércoles: ¡3x2 en Smoothies!",
+            4: "Jueves: ¡Promoción Especial del Día!",
+            5: "Viernes: ¡Fin de semana en Boba Haus!",
+            6: "Sábado: ¡Disfruta tus bebidas favoritas!",
+            0: "Domingo: ¡Familiar en Boba Haus!"
+        };
+
+        const todayDayIndex = new Date().getDay();
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("daily-promo-banner").innerText = dailyPromos[todayDayIndex] || "¡Disfruta tus bebidas!";
+            document.getElementById("order-id-display").innerText = String(orderCounter).padStart(4, '0');
+            renderInventoryTable();
+            updateTreasuryDisplay();
+            renderShiftHistory();
+        });
+
+        const productsDB = [
+            { name: 'Otoño Caramelo (Especial)', price: 75, category: 'temporada' },
+            { name: 'Boba Fresas c/ crema', price: 70, category: 'boba' },
+            { name: 'Boba Taro', price: 70, category: 'boba' },
+            { name: 'Boba Caramelo', price: 70, category: 'boba' },
+            { name: 'Boba Matcha', price: 70, category: 'boba' },
+            { name: 'Boba Ferrero', price: 75, category: 'boba' },
+            { name: 'Boba Chocolate Blanco', price: 70, category: 'boba' },
+            { name: 'Boba Mazapán', price: 70, category: 'boba' },
+            { name: 'Boba Cajeta', price: 70, category: 'boba' },
+            { name: 'Boba Chocolate', price: 70, category: 'boba' },
+            { name: 'Boba Chai Latte', price: 70, category: 'boba' },
+            { name: 'Boba Lychee', price: 70, category: 'boba' },
+            { name: 'Boba Chai Negro', price: 70, category: 'boba' },
+            { name: 'Boba Chocolate de dubai', price: 70, category: 'boba' },
+            { name: 'Boba Oreo', price: 70, category: 'boba' },
+            { name: 'Xolot Piña', price: 70, category: 'xolot' },
+            { name: 'Xolot Frutos Rojos', price: 70, category: 'xolot' },
+            { name: 'Xolot Fresa', price: 70, category: 'xolot' },
+            { name: 'Cerveza Victoria', price: 45, category: 'fortuna' },
+            { name: 'Cerveza Corona', price: 45, category: 'fortuna' },
+            { name: 'Copeo Johnnie Walker', price: 90, category: 'fortuna' },
+            { name: 'Copeo Torres 10', price: 90, category: 'fortuna' },
+            { name: 'Copeo Tequila', price: 80, category: 'fortuna' },
+            { name: 'Michelada (Adicional)', price: 25, category: 'fortuna' },
+            { name: 'Soda Italiana Mora Azul', price: 45, category: 'soda' },
+            { name: 'Soda Italiana Mango', price: 45, category: 'soda' },
+            { name: 'Soda Italiana Fresa', price: 45, category: 'soda' },
+            { name: 'Soda Italiana Frutos Rojos', price: 45, category: 'soda' },
+            { name: 'Soda Italiana Maracuyá', price: 45, category: 'soda' },
+            { name: 'Soda Italiana Manzana Verde', price: 45, category: 'soda' },
+            { name: 'Soda Italiana Durazno', price: 45, category: 'soda' },
+            { name: 'Soda Italiana Cereza', price: 45, category: 'soda' },
+            { name: 'Soda Italiana Frambuesa', price: 45, category: 'soda' },
+            { name: 'Frappé Cap. Vainilla', price: 75, category: 'frappe' },
+            { name: 'Frappé Cap. Moka', price: 75, category: 'frappe' },
+            { name: 'Frappé Ferrero', price: 80, category: 'frappe' },
+            { name: 'Frappé Chocolate', price: 75, category: 'frappe' },
+            { name: 'Frappé Oreo', price: 75, category: 'frappe' },
+            { name: 'Frappé Chocolate blanco', price: 75, category: 'frappe' },
+            { name: 'Frappé Cookies and cream', price: 70, category: 'frappe' },
+            { name: 'Frappé Chocolate de dubai', price: 70, category: 'frappe' },
+            { name: 'Frappé Fresas c/ crema', price: 70, category: 'frappe' },
+            { name: 'Frappé Taro', price: 70, category: 'frappe' },
+            { name: 'Frappé Caramelo', price: 70, category: 'frappe' },
+            { name: 'Frappé Matcha', price: 70, category: 'frappe' },
+            { name: 'Frappé Mazapán', price: 70, category: 'frappe' },
+            { name: 'Frappé Cajeta', price: 70, category: 'frappe' },
+            { name: 'Frappé Chai Latte', price: 70, category: 'frappe' },
+            { name: 'Frappé Lychee', price: 70, category: 'frappe' },
+            { name: 'Frappé Chai Negro', price: 70, category: 'frappe' },
+            { name: 'Smoothie Mora Azul', price: 70, category: 'smoothie' },
+            { name: 'Smoothie Mango', price: 70, category: 'smoothie' },
+            { name: 'Smoothie Fresa', price: 70, category: 'smoothie' },
+            { name: 'Smoothie Frutos Rojos', price: 70, category: 'smoothie' },
+            { name: 'Smoothie Maracuyá', price: 70, category: 'smoothie' },
+            { name: 'Smoothie Manzana Verde', price: 70, category: 'smoothie' },
+            { name: 'Smoothie Durazno', price: 70, category: 'smoothie' },
+            { name: 'Smoothie Frambuesa', price: 70, category: 'smoothie' },
+            { name: 'Smoothie Piña', price: 70, category: 'smoothie' },
+            { name: 'Capuchino Vainilla 12 oz (Frío)', price: 55, category: 'cafe_frio' },
+            { name: 'Capuchino Vainilla 16 oz (Frío)', price: 65, category: 'cafe_frio' },
+            { name: 'Capuchino Moka 12 oz (Frío)', price: 55, category: 'cafe_frio' },
+            { name: 'Capuchino Moka 16 oz (Frío)', price: 65, category: 'cafe_frio' },
+            { name: 'Americano 12 oz (Frío)', price: 45, category: 'cafe_frio' },
+            { name: 'Americano 16 oz (Frío)', price: 55, category: 'cafe_frio' },
+            { name: 'Espresso', price: 35, category: 'cafe_caliente' },
+            { name: 'Espresso Doble', price: 45, category: 'cafe_caliente' },
+            { name: 'Capuchino Sencillo', price: 55, category: 'cafe_caliente' },
+            { name: 'Capuchino Doble', price: 60, category: 'cafe_caliente' },
+            { name: 'Latte Sencillo', price: 50, category: 'cafe_caliente' },
+            { name: 'Latte Doble', price: 60, category: 'cafe_caliente' },
+            { name: 'Café de olla chico', price: 10, category: 'cafe_caliente' },
+            { name: 'Café de olla grande', price: 20, category: 'cafe_caliente' },
+            { name: 'Americano Caliente', price: 35, category: 'cafe_caliente' },
+            { name: 'Chocolate Grande', price: 35, category: 'cafe_caliente' },
+            { name: 'Chocolate Chico', price: 45, category: 'cafe_caliente' },
+            { name: 'Moka Extra 12 oz (Caliente)', price: 42, category: 'cafe_caliente' },
+            { name: 'Moka Extra 16 oz (Caliente)', price: 50, category: 'cafe_caliente' },
+            { name: 'Matcha Mango (Frío)', price: 70, category: 'cafe_caliente' },
+            { name: 'Tizana Fusión de Moras 12 oz', price: 50, category: 'tizana' },
+            { name: 'Tizana Fusión de Moras 16 oz', price: 65, category: 'tizana' },
+            { name: 'Tizana Esencia Fresa Kiwi 12 oz', price: 50, category: 'tizana' },
+            { name: 'Tizana Esencia Fresa Kiwi 16 oz', price: 65, category: 'tizana' },
+            { name: 'Bowl Chico', price: 65, category: 'bowl' },
+            { name: 'Bowl Grande', price: 95, category: 'bowl' },
+            { name: 'Crepa Cajeta', price: 50, category: 'crepas' },
+            { name: 'Crepa Mermelada de Fresa', price: 50, category: 'crepas' },
+            { name: 'Crepa Nutella', price: 55, category: 'crepas' },
+            { name: 'Crepa Crema de Cacahuate', price: 50, category: 'crepas' },
+            { name: 'Crepa Queso Crema', price: 80, category: 'crepas' },
+            { name: 'Crepa Queso Manchego', price: 80, category: 'crepas' },
+            { name: 'Banderilla Ramen Crunch', price: 65, category: 'banderillas' },
+            { name: 'Banderilla Papa Crunch', price: 65, category: 'banderillas' },
+            { name: 'Banderilla Panko Crunch Salchicha', price: 55, category: 'banderillas' },
+            { name: 'Banderilla Panko Crunch Mozzarella', price: 55, category: 'banderillas' },
+            { name: 'Pastel Matilde', price: 50, category: 'pasteles' },
+            { name: 'Cheesecake Tortuga', price: 45, category: 'pasteles' },
+            { name: 'Cheesecake Zarzamora', price: 45, category: 'pasteles' },
+            { name: 'Pay de Limón', price: 45, category: 'pasteles' },
+            { name: 'Club Sandwich', price: 85, category: 'comida' },
+            { name: 'Sincronizadas', price: 80, category: 'comida' },
+            { name: 'Waffles (2 pzs)', price: 35, category: 'comida' },
+            { name: 'Hot Cakes (3 pzs)', price: 55, category: 'comida' },
+            { name: 'Sandwich Sencillo', price: 55, category: 'comida' }
+        ];
+
+        let currentCart = [];
+        let activeProduct = null;
+        let discountVal = 0;
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar-menu');
+            sidebar.classList.toggle('w-64');
+            sidebar.classList.toggle('w-0');
+            sidebar.classList.toggle('overflow-hidden');
+        }
+
+        function switchTab(id) {
+            ['pos', 'shift', 'inventory'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                const navBtn = document.getElementById(`nav-${t}`);
+                if(navBtn) navBtn.className = "w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800 hover:text-white transition";
             });
-            const activeSec = document.getElementById(`bo-tab-${tabId}`);
-            if(activeSec) activeSec.classList.remove('hidden');
-            const activeBtn = document.getElementById(`nav-${tabId}`);
-            if(activeBtn) activeBtn.className = "w-full flex items-center space-x-3 px-3 py-3 rounded-xl bg-fig-purple text-white transition shadow-sm";
+            document.getElementById(`tab-${id}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${id}`);
+            if(activeNav) activeNav.className = "w-full flex items-center space-x-3 px-3 py-3 rounded-xl bg-brand-pink text-white transition";
+            
+            const titles = { pos: 'Punto de Venta', shift: 'Turno / Caja', inventory: 'Artículos / Inventario' };
+            document.getElementById('header-section-title').innerText = titles[id];
 
-            const titles = {
-                sales: 'Resumen de ventas',
-                items: 'Lista de artículos (Editable)',
-                inventory: 'Inventario avanzado',
-                purchases: 'Órdenes de Compra',
-                shifts: 'Cierres de Turno / Arqueos',
-                employees: 'Empleados y Accesos',
-                settings: 'Configuración'
-            };
-            document.getElementById('bo-header-title').innerText = titles[tabId];
-
-            if(tabId === 'sales') loadSalesData();
-            if(tabId === 'items') loadEditableItems();
-            if(tabId === 'inventory') loadInventoryData();
-            if(tabId === 'purchases') initPurchasesSelect();
-            if(tabId === 'shifts') loadShiftsData();
+            if(id === 'shift') { updateTreasuryDisplay(); }
+            if(id === 'inventory') { renderInventoryTable(); }
         }
 
-        document.addEventListener("DOMContentLoaded", () => { loadSalesData(); });
-
-        function loadSalesData() {
-            const shiftHistory = JSON.parse(localStorage.getItem('boba_shift_history')) || [];
-            let totalCash = 0, totalCard = 0;
-            shiftHistory.forEach(sh => { totalCash += sh.cashSales; totalCard += sh.cardSales; });
-
-            let gross = totalCash + totalCard;
-            let net = Math.max(0, gross);
-            let estimatedProfit = net * 0.75;
-
-            document.getElementById('bo-gross-sales').innerText = `$${gross.toFixed(2)}`;
-            document.getElementById('bo-cash-sales-card').innerText = `$${totalCash.toFixed(2)}`;
-            document.getElementById('bo-card-sales-card').innerText = `$${totalCard.toFixed(2)}`;
-            document.getElementById('bo-net-sales').innerText = `$${net.toFixed(2)}`;
-            document.getElementById('bo-gross-profit').innerText = `$${estimatedProfit.toFixed(2)}`;
-            document.getElementById('bo-pay-cash').innerText = `$${totalCash.toFixed(2)}`;
-            document.getElementById('bo-pay-card').innerText = `$${totalCard.toFixed(2)}`;
+        function openPinPadModal() {
+            currentPinInput = "";
+            updatePinDots();
+            document.getElementById('pinpad-modal').classList.remove('hidden');
         }
 
-        function loadEditableItems() {
-            const defaultCatalog = [
-                { name: 'Otoño Caramelo (Especial)', price: 75, category: 'Temporada', cost: 20 },
-                { name: 'Boba Taro', price: 70, category: 'Boba', cost: 18 },
-                { name: 'Boba Matcha', price: 70, category: 'Boba', cost: 18 },
-                { name: 'Xolot Piña', price: 70, category: 'Xolot', cost: 15 },
-                { name: 'Cerveza Victoria', price: 45, category: 'Fortuna', cost: 25 },
-                { name: 'Soda Italiana Fresa', price: 45, category: 'Soda Italiana', cost: 12 },
-                { name: 'Frappé Cap. Moka', price: 75, category: 'Frappé', cost: 22 },
-                { name: 'Smoothie Mango', price: 70, category: 'Smoothie', cost: 20 },
-                { name: 'Bowl Chico', price: 65, category: 'Bowl', cost: 25 },
-                { name: 'Crepa Nutella', price: 55, category: 'Crepas', cost: 18 },
-                { name: 'Banderilla Ramen Crunch', price: 65, category: 'Banderillas', cost: 20 }
-            ];
-            let catalog = JSON.parse(localStorage.getItem('boba_catalog_db')) || defaultCatalog;
-            const tbody = document.getElementById('bo-editable-items-body');
-            tbody.innerHTML = '';
-            catalog.forEach((item, idx) => {
-                const tr = document.createElement('tr');
-                tr.className = "border-b hover:bg-gray-50";
-                tr.innerHTML = `
-                    <td class="p-3 font-bold text-gray-800">${item.name}</td>
-                    <td class="p-3 text-gray-500">${item.category}</td>
-                    <td class="p-3 text-right"><input type="number" id="item-price-${idx}" value="${item.price}" class="w-24 p-1 text-right border rounded-lg font-bold text-fig-purple outline-none"></td>
-                    <td class="p-3 text-right text-gray-600">$${item.cost.toFixed(2)}</td>
-                `;
-                tbody.appendChild(tr);
+        function closePinPadModal() {
+            document.getElementById('pinpad-modal').classList.add('hidden');
+        }
+
+        function pressPinNum(num) {
+            if (currentPinInput.length < 4) {
+                currentPinInput += num;
+                updatePinDots();
+                if (currentPinInput.length === 4) {
+                    validatePin(currentPinInput);
+                }
+            }
+        }
+
+        function backspacePin() {
+            if (currentPinInput.length > 0) {
+                currentPinInput = currentPinInput.slice(0, -1);
+                updatePinDots();
+            }
+        }
+
+        function clearPin() {
+            currentPinInput = "";
+            updatePinDots();
+        }
+
+        function updatePinDots() {
+            let dotsHTML = "";
+            for (let i = 0; i < 4; i++) {
+                if (i < currentPinInput.length) {
+                    dotsHTML += "● ";
+                } else {
+                    dotsHTML += "○ ";
+                }
+            }
+            document.getElementById('pin-dots').innerText = dotsHTML.trim();
+        }
+
+        function validatePin(pin) {
+            setTimeout(() => {
+                closePinPadModal();
+                if (pin === "2107") {
+                    isOwnerMode = true;
+                    document.getElementById('sidebar-role-title').innerText = "Propietario";
+                    document.getElementById('owner-add-section').classList.remove('hidden');
+                    alert("✅ Acceso de Propietario concedido.");
+                    renderInventoryTable();
+                } else if (pin === "0805") {
+                    isOwnerMode = false;
+                    document.getElementById('sidebar-role-title').innerText = "Turno Mañana (0805)";
+                    document.getElementById('owner-add-section').classList.add('hidden');
+                    alert("☀️ Turno Mañana activado.");
+                    renderInventoryTable();
+                } else if (pin === "3240") {
+                    isOwnerMode = false;
+                    document.getElementById('sidebar-role-title').innerText = "Turno Tarde (3240)";
+                    document.getElementById('owner-add-section').classList.add('hidden');
+                    alert("🌙 Turno Tarde activado.");
+                    renderInventoryTable();
+                } else {
+                    alert("❌ PIN Incorrecto.");
+                }
+            }, 200);
+        }
+
+        function lockSystem() {
+            isOwnerMode = false;
+            document.getElementById('sidebar-role-title').innerText = "Sistema Bloqueado";
+            openPinPadModal();
+        }
+
+        function openTurnModal() {
+            document.getElementById('turn-modal').classList.remove('hidden');
+        }
+
+        function closeTurnModal() {
+            document.getElementById('turn-modal').classList.add('hidden');
+        }
+
+        function confirmOpenTurn() {
+            const fund = parseFloat(document.getElementById('input-turn-fund').value);
+            if(isNaN(fund) || fund < 0) return alert('Ingrese una cantidad válida.');
+            initialFund = fund;
+            shiftOpen = true;
+            document.getElementById('header-turn-status').innerText = "Turno Abierto";
+            closeTurnModal();
+            updateTreasuryDisplay();
+            alert('¡Turno abierto con éxito!');
+        }
+
+        function openCloseTurnModal() {
+            if(!shiftOpen) return alert('No hay ningún turno abierto actualmente.');
+            let totalExpenses = shiftData.expenses.reduce((sum, e) => sum + e.amount, 0);
+            let expectedCash = initialFund + shiftData.cashSales - totalExpenses;
+            document.getElementById('close-expected-cash').innerText = `$${expectedCash.toFixed(2)}`;
+            document.getElementById('close-counted-cash').value = '';
+            document.getElementById('close-diff-display').innerText = '$0.00';
+            document.getElementById('close-turn-modal').classList.remove('hidden');
+        }
+
+        function closeCloseTurnModal() {
+            document.getElementById('close-turn-modal').classList.add('hidden');
+        }
+
+        function calculateCloseDifference() {
+            let totalExpenses = shiftData.expenses.reduce((sum, e) => sum + e.amount, 0);
+            let expectedCash = initialFund + shiftData.cashSales - totalExpenses;
+            let counted = parseFloat(document.getElementById('close-counted-cash').value) || 0;
+            let diff = counted - expectedCash;
+            let diffDisplay = document.getElementById('close-diff-display');
+
+            if (diff === 0) {
+                diffDisplay.innerText = `$0.00 (Exacto ✅)`;
+                diffDisplay.className = "text-base font-bold text-emerald-600";
+            } else if (diff > 0) {
+                diffDisplay.innerText = `+$${diff.toFixed(2)} (Sobrante ⚠️)`;
+                diffDisplay.className = "text-base font-bold text-blue-600";
+            } else {
+                diffDisplay.innerText = `-$${Math.abs(diff).toFixed(2)} (Faltante ❌)`;
+                diffDisplay.className = "text-base font-bold text-red-600";
+            }
+        }
+
+        function confirmCloseTurn() {
+            let totalExpenses = shiftData.expenses.reduce((sum, e) => sum + e.amount, 0);
+            let expectedCash = initialFund + shiftData.cashSales - totalExpenses;
+            let counted = parseFloat(document.getElementById('close-counted-cash').value) || 0;
+            let diff = counted - expectedCash;
+
+            shiftHistory.unshift({
+                date: new Date().toLocaleString(),
+                fund: initialFund,
+                cashSales: shiftData.cashSales,
+                cardSales: shiftData.cardSales,
+                expenses: totalExpenses,
+                expected: expectedCash,
+                counted: counted,
+                diff: diff
             });
+            localStorage.setItem('boba_shift_history', JSON.stringify(shiftHistory));
+
+            shiftOpen = false;
+            shiftData = { cashSales: 0, cardSales: 0, totalSales: 0, expenses: [] };
+            document.getElementById('header-turn-status').innerText = "Turno Cerrado";
+            closeCloseTurnModal();
+            updateTreasuryDisplay();
+            renderShiftHistory();
+            alert('🔒 ¡Turno cerrado y guardado en el historial con éxito!');
         }
 
-        function saveCatalogChanges() {
-            let catalog = JSON.parse(localStorage.getItem('boba_catalog_db')) || [];
-            if(catalog.length === 0) return;
-            catalog.forEach((item, idx) => {
-                const input = document.getElementById(`item-price-${idx}`);
-                if(input) item.price = parseFloat(input.value) || item.price;
-            });
-            localStorage.setItem('boba_catalog_db', JSON.stringify(catalog));
-            alert('✅ ¡Precios actualizados y sincronizados con éxito!');
-        }
-
-        function loadInventoryData() {
-            const inventoryDB = JSON.parse(localStorage.getItem('boba_inventory_db')) || [];
-            const tbody = document.getElementById('bo-inventory-table-body');
-            tbody.innerHTML = '';
-            if(inventoryDB.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 italic">No hay datos de inventario sincronizados aún.</td></tr>`;
+        function renderShiftHistory() {
+            const container = document.getElementById('shift-history-container');
+            if (shiftHistory.length === 0) {
+                container.innerHTML = `<p class="text-gray-400 italic">No hay turnos cerrados registrados todavía en este historial.</p>`;
                 return;
             }
-            inventoryDB.forEach(item => {
-                const isLow = item.stock <= (item.min || 0);
+            container.innerHTML = '';
+            shiftHistory.forEach((sh, idx) => {
+                const div = document.createElement('div');
+                div.className = "p-3 bg-white border rounded-xl space-y-1 shadow-sm";
+                div.innerHTML = `
+                    <div class="flex justify-between font-bold text-gray-800">
+                        <span>Cierre #${shiftHistory.length - idx} (${sh.date})</span>
+                        <span class="text-brand-pink">Netas: $${(sh.cashSales + sh.cardSales - sh.expenses).toFixed(2)}</span>
+                    </div>
+                    <div class="grid grid-cols-2 text-gray-600 text-[11px]">
+                        <span>Fondo inicial: $${sh.fund.toFixed(2)}</span>
+                        <span>Ventas Cash: $${sh.cashSales.toFixed(2)}</span>
+                        <span>Gastos turno: $${sh.expenses.toFixed(2)}</span>
+                        <span class="${sh.diff === 0 ? 'text-emerald-600 font-bold' : sh.diff > 0 ? 'text-blue-600 font-bold' : 'text-red-600 font-bold'}">Dif: $${sh.diff.toFixed(2)}</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function registerExpense() {
+            const reason = document.getElementById('expense-reason').value.trim();
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            if(!reason || isNaN(amount) || amount <= 0) return alert('Ingrese un concepto y monto válido para el gasto.');
+            
+            shiftData.expenses.push({ reason, amount });
+            document.getElementById('expense-reason').value = '';
+            document.getElementById('expense-amount').value = '';
+            updateTreasuryDisplay();
+            renderExpensesList();
+            alert('¡Gasto registrado en el turno!');
+        }
+
+        function renderExpensesList() {
+            const container = document.getElementById('expenses-list-container');
+            if (shiftData.expenses.length === 0) {
+                container.innerHTML = `<p class="text-[11px] italic text-gray-400">No hay gastos registrados en este turno.</p>`;
+                return;
+            }
+            container.innerHTML = '';
+            shiftData.expenses.forEach((exp, idx) => {
+                const row = document.createElement('div');
+                row.className = "flex justify-between items-center bg-white p-1.5 rounded-lg border text-xs";
+                row.innerHTML = `<span>${exp.reason}</span><div class="space-x-2"><strong class="text-red-600">-$${exp.amount.toFixed(2)}</strong><button onclick="shiftData.expenses.splice(${idx},1); updateTreasuryDisplay(); renderExpensesList();" class="text-red-400 font-bold">✕</button></div>`;
+                container.appendChild(row);
+            });
+        }
+
+        function updateTreasuryDisplay() {
+            let totalExpenses = shiftData.expenses.reduce((sum, e) => sum + e.amount, 0);
+            let grossSales = shiftData.cashSales + shiftData.cardSales;
+            let expectedCash = initialFund + shiftData.cashSales - totalExpenses;
+
+            document.getElementById('rep-fund').innerText = `$${initialFund.toFixed(2)}`;
+            document.getElementById('rep-cash-sales').innerText = `$${shiftData.cashSales.toFixed(2)}`;
+            document.getElementById('rep-refunds').innerText = `$0.00`;
+            document.getElementById('rep-expenses').innerText = `$${totalExpenses.toFixed(2)}`;
+            document.getElementById('rep-expected-cash').innerText = `$${expectedCash.toFixed(2)}`;
+
+            document.getElementById('rep-gross-sales').innerText = `$${grossSales.toFixed(2)}`;
+            document.getElementById('rep-discounts').innerText = `$${(discountVal + (window.lastHappyDiscount || 0)).toFixed(2)}`;
+            document.getElementById('rep-net-sales').innerText = `$${Math.max(0, grossSales - (discountVal + (window.lastHappyDiscount || 0))).toFixed(2)}`;
+        }
+
+        function renderInventoryTable() {
+            const tbody = document.getElementById('inventory-table-body');
+            tbody.innerHTML = '';
+            inventoryDB.forEach((item, idx) => {
+                const isLowStock = item.stock <= (item.min || 0);
                 const tr = document.createElement('tr');
-                tr.className = isLow ? "bg-red-50 border-b" : "border-b hover:bg-gray-50";
+                tr.className = isLowStock ? "bg-red-50 border-b hover:bg-red-100" : "border-b hover:bg-gray-50";
                 tr.innerHTML = `
-                    <td class="p-3 font-bold text-gray-800">${item.name}</td>
-                    <td class="p-3 font-bold ${isLow ? 'text-red-600' : 'text-gray-700'}">${item.stock}</td>
+                    <td class="p-3 font-bold text-gray-800">
+                        ${item.name} 
+                        <span class="text-[10px] text-gray-400 font-mono">(${item.key})</span>
+                        ${isLowStock ? '<span class="ml-2 bg-red-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">⚠️ ¡Stock Bajo!</span>' : ''}
+                    </td>
+                    <td class="p-3"><input type="number" id="stock-input-${idx}" value="${item.stock}" ${isOwnerMode ? '' : 'readonly'} class="w-24 p-1 border rounded-lg text-xs font-bold ${isOwnerMode ? 'bg-white' : 'bg-gray-100 text-gray-600'}"></td>
                     <td class="p-3 text-gray-500">${item.unit}</td>
-                    <td class="p-3 text-center">
-                        ${isLow ? '<span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">⚠️ Stock Bajo</span>' : '<span class="text-emerald-600 font-bold text-[10px]">Normal ✅</span>'}
+                    <td class="p-3 text-center space-x-1">
+                        ${isOwnerMode ? `
+                            <button onclick="updateStockOwner(${idx})" class="px-2 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-bold">Actualizar</button>
+                            <button onclick="deleteInventoryItem(${idx})" class="px-2 py-1 bg-red-500 text-white rounded-lg text-[10px] font-bold">Eliminar</button>
+                        ` : `
+                            <button onclick="rectifyStockEmployee(${idx})" class="px-3 py-1 bg-amber-500 text-white rounded-lg text-[10px] font-bold">Rectificar</button>
+                        `}
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        function initPurchasesSelect() {
-            const inventoryDB = JSON.parse(localStorage.getItem('boba_inventory_db')) || [];
-            const select = document.getElementById('po-item-select');
-            select.innerHTML = '';
-            inventoryDB.forEach((item, idx) => {
-                const opt = document.createElement('option');
-                opt.value = idx;
-                opt.textContent = `${item.name} (Actual: ${item.stock} ${item.unit})`;
-                select.appendChild(opt);
+        function addNewInventoryItem() {
+            if (!isOwnerMode) return alert("Acción restringida. Ingrese el PIN de Dueña.");
+            const key = document.getElementById('new-item-key').value.trim();
+            const name = document.getElementById('new-item-name').value;
+            const stock = parseFloat(document.getElementById('new-item-stock').value);
+            const unit = document.getElementById('new-item-unit').value;
+            if(!key || !name || isNaN(stock) || !unit) return alert('Por favor llena todos los campos.');
+            inventoryDB.push({ key, name, stock, unit, min: 10 });
+            saveInventoryToStorage();
+            document.getElementById('new-item-key').value = '';
+            document.getElementById('new-item-name').value = '';
+            document.getElementById('new-item-stock').value = '';
+            document.getElementById('new-item-unit').value = '';
+            renderInventoryTable();
+            alert('¡Insumo añadido!');
+        }
+
+        function updateStockOwner(idx) {
+            const val = parseFloat(document.getElementById(`stock-input-${idx}`).value);
+            if(isNaN(val)) return alert('Valor inválido');
+            inventoryDB[idx].stock = val;
+            saveInventoryToStorage();
+            alert('¡Actualizado y guardado!');
+            renderInventoryTable();
+        }
+
+        function deleteInventoryItem(idx) {
+            if (!isOwnerMode) return alert("Acción restringida.");
+            if(confirm('¿Eliminar insumo?')) { 
+                inventoryDB.splice(idx, 1); 
+                saveInventoryToStorage();
+                renderInventoryTable(); 
+            }
+        }
+
+        function rectifyStockEmployee(idx) {
+            const val = parseFloat(document.getElementById(`stock-input-${idx}`).value);
+            if(isNaN(val)) return alert('Valor inválido');
+            inventoryDB[idx].stock = val;
+            saveInventoryToStorage();
+            alert('¡Rectificado y guardado!');
+            renderInventoryTable();
+        }
+
+        function openCategoryProducts(cat) {
+            document.getElementById('categories-grid').classList.add('hidden');
+            document.getElementById('products-desglose-grid').classList.remove('hidden');
+            document.getElementById('btn-back-categories').classList.remove('hidden');
+            document.getElementById('current-view-title').innerText = `Menú: ${cat.toUpperCase()}`;
+            
+            const grid = document.getElementById('products-desglose-grid');
+            grid.innerHTML = '';
+            
+            const filtered = productsDB.filter(p => p.category === cat);
+            filtered.forEach(p => {
+                const div = document.createElement('div');
+                div.className = "bg-white p-3 rounded-2xl border border-gray-100 shadow-sm hover:border-pink-300 transition cursor-pointer flex flex-col justify-between";
+                div.onclick = () => openCustomModal(p);
+                div.innerHTML = `
+                    <h4 class="font-bold text-xs text-gray-800">${p.name}</h4>
+                    <div class="mt-2 flex justify-between items-center pt-2 border-t">
+                        <span class="font-bold text-brand-pink text-xs">$${p.price.toFixed(2)}</span>
+                        <span class="w-5 h-5 rounded-full bg-pink-100 text-brand-pink font-bold flex items-center justify-center text-xs">+</span>
+                    </div>
+                `;
+                grid.appendChild(div);
             });
         }
 
-        function receivePurchaseOrder() {
-            const idx = document.getElementById('po-item-select').value;
-            const qty = parseFloat(document.getElementById('po-qty-input').value);
-            if(isNaN(qty) || qty <= 0) return alert('Ingrese una cantidad válida.');
-            let inventoryDB = JSON.parse(localStorage.getItem('boba_inventory_db')) || [];
-            if(inventoryDB[idx]) {
-                inventoryDB[idx].stock += qty;
-                localStorage.setItem('boba_inventory_db', JSON.stringify(inventoryDB));
-                document.getElementById('po-qty-input').value = '';
-                alert(`✅ ¡Entrada registrada con éxito! Stock actualizado para ${inventoryDB[idx].name}.`);
-                initPurchasesSelect();
-            }
+        function showCategoriesView() {
+            document.getElementById('categories-grid').classList.remove('hidden');
+            document.getElementById('products-desglose-grid').classList.add('hidden');
+            document.getElementById('btn-back-categories').classList.add('hidden');
+            document.getElementById('current-view-title').innerText = 'Categorías del Menú';
         }
 
-        function loadShiftsData() {
-            const shiftHistory = JSON.parse(localStorage.getItem('boba_shift_history')) || [];
-            const container = document.getElementById('bo-shift-history-container');
-            if (shiftHistory.length === 0) {
-                container.innerHTML = `<p class="text-gray-400 text-xs italic">No hay cierres de turno registrados todavía.</p>`;
+        function openCustomModal(product) {
+            activeProduct = product;
+            document.getElementById('modal-product-name').innerText = product.name;
+            document.getElementById('modal-product-price-tag').innerText = `$${product.price.toFixed(2)}`;
+            
+            const cat = product.category;
+            document.getElementById('sugar-section').style.display = ['cafe_frio', 'cafe_caliente', 'temporada'].includes(cat) ? 'block' : 'none';
+            document.getElementById('ice-section').style.display = ['soda', 'cafe_frio', 'tizana', 'temporada'].includes(cat) ? 'block' : 'none';
+            document.getElementById('base-topping-section').style.display = ['boba', 'xolot', 'soda', 'temporada'].includes(cat) ? 'block' : 'none';
+            document.getElementById('extra-toppings-section').style.display = ['boba', 'xolot', 'soda', 'frappe', 'smoothie', 'temporada'].includes(cat) ? 'block' : 'none';
+
+            document.querySelectorAll('.extra-cb').forEach(cb => cb.checked = false);
+            updateModalTotal();
+            document.getElementById('custom-modal').classList.remove('hidden');
+        }
+
+        function selectOpt(btn, group) {
+            document.querySelectorAll(`.opt-${group}`).forEach(b => b.classList.remove('bg-pink-50', 'text-brand-pink', 'border-brand-pink', 'font-bold'));
+            btn.classList.add('bg-pink-50', 'text-brand-pink', 'border-brand-pink', 'font-bold');
+        }
+
+        function updateModalTotal() {
+            if (!activeProduct) return;
+            let total = activeProduct.price;
+            document.querySelectorAll('.extra-cb:checked').forEach(cb => total += parseFloat(cb.dataset.price));
+            document.getElementById('modal-calculated-total').innerText = `$${total.toFixed(2)}`;
+        }
+
+        function closeCustomModal() { document.getElementById('custom-modal').classList.add('hidden'); }
+
+        function confirmCustomProductAdd() {
+            if (!activeProduct) return;
+            let finalPrice = activeProduct.price;
+            let optionsArr = [];
+
+            if (['boba', 'xolot', 'soda', 'temporada'].includes(activeProduct.category)) {
+                optionsArr.push(`Topping: ${document.getElementById('modal-base-topping-select').value}`);
+            }
+
+            document.querySelectorAll('.extra-cb:checked').forEach(cb => {
+                finalPrice += parseFloat(cb.dataset.price);
+                optionsArr.push(cb.value);
+            });
+
+            currentCart.push({ name: activeProduct.name, price: finalPrice, category: activeProduct.category, options: optionsArr.join(' • ') });
+            closeCustomModal();
+            renderCart();
+        }
+
+        function openStaffModal() {
+            if (currentCart.length === 0) return alert('El carrito está vacío. Agrega los productos que tomará el personal.');
+            document.getElementById('staff-modal').classList.remove('hidden');
+        }
+
+        function closeStaffModal() {
+            document.getElementById('staff-modal').classList.add('hidden');
+        }
+
+        function processStaffConsumption() {
+            const staffName = document.getElementById('staff-name-select').value;
+            
+            currentCart.forEach(item => {
+                const recipe = recipeMapping[item.name];
+                if (recipe) {
+                    recipe.forEach(ingredient => {
+                        const insumo = inventoryDB.find(i => i.key === ingredient.key);
+                        if (insumo) {
+                            insumo.stock -= ingredient.qty;
+                            if (insumo.stock < 0) insumo.stock = 0;
+                        }
+                    });
+                }
+            });
+
+            const hieloInsumo = inventoryDB.find(i => i.key === 'hielo');
+            if (hieloInsumo) {
+                hieloInsumo.stock -= 0.1;
+                if (hieloInsumo.stock < 0) hieloInsumo.stock = 0;
+            }
+
+            saveInventoryToStorage();
+            alert(`✅ Consumo registrado para ${staffName} como Cortesía. Se han descontado los insumos del inventario sin cobro en caja.`);
+            closeStaffModal();
+            clearCart();
+        }
+
+        function applyEcoDiscount() {
+            discountVal = discountVal === 10 ? 0 : 10;
+            const btnEco = document.getElementById('btn-eco-discount');
+            btnEco.className = discountVal > 0 ? "px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-xl border border-emerald-700 shadow-sm" : "px-3 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-300 shadow-sm";
+            renderCart();
+        }
+
+        function checkAndToggleHappyHour(checkbox) {
+            if (new Date().getHours() < 20) {
+                alert("⚠️ Aún no es la Hora Feliz (8 PM - 9 PM).");
+                checkbox.checked = false;
+            }
+            renderCart();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            const storeLocation = document.getElementById('store-location').value;
+            const isHappyHour = document.getElementById('happy-hour-toggle').checked;
+
+            if (currentCart.length === 0) {
+                container.innerHTML = `<div id="empty-cart-msg" class="h-full flex flex-col items-center justify-center text-gray-400 py-12"><i class="fa-solid fa-basket-shopping text-4xl mb-2 text-gray-300"></i><p class="text-xs font-medium">Carrito vacío.</p></div>`;
+                document.getElementById('cart-subtotal').innerText = '$0.00';
+                document.getElementById('cart-discount').innerText = '-$0.00';
+                document.getElementById('cart-total').innerText = '$0.00';
                 return;
             }
+
             container.innerHTML = '';
-            shiftHistory.forEach((sh, idx) => {
+            let subtotal = 0, happyHourDiscount = 0;
+
+            currentCart.forEach((item, idx) => {
+                let itemPrice = item.price;
+                let isFree = (storeLocation === 'fortuna' && isHappyHour && item.category === 'fortuna');
+                if (isFree) { happyHourDiscount += itemPrice; itemPrice = 0; }
+
+                subtotal += item.price;
                 const div = document.createElement('div');
-                div.className = "p-4 bg-gray-50 border rounded-2xl space-y-2";
+                div.className = "p-2 bg-gray-50 border rounded-xl flex justify-between items-center text-xs";
                 div.innerHTML = `
-                    <div class="flex justify-between font-bold text-gray-800 text-xs">
-                        <span>Cierre de Turno #${shiftHistory.length - idx} — ${sh.date}</span>
-                        <span class="text-fig-purple">Netas: $${(sh.cashSales + sh.cardSales - sh.expenses).toFixed(2)}</span>
+                    <div>
+                        <p class="font-bold text-gray-800">${item.name} ${isFree ? '<span class="text-amber-600 font-bold">(¡Gratis!)</span>' : ''}</p>
+                        ${item.options ? `<p class="text-[10px] text-gray-400">${item.options}</p>` : ''}
                     </div>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 text-gray-600 text-[11px] gap-2">
-                        <div>Fondo Inicial: <strong>$${sh.fund.toFixed(2)}</strong></div>
-                        <div>Ventas Efectivo: <strong class="text-emerald-600">$${sh.cashSales.toFixed(2)}</strong></div>
-                        <div>Gastos de Turno: <strong class="text-red-600">$${sh.expenses.toFixed(2)}</strong></div>
-                        <div>Diferencia Arqueo: <strong class="${sh.diff === 0 ? 'text-emerald-600' : 'text-fig-amber'}">$${sh.diff.toFixed(2)}</strong></div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-bold text-gray-700">$${itemPrice.toFixed(2)}</span>
+                        <button onclick="currentCart.splice(${idx},1); renderCart();" class="text-red-500 font-bold">✕</button>
                     </div>
                 `;
                 container.appendChild(div);
             });
+
+            window.lastHappyDiscount = happyHourDiscount;
+            let totalDiscount = discountVal + happyHourDiscount;
+            let finalTotal = Math.max(0, subtotal - totalDiscount);
+
+            document.getElementById('cart-subtotal').innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById('cart-discount').innerText = `-$${totalDiscount.toFixed(2)}`;
+            document.getElementById('cart-total').innerText = `$${finalTotal.toFixed(2)}`;
         }
+
+        function clearCart() { currentCart = []; discountVal = 0; renderCart(); }
+
+        function setPaymentMethod(method) {
+            selectedPaymentMethod = method;
+            document.getElementById('btn-pay-cash').className = method === 'efectivo' ? "py-2.5 bg-brand-pink text-white font-bold rounded-xl text-xs shadow transition" : "py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition";
+            document.getElementById('btn-pay-card').className = method === 'tarjeta' ? "py-2.5 bg-purple-600 text-white font-bold rounded-xl text-xs shadow transition" : "py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition";
+            document.getElementById('cash-payment-section').classList.toggle('hidden', method !== 'efectivo');
+            document.getElementById('card-payment-section').classList.toggle('hidden', method !== 'tarjeta');
+        }
+
+        function openCheckoutModal() {
+            if (currentCart.length === 0) return alert('El carrito está vacío');
+            document.getElementById('checkout-total-display').innerText = document.getElementById('cart-total').innerText;
+            document.getElementById('cash-received-input').value = '';
+            document.getElementById('cash-change-display').innerText = '$0.00';
+            setPaymentMethod('efectivo');
+            document.getElementById('checkout-modal').classList.remove('hidden');
+        }
+
+        function closeCheckoutModal() { document.getElementById('checkout-modal').classList.add('hidden'); }
+
+        function calculateChange() {
+            const total = parseFloat(document.getElementById('checkout-total-display').innerText.replace('$','')) || 0;
+            const rec = parseFloat(document.getElementById('cash-received-input').value || 0);
+            document.getElementById('cash-change-display').innerText = `$${Math.max(0, rec - total).toFixed(2)}`;
+        }
+
+        function processFinalPayment() {
+            const total = parseFloat(document.getElementById('checkout-total-display').innerText.replace('$','')) || 0;
+            if (selectedPaymentMethod === 'efectivo') {
+                const rec = parseFloat(document.getElementById('cash-received-input').value || 0);
+                if (rec < total) return alert('Efectivo menor al total.');
+            }
+
+            if (selectedPaymentMethod === 'efectivo') {
+                shiftData.cashSales += total;
+            } else {
+                shiftData.cardSales += total;
+            }
+            shiftData.totalSales += total;
+
+            currentCart.forEach(item => {
+                const recipe = recipeMapping[item.name];
+                if (recipe) {
+                    recipe.forEach(ingredient => {
+                        const insumo = inventoryDB.find(i => i.key === ingredient.key);
+                        if (insumo) {
+                            insumo.stock -= ingredient.qty;
+                            if (insumo.stock < 0) insumo.stock = 0;
+                        }
+                    });
+                }
+            });
+
+            const hieloInsumo = inventoryDB.find(i => i.key === 'hielo');
+            if (hieloInsumo) {
+                hieloInsumo.stock -= 0.1;
+                if (hieloInsumo.stock < 0) hieloInsumo.stock = 0;
+            }
+
+            saveInventoryToStorage();
+
+            document.getElementById('rec-order-num').innerText = document.getElementById('order-id-display').innerText;
+            document.getElementById('rec-order-mode').innerText = document.getElementById('order-mode').options[document.getElementById('order-mode').selectedIndex].text;
+            document.getElementById('receipt-date').innerText = new Date().toLocaleString();
+            document.getElementById('rec-subtotal').innerText = document.getElementById('cart-subtotal').innerText;
+            document.getElementById('rec-discount').innerText = document.getElementById('cart-discount').innerText;
+            document.getElementById('rec-total').innerText = document.getElementById('cart-total').innerText;
+            document.getElementById('rec-payment').innerText = selectedPaymentMethod.toUpperCase();
+
+            const recItemsList = document.getElementById('rec-items-list');
+            recItemsList.innerHTML = '';
+            currentCart.forEach(item => {
+                const p = document.createElement('div');
+                p.className = "flex justify-between text-[10px]";
+                p.innerHTML = `<span>1x ${item.name}</span><span>$${item.price.toFixed(2)}</span>`;
+                recItemsList.appendChild(p);
+            });
+
+            document.getElementById('checkout-modal').classList.add('hidden');
+            document.getElementById('receipt-modal').classList.remove('hidden');
+
+            orderCounter++;
+            document.getElementById('order-id-display').innerText = String(orderCounter).padStart(4, '0');
+        }
+
+        function printReceiptTicket() { window.print(); }
+        function closeReceiptModal() { document.getElementById('receipt-modal').classList.add('hidden'); clearCart(); }
     </script>
 </body>
 </html>
