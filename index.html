@@ -150,7 +150,7 @@
                         <div onclick="openCategoryProducts('frappe')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
                             <span class="text-4xl mb-2">🥤</span>
                             <h3 class="font-bold text-gray-800 text-base">FRAPPÉ</h3>
-                            <span class="text-xs text-gray-400 mt-1">Sabores • $70 - $80</span>
+                            <span class="text-xs text-gray-400 mt-1">Todos los Sabores • $70 - $80</span>
                         </div>
                         <div onclick="openCategoryProducts('smoothie')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
                             <span class="text-4xl mb-2">🥭</span>
@@ -542,7 +542,6 @@
 
         let shiftData = { cashSales: 0, cardSales: 0, totalSales: 0, expenses: [] };
 
-        // INVENTARIO COMPLETO CON RECETAS EXACTAS, HIELO Y LECHE
         let inventoryDB = [
             { key: 'avellana', name: 'Jarabe Avellana', stock: 2000, unit: 'ml', min: 200 },
             { key: 'mora', name: 'Jarabe Mora', stock: 2000, unit: 'ml', min: 200 },
@@ -566,8 +565,9 @@
             { key: 'moka', name: 'Moka', stock: 507, unit: 'g', min: 100 },
             { key: 'matcha', name: 'Matcha', stock: 916, unit: 'g', min: 150 },
             { key: 'chai_latte', name: 'Chai Latte', stock: 854, unit: 'g', min: 150 },
+            { key: 'mazapan', name: 'Mazapán', stock: 1000, unit: 'g', min: 150 },
+            { key: 'cajeta', name: 'Cajeta', stock: 1000, unit: 'g', min: 150 },
             { key: 'base_cristal', name: 'Base Cristal / Neutra', stock: 2000, unit: 'g', min: 300 },
-            // PERLAS Y COMPLEMENTOS
             { key: 'pop_mora', name: 'Perlas Explosivas Mora Azul', stock: 1785, unit: 'g', min: 300 },
             { key: 'pop_fresa', name: 'Perlas Explosivas Fresa', stock: 2380, unit: 'g', min: 300 },
             { key: 'pop_arcoiris', name: 'Perlas Explosivas Arcoíris', stock: 900, unit: 'g', min: 200 },
@@ -581,7 +581,6 @@
             { key: 'galleta_oreo', name: 'Galleta Oreo', stock: 21, unit: 'pzas', min: 5 },
             { key: 'tizana_fresa_kiwi', name: 'Tizana Fresa Kiwi', stock: 191, unit: 'g', min: 50 },
             { key: 'tizana_mora', name: 'Tizana Mora', stock: 188, unit: 'g', min: 50 },
-            // VASOS Y DESECHABLES
             { key: 'vaso_boba', name: 'Vasos Boba', stock: 83, unit: 'pzas', min: 15 },
             { key: 'vaso_frappe', name: 'Vasos Frappé', stock: 33, unit: 'pzas', min: 10 },
             { key: 'vaso_smoothie', name: 'Vasos Smoothie', stock: 33, unit: 'pzas', min: 10 },
@@ -602,7 +601,6 @@
             { key: 'plato_pastel', name: 'Platos Pastel Cheesecake', stock: 19, unit: 'pzas', min: 5 }
         ];
 
-        // MAPA DE RECETAS EXACTO SEGÚN TUS NOTAS
         const recipeMapping = {
             'Boba Taro': [ {key:'taro', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
             'Boba Fresas c/ crema': [ {key:'fresa_crema', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
@@ -615,6 +613,9 @@
             'Boba Chai Negro': [ {key:'chai_negro', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
             'Boba Chocolate de dubai': [ {key:'dubai', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
             'Boba Ferrero': [ {key:'choco_negro', qty:40}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Mazapán': [ {key:'mazapan', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Cajeta': [ {key:'cajeta', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
+            'Boba Oreo': [ {key:'cookies_cream', qty:58}, {key:'galleta_oreo', qty:2}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
             
             'Xolot Piña': [ {key:'manzana_verde', qty:60}, {key:'hielo', qty:0.1} ],
             'Xolot Frutos Rojos': [ {key:'frutos_rojos', qty:60}, {key:'hielo', qty:0.1} ],
@@ -630,6 +631,7 @@
             'Soda Italiana Cereza': [ {key:'cereza', qty:60}, {key:'hielo', qty:0.25} ],
             'Soda Italiana Frambuesa': [ {key:'fresa', qty:60}, {key:'hielo', qty:0.25} ],
 
+            // TODOS LOS SABORES DE BOBA AÑADIDOS A FRAPPÉS
             'Frappé Cap. Vainilla': [ {key:'cap_vainilla', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
             'Frappé Cap. Moka': [ {key:'moka', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
             'Frappé Ferrero': [ {key:'choco_negro', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
@@ -638,6 +640,15 @@
             'Frappé Chocolate blanco': [ {key:'blanco', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
             'Frappé Cookies and cream': [ {key:'cookies_cream', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
             'Frappé Chocolate de dubai': [ {key:'dubai', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Fresas c/ crema': [ {key:'fresa_crema', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Taro': [ {key:'taro', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Caramelo': [ {key:'caramelo', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Matcha': [ {key:'matcha', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Mazapán': [ {key:'mazapan', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Cajeta': [ {key:'cajeta', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Chai Latte': [ {key:'chai_latte', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Lychee': [ {key:'lychee', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+            'Frappé Chai Negro': [ {key:'chai_negro', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
 
             'Smoothie Mora Azul': [ {key:'mora', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
             'Smoothie Mango': [ {key:'mango', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
@@ -698,6 +709,7 @@
             { name: 'Boba Lychee', price: 70, category: 'boba' },
             { name: 'Boba Chai Negro', price: 70, category: 'boba' },
             { name: 'Boba Chocolate de dubai', price: 70, category: 'boba' },
+            { name: 'Boba Oreo', price: 70, category: 'boba' },
             { name: 'Xolot Piña', price: 70, category: 'xolot' },
             { name: 'Xolot Frutos Rojos', price: 70, category: 'xolot' },
             { name: 'Xolot Fresa', price: 70, category: 'xolot' },
@@ -716,6 +728,7 @@
             { name: 'Soda Italiana Durazno', price: 45, category: 'soda' },
             { name: 'Soda Italiana Cereza', price: 45, category: 'soda' },
             { name: 'Soda Italiana Frambuesa', price: 45, category: 'soda' },
+            // FRAPPÉS CON TODOS LOS SABORES DE BOBA
             { name: 'Frappé Cap. Vainilla', price: 75, category: 'frappe' },
             { name: 'Frappé Cap. Moka', price: 75, category: 'frappe' },
             { name: 'Frappé Ferrero', price: 80, category: 'frappe' },
@@ -724,6 +737,16 @@
             { name: 'Frappé Chocolate blanco', price: 75, category: 'frappe' },
             { name: 'Frappé Cookies and cream', price: 70, category: 'frappe' },
             { name: 'Frappé Chocolate de dubai', price: 70, category: 'frappe' },
+            { name: 'Frappé Fresas c/ crema', price: 70, category: 'frappe' },
+            { name: 'Frappé Taro', price: 70, category: 'frappe' },
+            { name: 'Frappé Caramelo', price: 70, category: 'frappe' },
+            { name: 'Frappé Matcha', price: 70, category: 'frappe' },
+            { name: 'Frappé Mazapán', price: 70, category: 'frappe' },
+            { name: 'Frappé Cajeta', price: 70, category: 'frappe' },
+            { name: 'Frappé Chai Latte', price: 70, category: 'frappe' },
+            { name: 'Frappé Lychee', price: 70, category: 'frappe' },
+            { name: 'Frappé Chai Negro', price: 70, category: 'frappe' },
+
             { name: 'Smoothie Mora Azul', price: 70, category: 'smoothie' },
             { name: 'Smoothie Mango', price: 70, category: 'smoothie' },
             { name: 'Smoothie Fresa', price: 70, category: 'smoothie' },
@@ -742,7 +765,7 @@
             { name: 'Espresso', price: 35, category: 'cafe_caliente' },
             { name: 'Espresso Doble', price: 45, category: 'cafe_caliente' },
             { name: 'Capuchino Sencillo', price: 55, category: 'cafe_caliente' },
-            { name: 'Capuchino Doble', price: 65, category: 'cafe_caliente' },
+            { name: 'Capuchino Doble', price: 60, category: 'cafe_caliente' },
             { name: 'Latte Sencillo', price: 50, category: 'cafe_caliente' },
             { name: 'Latte Doble', price: 60, category: 'cafe_caliente' },
             { name: 'Café de olla chico', price: 10, category: 'cafe_caliente' },
@@ -793,7 +816,6 @@
             if(id === 'inventory') { renderInventoryTable(); }
         }
 
-        // SISTEMA DE SEGURIDAD CORREGIDO (SIN FILTRAR LOS CÓDIGOS EN EL TEXTO)
         function promptSecurityPin() {
             const pin = prompt("🔐 Ingrese su código de acceso autorizado:");
             if (pin === "2107") {
@@ -1145,7 +1167,6 @@
             }
             shiftData.totalSales += total;
 
-            // APLICAR ESCANDALLO Y DESCUENTO AUTOMÁTICO DE INGREDIENTES + CONSUMO DIARIO DE HIELO
             currentCart.forEach(item => {
                 const recipe = recipeMapping[item.name];
                 if (recipe) {
