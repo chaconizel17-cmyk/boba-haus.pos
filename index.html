@@ -73,7 +73,7 @@
                 <i class="fa-solid fa-cash-register"></i> <span>Corte y Turno</span>
             </button>
             <button onclick="switchTab('inventory')" id="nav-inventory" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-sm font-semibold flex items-center space-x-1">
-                <i class="fa-solid fa-boxes-stacked"></i> <span>Inventario</span>
+                <i class="fa-solid fa-boxes-stacked"></i> <span>Inventario & Recetas</span>
             </button>
         </nav>
 
@@ -257,7 +257,7 @@
             </div>
         </section>
 
-        <!-- TAB 2: CORTE Y TURNO (ARQUEO DE CAJA) -->
+        <!-- TAB 2: CORTE Y TURNO -->
         <section id="tab-shift" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
             <div class="max-w-3xl mx-auto bg-white p-6 rounded-3xl shadow-sm space-y-6">
                 <div class="flex justify-between items-center border-b pb-4">
@@ -268,7 +268,6 @@
                     <span class="bg-pink-100 text-brand-pink text-xs font-bold px-3 py-1 rounded-xl">Turno Activo</span>
                 </div>
 
-                <!-- RESUMEN DE VENTAS DEL TURNO -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="bg-pink-50 p-4 rounded-2xl border border-pink-100">
                         <span class="text-xs text-gray-500 block">Ventas en Efectivo</span>
@@ -284,7 +283,6 @@
                     </div>
                 </div>
 
-                <!-- ARQUEO DE CAJA -->
                 <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
                     <h3 class="font-bold text-sm text-gray-800"><i class="fa-solid fa-calculator mr-1"></i> Arqueo Físico de Caja</h3>
                     
@@ -317,13 +315,13 @@
             </div>
         </section>
 
-        <!-- TAB 3: INVENTARIO -->
+        <!-- TAB 3: INVENTARIO & RECETAS (ESCANDALLO) -->
         <section id="tab-inventory" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
-            <div class="max-w-3xl mx-auto bg-white p-5 rounded-3xl shadow-sm space-y-5">
-                <div class="flex justify-between items-center border-b pb-3">
+            <div class="max-w-4xl mx-auto bg-white p-6 rounded-3xl shadow-sm space-y-6">
+                <div class="flex justify-between items-center border-b pb-4">
                     <div>
-                        <h2 class="text-xl font-bold text-gray-800">Gestión de Inventario e Insumos</h2>
-                        <p id="mode-subtitle" class="text-xs text-gray-500">Vista de Dueña (Edición y Control Total)</p>
+                        <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-boxes-stacked text-brand-pink mr-2"></i> Inventario & Control de Recetas</h2>
+                        <p id="mode-subtitle" class="text-xs text-gray-500">Vista de Dueña (Descuento automático configurado por receta)</p>
                     </div>
                     <button onclick="toggleOwnerMode()" class="px-3 py-1.5 bg-pink-100 text-brand-pink font-bold text-xs rounded-xl">
                         🔒 Cambiar a Vista Empleada
@@ -333,9 +331,10 @@
                 <div id="owner-add-section" class="bg-pink-50 p-4 rounded-2xl border border-pink-200 space-y-3">
                     <h3 class="font-bold text-xs text-brand-pink uppercase tracking-wide">➕ Añadir Nuevo Insumo al Almacén</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <input type="text" id="new-item-name" placeholder="Nombre (Ej. Vasos 16oz)" class="p-2 border rounded-xl text-xs bg-white">
+                        <input type="text" id="new-item-key" placeholder="Clave id (ej. taro)" class="p-2 border rounded-xl text-xs bg-white">
+                        <input type="text" id="new-item-name" placeholder="Nombre (Ej. Polvo Taro)" class="p-2 border rounded-xl text-xs bg-white">
                         <input type="number" id="new-item-stock" placeholder="Stock Inicial" class="p-2 border rounded-xl text-xs bg-white">
-                        <input type="text" id="new-item-unit" placeholder="Unidad (Pzas, Kilos, Litros)" class="p-2 border rounded-xl text-xs bg-white">
+                        <input type="text" id="new-item-unit" placeholder="Unidad (g, ml, Litros, Kilos)" class="p-2 border rounded-xl text-xs bg-white">
                     </div>
                     <button onclick="addNewInventoryItem()" class="w-full py-2 bg-brand-pink text-white font-bold rounded-xl text-xs shadow">Guardar Nuevo Insumo</button>
                 </div>
@@ -523,37 +522,61 @@
         let orderCounter = 1;
         let isOwnerMode = true;
 
-        // Acumuladores de Turno / Corte
-        let shiftData = {
-            cashSales: 0,
-            cardSales: 0,
-            totalSales: 0
-        };
+        let shiftData = { cashSales: 0, cardSales: 0, totalSales: 0 };
 
+        // INVENTARIO CON CLAVES (ID) PARA EL ESCANDALLO AUTOMÁTICO
         let inventoryDB = [
-            { id: 1, name: 'Jarabe Avellana', stock: 2, unit: 'Litros' },
-            { id: 2, name: 'Jarabe Mora', stock: 2, unit: 'Litros' },
-            { id: 3, name: 'Jarabe Maracuyá', stock: 1760, unit: 'ml' },
-            { id: 4, name: 'Jarabe Frutos Rojos', stock: 1, unit: 'Litros' },
-            { id: 5, name: 'Jarabe Fresa', stock: 1930, unit: 'ml' },
-            { id: 6, name: 'Jarabe Manzana Verde', stock: 809, unit: 'ml' },
-            { id: 7, name: 'Jarabe Cereza', stock: 801, unit: 'ml' },
-            { id: 8, name: 'Jarabe Mango', stock: 796, unit: 'ml' },
-            { id: 9, name: 'Polvos Dubái', stock: 556, unit: 'g' },
-            { id: 10, name: 'Chocolate Negro', stock: 2, unit: 'Kilos' },
-            { id: 11, name: 'Chocolate Blanco', stock: 2, unit: 'Kilos' },
-            { id: 12, name: 'Taro', stock: 6, unit: 'Kilos' },
-            { id: 13, name: 'Caramelo', stock: 3, unit: 'Kilos' },
-            { id: 14, name: 'Te Chai', stock: 670, unit: 'g' },
-            { id: 15, name: 'Lychee', stock: 344, unit: 'g' },
-            { id: 16, name: 'Fresas c/ crema', stock: 646, unit: 'g' },
-            { id: 17, name: 'Cookies and Cream', stock: 1586, unit: 'g' },
-            { id: 18, name: 'Chai Negro', stock: 1573, unit: 'g' },
-            { id: 19, name: 'Cap. Vainilla', stock: 1613, unit: 'g' },
-            { id: 20, name: 'Moka', stock: 507, unit: 'g' },
-            { id: 21, name: 'Matcha', stock: 916, unit: 'g' },
-            { id: 22, name: 'Chai Latte', stock: 854, unit: 'g' }
+            { key: 'avellana', name: 'Jarabe Avellana', stock: 2000, unit: 'ml' },
+            { key: 'mora', name: 'Jarabe Mora', stock: 2000, unit: 'ml' },
+            { key: 'maracuya', name: 'Jarabe Maracuyá', stock: 1760, unit: 'ml' },
+            { key: 'frutos_rojos', name: 'Jarabe Frutos Rojos', stock: 1000, unit: 'ml' },
+            { key: 'fresa', name: 'Jarabe Fresa', stock: 1930, unit: 'ml' },
+            { key: 'manzana_verde', name: 'Jarabe Manzana Verde', stock: 809, unit: 'ml' },
+            { key: 'cereza', name: 'Jarabe Cereza', stock: 801, unit: 'ml' },
+            { key: 'mango', name: 'Jarabe Mango', stock: 796, unit: 'ml' },
+            { key: 'dubai', name: 'Polvos Dubái', stock: 556, unit: 'g' },
+            { key: 'choco_negro', name: 'Chocolate Negro', stock: 2000, unit: 'g' },
+            { key: 'blanco', name: 'Chocolate Blanco', stock: 2000, unit: 'g' },
+            { key: 'taro', name: 'Taro', stock: 6000, unit: 'g' },
+            { key: 'caramelo', name: 'Caramelo', stock: 3000, unit: 'g' },
+            { key: 'techai', name: 'Te Chai', stock: 670, unit: 'g' },
+            { key: 'lychee', name: 'Lychee', stock: 344, unit: 'g' },
+            { key: 'fresa_crema', name: 'Fresas c/ crema', stock: 646, unit: 'g' },
+            { key: 'cookies_cream', name: 'Cookies and Cream', stock: 1586, unit: 'g' },
+            { key: 'chai_negro', name: 'Chai Negro', stock: 1573, unit: 'g' },
+            { key: 'cap_vainilla', name: 'Cap. Vainilla', stock: 1613, unit: 'g' },
+            { key: 'moka', name: 'Moka', stock: 507, unit: 'g' },
+            { key: 'matcha', name: 'Matcha', stock: 916, unit: 'g' },
+            { key: 'chai_latte', name: 'Chai Latte', stock: 854, unit: 'g' }
         ];
+
+        // RECETAS / ESCANDALLO (Insumo consumido por cada venta)
+        const recipeMapping = {
+            'Boba Taro': { key: 'taro', qty: 50 },
+            'Boba Fresas c/ crema': { key: 'fresa_crema', qty: 50 },
+            'Boba Caramelo': { key: 'caramelo', qty: 50 },
+            'Boba Matcha': { key: 'matcha', qty: 45 },
+            'Boba Chocolate Blanco': { key: 'blanco', qty: 50 },
+            'Boba Chocolate': { key: 'choco_negro', qty: 50 },
+            'Boba Chai Latte': { key: 'chai_latte', qty: 50 },
+            'Boba Lychee': { key: 'lychee', qty: 40 },
+            'Boba Chai Negro': { key: 'chai_negro', qty: 50 },
+            'Boba Chocolate de dubai': { key: 'dubai', qty: 50 },
+            'Xolot Frutos Rojos': { key: 'frutos_rojos', qty: 40 },
+            'Xolot Fresa': { key: 'fresa', qty: 40 },
+            'Soda Italiana Mora Azul': { key: 'mora', qty: 40 },
+            'Soda Italiana Mango': { key: 'mango', qty: 40 },
+            'Soda Italiana Fresa': { key: 'fresa', qty: 40 },
+            'Soda Italiana Frutos Rojos': { key: 'frutos_rojos', qty: 40 },
+            'Soda Italiana Maracuyá': { key: 'maracuya', qty: 40 },
+            'Soda Italiana Manzana Verde': { key: 'manzana_verde', qty: 40 },
+            'Soda Italiana Cereza': { key: 'cereza', qty: 40 },
+            'Frappé Cap. Vainilla': { key: 'cap_vainilla', qty: 60 },
+            'Frappé Cap. Moka': { key: 'moka', qty: 60 },
+            'Frappé Chocolate': { key: 'choco_negro', qty: 60 },
+            'Frappé Cookies and cream': { key: 'cookies_cream', qty: 60 },
+            'Frappé Chocolate de dubai': { key: 'dubai', qty: 60 }
+        };
 
         const dailyPromos = {
             1: "Lunes: ¡3x2 en Smoothies!",
@@ -679,9 +702,8 @@
                 document.getElementById(`tab-${t}`).classList.add('hidden');
             });
             document.getElementById(`tab-${id}`).classList.remove('hidden');
-            if(id === 'shift') {
-                updateShiftDisplay();
-            }
+            if(id === 'shift') { updateShiftDisplay(); }
+            if(id === 'inventory') { renderInventoryTable(); }
         }
 
         function toggleOwnerMode() {
@@ -737,8 +759,8 @@
                 const tr = document.createElement('tr');
                 tr.className = "border-b hover:bg-gray-50";
                 tr.innerHTML = `
-                    <td class="p-3 font-bold text-gray-800">${item.name}</td>
-                    <td class="p-3"><input type="number" id="stock-input-${idx}" value="${item.stock}" ${isOwnerMode ? '' : 'readonly'} class="w-20 p-1 border rounded-lg text-xs font-bold ${isOwnerMode ? 'bg-white' : 'bg-gray-100 text-gray-600'}"></td>
+                    <td class="p-3 font-bold text-gray-800">${item.name} <span class="text-[10px] text-gray-400 font-mono">(${item.key})</span></td>
+                    <td class="p-3"><input type="number" id="stock-input-${idx}" value="${item.stock}" ${isOwnerMode ? '' : 'readonly'} class="w-24 p-1 border rounded-lg text-xs font-bold ${isOwnerMode ? 'bg-white' : 'bg-gray-100 text-gray-600'}"></td>
                     <td class="p-3 text-gray-500">${item.unit}</td>
                     <td class="p-3 text-center space-x-1">
                         ${isOwnerMode ? `
@@ -754,11 +776,13 @@
         }
 
         function addNewInventoryItem() {
+            const key = document.getElementById('new-item-key').value.trim();
             const name = document.getElementById('new-item-name').value;
             const stock = parseFloat(document.getElementById('new-item-stock').value);
             const unit = document.getElementById('new-item-unit').value;
-            if(!name || isNaN(stock) || !unit) return alert('Por favor llena todos los campos.');
-            inventoryDB.push({ id: Date.now(), name, stock, unit });
+            if(!key || !name || isNaN(stock) || !unit) return alert('Por favor llena todos los campos.');
+            inventoryDB.push({ key, name, stock, unit });
+            document.getElementById('new-item-key').value = '';
             document.getElementById('new-item-name').value = '';
             document.getElementById('new-item-stock').value = '';
             document.getElementById('new-item-unit').value = '';
@@ -961,13 +985,25 @@
                 if (rec < total) return alert('Efectivo menor al total.');
             }
 
-            // Registrar venta en el turno
+            // 1. REGISTRAR VENTA EN TURNO
             if (selectedPaymentMethod === 'efectivo') {
                 shiftData.cashSales += total;
             } else {
                 shiftData.cardSales += total;
             }
             shiftData.totalSales += total;
+
+            // 2. APLICAR ESCANDALLO (DESCUENTO AUTOMÁTICO DE INVENTARIO)
+            currentCart.forEach(item => {
+                const receta = recipeMapping[item.name];
+                if (receta) {
+                    const insumo = inventoryDB.find(i => i.key === receta.key);
+                    if (insumo) {
+                        insumo.stock -= receta.qty;
+                        if (insumo.stock < 0) insumo.stock = 0;
+                    }
+                }
+            });
 
             document.getElementById('rec-order-num').innerText = document.getElementById('order-id-display').innerText;
             document.getElementById('rec-order-mode').innerText = document.getElementById('order-mode').options[document.getElementById('order-mode').selectedIndex].text;
