@@ -58,9 +58,9 @@
             <!-- Menú de Productos -->
             <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-pink-100">
                 <h2 class="font-fredoka text-xl mb-4 text-brand-dark flex items-center">
-                    <i class="fas fa-mug-hot text-brand-pink mr-2"></i> Menú de Bebidas y Modificadores
+                    <i class="fas fa-mug-hot text-brand-pink mr-2"></i> Menú Completo de Bebidas
                 </h2>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="catalogo-productos">
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[600px] overflow-y-auto pr-2" id="catalogo-productos">
                     <!-- Productos inyectados por JS -->
                 </div>
             </div>
@@ -154,9 +154,20 @@
         let productosPOS = [
             { id: 1, nombre: 'Boba Te de Taro', precio: 65, insumoReq: 'taro', consumo: 50 },
             { id: 2, nombre: 'Boba Te de Chocolate Negro', precio: 65, insumoReq: 'choco_negro', consumo: 50 },
-            { id: 3, nombre: 'Boba Frutos Rojos', precio: 60, insumoReq: 'frutos_rojos', consumo: 40 },
+            { id: 3, nombre: 'Boba Te de Chocolate Blanco', precio: 65, insumoReq: 'blanco', consumo: 50 },
             { id: 4, nombre: 'Boba Matcha', precio: 70, insumoReq: 'matcha', consumo: 45 },
-            { id: 5, nombre: 'Boba Fresa con Crema', precio: 65, insumoReq: 'fresa_crema', consumo: 50 }
+            { id: 5, nombre: 'Boba Fresa con Crema', precio: 65, insumoReq: 'fresa_crema', consumo: 50 },
+            { id: 6, nombre: 'Boba Cookies and Cream', precio: 70, insumoReq: 'cookies_cream', consumo: 50 },
+            { id: 7, nombre: 'Boba Caramelo', precio: 65, insumoReq: 'caramelo', consumo: 50 },
+            { id: 8, nombre: 'Boba Moka', precio: 65, insumoReq: 'moka', consumo: 50 },
+            { id: 9, nombre: 'Boba Chai Latte', precio: 65, insumoReq: 'chai_latte', consumo: 50 },
+            { id: 10, nombre: 'Boba Frutos Rojos', precio: 60, insumoReq: 'frutos_rojos', consumo: 40 },
+            { id: 11, nombre: 'Boba Maracuyá', precio: 60, insumoReq: 'maracuya', consumo: 40 },
+            { id: 12, nombre: 'Boba Mango', precio: 60, insumoReq: 'mango', consumo: 40 },
+            { id: 13, nombre: 'Boba Manzana Verde', precio: 60, insumoReq: 'manzana_verde', consumo: 40 },
+            { id: 14, nombre: 'Boba Lychee', precio: 65, insumoReq: 'lychee', consumo: 40 },
+            { id: 15, nombre: 'Boba Avellana', precio: 65, insumoReq: 'avellana', consumo: 40 },
+            { id: 16, nombre: 'Boba Mora', precio: 60, insumoReq: 'mora', consumo: 40 }
         ];
 
         let ticket = [];
