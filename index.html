@@ -43,10 +43,9 @@
 </head>
 <body class="h-screen overflow-hidden flex text-gray-800">
 
-    <!-- MENÚ LATERAL ESTILO TPV (CON OPCIÓN DE ESCONDERSE) -->
+    <!-- MENÚ LATERAL ESTILO TPV -->
     <aside id="sidebar-menu" class="w-64 bg-gray-900 text-gray-300 flex flex-col justify-between shrink-0 shadow-xl z-30 transition-all duration-300">
         <div>
-            <!-- Header de Perfil / Negocio -->
             <div class="p-4 bg-gray-950 border-b border-gray-800 flex items-center justify-between">
                 <div>
                     <h2 id="sidebar-role-title" class="font-bold text-white text-sm">Propietario</h2>
@@ -57,7 +56,6 @@
                 </button>
             </div>
 
-            <!-- Enlaces de Navegación -->
             <nav class="p-2 space-y-1 text-xs font-semibold">
                 <button onclick="switchTab('pos')" id="nav-pos" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl bg-brand-pink text-white transition">
                     <i class="fa-solid fa-store text-base w-5"></i> <span>Ventas</span>
@@ -72,14 +70,13 @@
         </div>
 
         <div class="p-3 border-t border-gray-800 text-[11px] text-gray-500 text-center">
-            Boba Haus POS v3.7
+            Boba Haus POS v3.8 (Pro)
         </div>
     </aside>
 
     <!-- MAIN BODY -->
     <main class="flex-1 overflow-hidden relative flex flex-col h-full">
 
-        <!-- HEADER SUPERIOR -->
         <header class="bg-white border-b border-gray-200 px-4 py-2.5 flex items-center justify-between shadow-sm z-20 shrink-0">
             <div class="flex items-center space-x-3">
                 <button onclick="toggleSidebar()" class="p-2 text-gray-600 hover:text-brand-pink bg-gray-100 rounded-xl text-xs font-bold" title="Mostrar/Esconder Menú">
@@ -98,7 +95,6 @@
             </div>
         </header>
 
-        <!-- CONTENEDOR DE PESTAÑAS -->
         <div class="flex-1 overflow-hidden relative flex flex-col">
 
             <!-- TAB 1: POS -->
@@ -273,7 +269,7 @@
                 </div>
             </section>
 
-            <!-- TAB 2: CORTE Y TURNO (CON BOTONES DE ABRIR Y CERRAR TURNO + HISTORIAL) -->
+            <!-- TAB 2: CORTE Y TURNO -->
             <section id="tab-shift" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
                 <div class="max-w-3xl mx-auto bg-white p-6 rounded-3xl shadow-sm space-y-6">
                     <div class="flex justify-between items-center border-b pb-4">
@@ -291,7 +287,6 @@
                         </div>
                     </div>
 
-                    <!-- CAJÓN DE EFECTIVO -->
                     <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-3">
                         <h3 class="font-bold text-sm text-gray-800"><i class="fa-solid fa-vault mr-1 text-brand-pink"></i> Cajón de efectivo</h3>
                         <div class="space-y-2 text-xs divide-y divide-gray-200">
@@ -304,7 +299,6 @@
                         </div>
                     </div>
 
-                    <!-- RESUMEN DE VENTAS -->
                     <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-3">
                         <h3 class="font-bold text-sm text-gray-800"><i class="fa-solid fa-chart-line mr-1 text-brand-pink"></i> Resumen de ventas</h3>
                         <div class="space-y-2 text-xs divide-y divide-gray-200">
@@ -315,7 +309,6 @@
                         </div>
                     </div>
 
-                    <!-- REGISTRAR GASTO EN TURNO -->
                     <div class="bg-red-50/50 p-4 rounded-2xl border border-red-200 space-y-3">
                         <h3 class="font-bold text-xs text-red-700 uppercase tracking-wide"><i class="fa-solid fa-receipt mr-1"></i> Registrar Gasto / Salida de Efectivo en Turno</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -328,7 +321,6 @@
                         </div>
                     </div>
 
-                    <!-- HISTORIAL DE TURNOS ANTERIORES -->
                     <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-3">
                         <h3 class="font-bold text-sm text-gray-800"><i class="fa-solid history mr-1 text-brand-pink"></i> Historial de Cierres de Turno</h3>
                         <div id="shift-history-container" class="space-y-2 text-xs">
@@ -660,11 +652,12 @@
         let currentPinInput = "";
         let initialFund = 500;
         let shiftOpen = false;
-        let shiftHistory = [];
+        let shiftHistory = JSON.parse(localStorage.getItem('boba_shift_history')) || [];
 
         let shiftData = { cashSales: 0, cardSales: 0, totalSales: 0, expenses: [] };
 
-        let inventoryDB = [
+        // Inventario con persistencia local (LocalStorage)
+        let defaultInventory = [
             { key: 'avellana', name: 'Jarabe Avellana', stock: 2000, unit: 'ml', min: 200 },
             { key: 'mora', name: 'Jarabe Mora', stock: 2000, unit: 'ml', min: 200 },
             { key: 'maracuya', name: 'Jarabe Maracuyá', stock: 1760, unit: 'ml', min: 200 },
@@ -722,6 +715,12 @@
             { key: 'plato_bowl_chico', name: 'Platos Bowl Chico', stock: 11, unit: 'pzas', min: 3 },
             { key: 'plato_pastel', name: 'Platos Pastel Cheesecake', stock: 19, unit: 'pzas', min: 5 }
         ];
+
+        let inventoryDB = JSON.parse(localStorage.getItem('boba_inventory_db')) || defaultInventory;
+
+        function saveInventoryToStorage() {
+            localStorage.setItem('boba_inventory_db', JSON.stringify(inventoryDB));
+        }
 
         const recipeMapping = {
             'Boba Taro': [ {key:'taro', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
@@ -813,6 +812,7 @@
             document.getElementById("order-id-display").innerText = String(orderCounter).padStart(4, '0');
             renderInventoryTable();
             updateTreasuryDisplay();
+            renderShiftHistory();
         });
 
         const productsDB = [
@@ -1046,7 +1046,6 @@
             alert('¡Turno abierto con éxito!');
         }
 
-        // FUNCIONES DE CIERRE DE TURNO Y ARQUEO
         function openCloseTurnModal() {
             if(!shiftOpen) return alert('No hay ningún turno abierto actualmente.');
             let totalExpenses = shiftData.expenses.reduce((sum, e) => sum + e.amount, 0);
@@ -1086,7 +1085,6 @@
             let counted = parseFloat(document.getElementById('close-counted-cash').value) || 0;
             let diff = counted - expectedCash;
 
-            // Guardar en historial
             shiftHistory.unshift({
                 date: new Date().toLocaleString(),
                 fund: initialFund,
@@ -1097,8 +1095,8 @@
                 counted: counted,
                 diff: diff
             });
+            localStorage.setItem('boba_shift_history', JSON.stringify(shiftHistory));
 
-            // Limpiar turno y cerrar
             shiftOpen = false;
             shiftData = { cashSales: 0, cardSales: 0, totalSales: 0, expenses: [] };
             document.getElementById('header-turn-status').innerText = "Turno Cerrado";
@@ -1214,6 +1212,7 @@
             const unit = document.getElementById('new-item-unit').value;
             if(!key || !name || isNaN(stock) || !unit) return alert('Por favor llena todos los campos.');
             inventoryDB.push({ key, name, stock, unit, min: 10 });
+            saveInventoryToStorage();
             document.getElementById('new-item-key').value = '';
             document.getElementById('new-item-name').value = '';
             document.getElementById('new-item-stock').value = '';
@@ -1226,20 +1225,26 @@
             const val = parseFloat(document.getElementById(`stock-input-${idx}`).value);
             if(isNaN(val)) return alert('Valor inválido');
             inventoryDB[idx].stock = val;
-            alert('¡Actualizado!');
+            saveInventoryToStorage();
+            alert('¡Actualizado y guardado!');
             renderInventoryTable();
         }
 
         function deleteInventoryItem(idx) {
             if (!isOwnerMode) return alert("Acción restringida.");
-            if(confirm('¿Eliminar insumo?')) { inventoryDB.splice(idx, 1); renderInventoryTable(); }
+            if(confirm('¿Eliminar insumo?')) { 
+                inventoryDB.splice(idx, 1); 
+                saveInventoryToStorage();
+                renderInventoryTable(); 
+            }
         }
 
         function rectifyStockEmployee(idx) {
             const val = parseFloat(document.getElementById(`stock-input-${idx}`).value);
             if(isNaN(val)) return alert('Valor inválido');
             inventoryDB[idx].stock = val;
-            alert('¡Rectificado!');
+            saveInventoryToStorage();
+            alert('¡Rectificado y guardado!');
             renderInventoryTable();
         }
 
@@ -1324,7 +1329,6 @@
             renderCart();
         }
 
-        // FUNCIONES DE CORTESÍA PARA PERSONAL (IZEL, AGUSTÍN, NICOLÁS, CHEPIS, CLEMENTITO)
         function openStaffModal() {
             if (currentCart.length === 0) return alert('El carrito está vacío. Agrega los productos que tomará el personal.');
             document.getElementById('staff-modal').classList.remove('hidden');
@@ -1337,7 +1341,6 @@
         function processStaffConsumption() {
             const staffName = document.getElementById('staff-name-select').value;
             
-            // Descontar inventario automáticamente
             currentCart.forEach(item => {
                 const recipe = recipeMapping[item.name];
                 if (recipe) {
@@ -1357,6 +1360,7 @@
                 if (hieloInsumo.stock < 0) hieloInsumo.stock = 0;
             }
 
+            saveInventoryToStorage();
             alert(`✅ Consumo registrado para ${staffName} como Cortesía. Se han descontado los insumos del inventario sin cobro en caja.`);
             closeStaffModal();
             clearCart();
@@ -1482,6 +1486,8 @@
                 hieloInsumo.stock -= 0.1;
                 if (hieloInsumo.stock < 0) hieloInsumo.stock = 0;
             }
+
+            saveInventoryToStorage();
 
             document.getElementById('rec-order-num').innerText = document.getElementById('order-id-display').innerText;
             document.getElementById('rec-order-mode').innerText = document.getElementById('order-mode').options[document.getElementById('order-mode').selectedIndex].text;
