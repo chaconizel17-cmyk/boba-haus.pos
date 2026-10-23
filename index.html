@@ -79,7 +79,7 @@
 
         <div class="flex items-center space-x-3 border-l border-pink-400/50 pl-3">
             <div class="text-right">
-                <p id="current-user-role" class="text-xs font-bold leading-tight">Izel (Dueña)</p>
+                <p id="current-user-role" class="text-xs font-bold leading-tight">Turno General</p>
                 <button onclick="promptSecurityPin()" class="text-[10px] bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-lg mt-0.5 font-bold">Ingresar Código</button>
             </div>
         </div>
@@ -257,7 +257,7 @@
             </div>
         </section>
 
-        <!-- TAB 2: CORTE Y TURNO (CON GASTOS EN TURNO) -->
+        <!-- TAB 2: CORTE Y TURNO (FONDO INICIAL PROTEGIDO) -->
         <section id="tab-shift" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
             <div class="max-w-3xl mx-auto bg-white p-6 rounded-3xl shadow-sm space-y-6">
                 <div class="flex justify-between items-center border-b pb-4">
@@ -265,7 +265,7 @@
                         <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-cash-register text-brand-pink mr-2"></i> Módulo de Corte de Caja y Arqueo</h2>
                         <p class="text-xs text-gray-500">Control de fondo inicial, ventas, gastos de turno y arqueo de efectivo.</p>
                     </div>
-                    <span id="current-shift-badge" class="bg-pink-100 text-brand-pink text-xs font-bold px-3 py-1 rounded-xl">Turno Mañana</span>
+                    <span id="current-shift-badge" class="bg-pink-100 text-brand-pink text-xs font-bold px-3 py-1 rounded-xl">Turno General</span>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
@@ -301,12 +301,17 @@
                 </div>
 
                 <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
-                    <h3 class="font-bold text-sm text-gray-800"><i class="fa-solid fa-calculator mr-1"></i> Arqueo Físico de Caja</h3>
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-sm text-gray-800"><i class="fa-solid fa-calculator mr-1"></i> Arqueo Físico de Caja</h3>
+                        <button onclick="unlockInitialFund()" class="text-[11px] bg-pink-100 text-brand-pink px-2.5 py-1 rounded-lg font-bold hover:bg-pink-200 transition">
+                            🔓 Desbloquear Fondo (Requiere Código)
+                        </button>
+                    </div>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="text-xs font-bold text-gray-600 block mb-1">Fondo Inicial de Caja (Cambio):</label>
-                            <input type="number" id="initial-fund" value="500" onkeyup="calculateCashCut()" class="w-full p-2 border rounded-xl text-xs bg-white font-bold">
+                            <input type="number" id="initial-fund" value="500" readonly onkeyup="calculateCashCut()" class="w-full p-2 border rounded-xl text-xs bg-gray-100 text-gray-600 font-bold cursor-not-allowed">
                         </div>
                         <div>
                             <label class="text-xs font-bold text-gray-600 block mb-1">Efectivo Físico Contado en Gaveta:</label>
@@ -338,7 +343,7 @@
                 <div class="flex justify-between items-center border-b pb-4">
                     <div>
                         <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-boxes-stacked text-brand-pink mr-2"></i> Inventario & Control de Recetas</h2>
-                        <p id="mode-subtitle" class="text-xs text-gray-500">Bloqueado para empleadas (Requiere PIN de Dueña)</p>
+                        <p id="mode-subtitle" class="text-xs text-gray-500">Bloqueado para empleadas (Requiere PIN de Acceso)</p>
                     </div>
                     <button onclick="promptSecurityPin()" class="px-3 py-1.5 bg-pink-100 text-brand-pink font-bold text-xs rounded-xl">
                         🔑 Ingresar PIN de Acceso
@@ -538,7 +543,7 @@
         let selectedPaymentMethod = 'efectivo';
         let orderCounter = 1;
         let isOwnerMode = false;
-        let currentShiftName = 'Turno Mañana';
+        let currentShiftName = 'Turno General';
 
         let shiftData = { cashSales: 0, cardSales: 0, totalSales: 0, expenses: [] };
 
@@ -631,7 +636,6 @@
             'Soda Italiana Cereza': [ {key:'cereza', qty:60}, {key:'hielo', qty:0.25} ],
             'Soda Italiana Frambuesa': [ {key:'fresa', qty:60}, {key:'hielo', qty:0.25} ],
 
-            // TODOS LOS SABORES DE BOBA AÑADIDOS A FRAPPÉS
             'Frappé Cap. Vainilla': [ {key:'cap_vainilla', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
             'Frappé Cap. Moka': [ {key:'moka', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
             'Frappé Ferrero': [ {key:'choco_negro', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
@@ -728,7 +732,6 @@
             { name: 'Soda Italiana Durazno', price: 45, category: 'soda' },
             { name: 'Soda Italiana Cereza', price: 45, category: 'soda' },
             { name: 'Soda Italiana Frambuesa', price: 45, category: 'soda' },
-            // FRAPPÉS CON TODOS LOS SABORES DE BOBA
             { name: 'Frappé Cap. Vainilla', price: 75, category: 'frappe' },
             { name: 'Frappé Cap. Moka', price: 75, category: 'frappe' },
             { name: 'Frappé Ferrero', price: 80, category: 'frappe' },
@@ -746,7 +749,6 @@
             { name: 'Frappé Chai Latte', price: 70, category: 'frappe' },
             { name: 'Frappé Lychee', price: 70, category: 'frappe' },
             { name: 'Frappé Chai Negro', price: 70, category: 'frappe' },
-
             { name: 'Smoothie Mora Azul', price: 70, category: 'smoothie' },
             { name: 'Smoothie Mango', price: 70, category: 'smoothie' },
             { name: 'Smoothie Fresa', price: 70, category: 'smoothie' },
@@ -845,6 +847,21 @@
                 document.getElementById('current-shift-badge').innerText = currentShiftName;
                 alert("🌙 Turno Tarde activado.");
                 renderInventoryTable();
+            } else if (pin !== null) {
+                alert("❌ Código incorrecto.");
+            }
+        }
+
+        // DESBLOQUEAR CAMPO DE FONDO INICIAL CON CÓDIGO
+        function unlockInitialFund() {
+            const pin = prompt("🔐 Ingrese código para desbloquear el Fondo Inicial:");
+            if (pin === "2107" || pin === "0805" || pin === "3240") {
+                const fundInput = document.getElementById('initial-fund');
+                fundInput.removeAttribute('readonly');
+                fundInput.classList.remove('bg-gray-100', 'text-gray-600', 'cursor-not-allowed');
+                fundInput.classList.add('bg-white', 'text-brand-pink');
+                fundInput.focus();
+                alert("🔓 Fondo inicial desbloqueado para edición.");
             } else if (pin !== null) {
                 alert("❌ Código incorrecto.");
             }
