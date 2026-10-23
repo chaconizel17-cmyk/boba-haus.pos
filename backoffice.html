@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boba Haus - Back Office (Gerencia)</title>
+    <title>Boba Haus - Back Office Pro (Gerencia)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -45,11 +45,11 @@
                     <h2 class="font-bold text-white text-sm">Boba Haus Back Office</h2>
                     <p class="text-[11px] text-fig-cream">Panel Gerencial • Izel</p>
                 </div>
-                <span class="p-2 bg-fig-amber text-white rounded-xl text-xs font-bold shadow">Admin</span>
+                <span class="p-2 bg-fig-amber text-white rounded-xl text-xs font-bold shadow">Pro</span>
             </div>
 
-            <nav class="p-2 space-y-1 text-xs font-semibold">
-                <button onclick="switchBoTab('sales')" id="nav-sales" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl bg-fig-purple text-white transition shadow-sm">
+            <nav class="p-2 space-y-1 text-xs font-semibold overflow-y-auto max-h-[calc(100vh-100px)]">
+                <button onclick="switchBoTab('sales')" id="nav-sales" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-fig-purple text-white transition shadow-sm">
                     <i class="fa-solid fa-chart-line text-base w-5"></i> <span>Resumen de ventas</span>
                 </button>
                 <button onclick="switchBoTab('items')" id="nav-items" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
@@ -58,8 +58,14 @@
                 <button onclick="switchBoTab('inventory')" id="nav-inventory" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
                     <i class="fa-solid fa-boxes-stacked text-base w-5"></i> <span>Inventario avanzado</span>
                 </button>
+                <button onclick="switchBoTab('purchases')" id="nav-purchases" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
+                    <i class="fa-solid fa-truck-ramp-box text-base w-5"></i> <span>Órdenes de Compra</span>
+                </button>
                 <button onclick="switchBoTab('shifts')" id="nav-shifts" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
                     <i class="fa-solid fa-cash-register text-base w-5"></i> <span>Cierres de Turno / Arqueos</span>
+                </button>
+                <button onclick="switchBoTab('employees')" id="nav-employees" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
+                    <i class="fa-solid fa-users text-base w-5"></i> <span>Empleados y Accesos</span>
                 </button>
                 <button onclick="switchBoTab('settings')" id="nav-settings" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
                     <i class="fa-solid fa-gear text-base w-5"></i> <span>Configuración</span>
@@ -68,7 +74,7 @@
         </div>
 
         <div class="p-3 border-t border-purple-900/40 text-[11px] text-fig-cream/70 text-center">
-            Paleta Oficial: Higos & Otoño
+            Ecosistema Boba Haus 2026
         </div>
     </aside>
 
@@ -79,9 +85,9 @@
         <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-20">
             <h1 id="bo-header-title" class="text-lg font-bold text-fig-dark">Resumen de ventas</h1>
             <div class="flex items-center space-x-3">
-                <span class="text-xs font-semibold bg-fig-cream/40 text-fig-dark px-3 py-1.5 rounded-xl border border-fig-cream">📅 Periodo: Hoy / Activo</span>
+                <span class="text-xs font-semibold bg-fig-cream/40 text-fig-dark px-3 py-1.5 rounded-xl border border-fig-cream">📅 Sincronizado en Vivo</span>
                 <button onclick="location.reload()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">
-                    <i class="fa-solid fa-rotate-right mr-1"></i> Sincronizar Datos
+                    <i class="fa-solid fa-rotate-right mr-1"></i> Actualizar
                 </button>
             </div>
         </header>
@@ -97,12 +103,12 @@
                         <h3 id="bo-gross-sales" class="text-lg font-bold text-gray-900 mt-1">$0.00</h3>
                     </div>
                     <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-                        <span class="text-[11px] text-gray-500 font-semibold block">Reembolsos</span>
-                        <h3 class="text-lg font-bold text-gray-900 mt-1">$0.00</h3>
+                        <span class="text-[11px] text-gray-500 font-semibold block">Efectivo en Caja</span>
+                        <h3 id="bo-cash-sales-card" class="text-lg font-bold text-emerald-600 mt-1">$0.00</h3>
                     </div>
                     <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-                        <span class="text-[11px] text-gray-500 font-semibold block">Descuentos</span>
-                        <h3 id="bo-discounts" class="text-lg font-bold text-fig-amber mt-1">$0.00</h3>
+                        <span class="text-[11px] text-gray-500 font-semibold block">Cobros con Tarjeta</span>
+                        <h3 id="bo-card-sales-card" class="text-lg font-bold text-purple-600 mt-1">$0.00</h3>
                     </div>
                     <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
                         <span class="text-[11px] text-gray-500 font-semibold block">Ventas netas</span>
@@ -116,27 +122,28 @@
 
                 <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4">
                     <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-fig-dark text-sm">Desglose de Operaciones del Turno Actual</h3>
-                        <button onclick="window.print()" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-xl font-bold text-gray-700">🖨️ Exportar / Imprimir</button>
+                        <h3 class="font-bold text-fig-dark text-sm">Desglose por Tipo de Pago</h3>
+                        <button onclick="window.print()" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-xl font-bold text-gray-700">🖨️ Imprimir Reporte</button>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs border-collapse">
                             <thead>
                                 <tr class="bg-fig-cream/20 text-fig-dark border-b">
-                                    <th class="p-3 rounded-l-xl">Estado / Canal</th>
-                                    <th class="p-3">Método de Pago</th>
-                                    <th class="p-3 text-right">Ventas Brutas</th>
-                                    <th class="p-3 text-right">Descuentos</th>
-                                    <th class="p-3 text-right rounded-r-xl">Ventas Netas</th>
+                                    <th class="p-3 rounded-l-xl">Método de Pago</th>
+                                    <th class="p-3">Transacciones / Canal</th>
+                                    <th class="p-3 text-right rounded-r-xl">Total Recaudado</th>
                                 </tr>
                             </thead>
-                            <tbody id="bo-sales-table-body" class="divide-y divide-gray-100">
+                            <tbody class="divide-y divide-gray-100">
                                 <tr>
-                                    <td class="p-3 font-semibold">Boba Haus - Sucursal Principal</td>
-                                    <td class="p-3 text-gray-500">Efectivo y Tarjeta</td>
-                                    <td id="bo-table-gross" class="p-3 text-right font-bold">$0.00</td>
-                                    <td id="bo-table-desc" class="p-3 text-right font-bold text-fig-amber">-$0.00</td>
-                                    <td id="bo-table-net" class="p-3 text-right font-bold text-fig-purple">$0.00</td>
+                                    <td class="p-3 font-semibold">💵 Efectivo (Gaveta TPV)</td>
+                                    <td class="p-3 text-gray-500">Caja Principal / Turno Activo</td>
+                                    <td id="bo-payment-cash" class="p-3 text-right font-bold text-emerald-600">$0.00</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-semibold">💳 Tarjeta / Terminal</td>
+                                    <td class="p-3 text-gray-500">Cobros Electrónicos</td>
+                                    <td id="bo-payment-card" class="p-3 text-right font-bold text-purple-600">$0.00</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -183,7 +190,28 @@
                 </div>
             </section>
 
-            <!-- TAB 4: CIERRES DE TURNO -->
+            <!-- TAB 4: ÓRDENES DE COMPRA (PROVEEDORES) -->
+            <section id="bo-tab-purchases" class="space-y-4 hidden">
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4 max-w-xl">
+                    <h3 class="font-bold text-fig-dark text-sm"><i class="fa-solid fa-truck-ramp-box mr-1"></i> Recepción de Mercancía / Proveedores</h3>
+                    <p class="text-xs text-gray-500">Añade stock directamente al almacén al recibir pedidos bulk (tapioca, polvos, leches, hielo).</p>
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="font-bold block text-gray-700 mb-1">Seleccionar Insumo:</label>
+                            <select id="po-item-select" class="w-full p-2.5 border rounded-xl bg-gray-50 font-semibold outline-none"></select>
+                        </div>
+                        <div>
+                            <label class="font-bold block text-gray-700 mb-1">Cantidad a Sumar al Stock:</label>
+                            <input type="number" id="po-qty-input" placeholder="Ej. 2000 (g) o 5 (Litros)" class="w-full p-2.5 border rounded-xl outline-none">
+                        </div>
+                        <button onclick="receivePurchaseOrder()" class="w-full py-3 bg-fig-purple hover:bg-fig-dark text-white font-bold rounded-xl shadow transition">
+                            📥 Registrar Entrada al Almacén
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: CIERRES DE TURNO -->
             <section id="bo-tab-shifts" class="space-y-4 hidden">
                 <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4">
                     <h3 class="font-bold text-fig-dark text-sm">Historial de Cierres de Turno y Auditoría de Caja</h3>
@@ -193,7 +221,31 @@
                 </div>
             </section>
 
-            <!-- TAB 5: CONFIGURACIÓN -->
+            <!-- TAB 6: EMPLEADOS Y ACCESOS -->
+            <section id="bo-tab-employees" class="space-y-4 hidden">
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4 max-w-2xl">
+                    <h3 class="font-bold text-fig-dark text-sm">Lista de Empleados y Permisos de TPV</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-fig-cream/20 text-fig-dark border-b">
+                                    <th class="p-3 rounded-l-xl">Colaborador</th>
+                                    <th class="p-3">PIN de Acceso</th>
+                                    <th class="p-3 text-right rounded-r-xl">Rol / Nivel</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-xs">
+                                <tr><td class="p-3 font-bold">Izel Chacon</td><td class="p-3 font-mono">2107</td><td class="p-3 text-right font-bold text-fig-purple">Propietario (Acceso Total)</td></tr>
+                                <tr><td class="p-3 font-bold">Turno Mañana</td><td class="p-3 font-mono">0805</td><td class="p-3 text-right text-gray-600">Cajero Operativo</td></tr>
+                                <tr><td class="p-3 font-bold">Turno Tarde</td><td class="p-3 font-mono">3240</td><td class="p-3 text-right text-gray-600">Cajero Operativo</td></tr>
+                                <tr><td class="p-3 font-bold">Agustín / Nicolás / Chepis</td><td class="p-3 text-mono">Personal</td><td class="p-3 text-right text-emerald-600">Cortesías Autorizadas</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 7: CONFIGURACIÓN -->
             <section id="bo-tab-settings" class="space-y-4 hidden">
                 <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4 max-w-xl">
                     <h3 class="font-bold text-fig-dark text-sm">Configuración General del Sistema</h3>
@@ -206,6 +258,10 @@
                             <span>Cierres de caja por turnos:</span>
                             <span class="font-bold text-fig-purple">Habilitado (PIN Activo)</span>
                         </div>
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <span>Sincronización LocalStorage:</span>
+                            <span class="font-bold text-emerald-600">Activa (Conectado con TPV)</span>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -215,12 +271,14 @@
 
     <script>
         function switchBoTab(tabId) {
-            ['sales', 'items', 'inventory', 'shifts', 'settings'].forEach(t => {
-                document.getElementById(`bo-tab-${t}`).classList.add('hidden');
+            ['sales', 'items', 'inventory', 'purchases', 'shifts', 'employees', 'settings'].forEach(t => {
+                const sec = document.getElementById(`bo-tab-${t}`);
+                if(sec) sec.classList.add('hidden');
                 const btn = document.getElementById(`nav-${t}`);
                 if(btn) btn.className = "w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition";
             });
-            document.getElementById(`bo-tab-${tabId}`).classList.remove('hidden');
+            const activeSec = document.getElementById(`bo-tab-${tabId}`);
+            if(activeSec) activeSec.classList.remove('hidden');
             const activeBtn = document.getElementById(`nav-${tabId}`);
             if(activeBtn) activeBtn.className = "w-full flex items-center space-x-3 px-3 py-3 rounded-xl bg-fig-purple text-white transition shadow-sm";
 
@@ -228,7 +286,9 @@
                 sales: 'Resumen de ventas',
                 items: 'Lista de artículos',
                 inventory: 'Inventario avanzado',
+                purchases: 'Órdenes de Compra',
                 shifts: 'Cierres de Turno / Arqueos',
+                employees: 'Empleados y Accesos',
                 settings: 'Configuración'
             };
             document.getElementById('bo-header-title').innerText = titles[tabId];
@@ -236,6 +296,7 @@
             if(tabId === 'sales') loadSalesData();
             if(tabId === 'items') loadItemsData();
             if(tabId === 'inventory') loadInventoryData();
+            if(tabId === 'purchases') initPurchasesSelect();
             if(tabId === 'shifts') loadShiftsData();
         }
 
@@ -252,13 +313,13 @@
             let estimatedProfit = net * 0.75;
 
             document.getElementById('bo-gross-sales').innerText = `$${gross.toFixed(2)}`;
-            document.getElementById('bo-discounts').innerText = `-$${discounts.toFixed(2)}`;
+            document.getElementById('bo-cash-sales-card').innerText = `$${totalCash.toFixed(2)}`;
+            document.getElementById('bo-card-sales-card').innerText = `$${totalCard.toFixed(2)}`;
             document.getElementById('bo-net-sales').innerText = `$${net.toFixed(2)}`;
             document.getElementById('bo-gross-profit').innerText = `$${estimatedProfit.toFixed(2)}`;
 
-            document.getElementById('bo-table-gross').innerText = `$${gross.toFixed(2)}`;
-            document.getElementById('bo-table-desc').innerText = `-$${discounts.toFixed(2)}`;
-            document.getElementById('bo-table-net').innerText = `$${net.toFixed(2)}`;
+            document.getElementById('bo-payment-cash').innerText = `$${totalCash.toFixed(2)}`;
+            document.getElementById('bo-payment-card').innerText = `$${totalCard.toFixed(2)}`;
         }
 
         function loadItemsData() {
@@ -311,6 +372,33 @@
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        function initPurchasesSelect() {
+            const inventoryDB = JSON.parse(localStorage.getItem('boba_inventory_db')) || [];
+            const select = document.getElementById('po-item-select');
+            select.innerHTML = '';
+            inventoryDB.forEach((item, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = `${item.name} (Actual: ${item.stock} ${item.unit})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function receivePurchaseOrder() {
+            const idx = document.getElementById('po-item-select').value;
+            const qty = parseFloat(document.getElementById('po-qty-input').value);
+            if(isNaN(qty) || qty <= 0) return alert('Ingrese una cantidad válida.');
+            
+            let inventoryDB = JSON.parse(localStorage.getItem('boba_inventory_db')) || [];
+            if(inventoryDB[idx]) {
+                inventoryDB[idx].stock += qty;
+                localStorage.setItem('boba_inventory_db', JSON.stringify(inventoryDB));
+                document.getElementById('po-qty-input').value = '';
+                alert(`✅ ¡Entrada registrada con éxito! Stock actualizado para ${inventoryDB[idx].name}.`);
+                initPurchasesSelect();
+            }
         }
 
         function loadShiftsData() {
