@@ -70,7 +70,10 @@
                 <i class="fa-solid fa-store"></i> <span>Punto de Venta</span>
             </button>
             <button onclick="switchTab('shift')" id="nav-shift" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-sm font-semibold flex items-center space-x-1">
-                <i class="fa-solid fa-boxes-stacked"></i> <span>Caja e Inventario</span>
+                <i class="fa-solid fa-cash-register"></i> <span>Corte y Turno</span>
+            </button>
+            <button onclick="switchTab('inventory')" id="nav-inventory" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-sm font-semibold flex items-center space-x-1">
+                <i class="fa-solid fa-boxes-stacked"></i> <span>Inventario</span>
             </button>
         </nav>
 
@@ -105,7 +108,6 @@
                 </div>
 
                 <div class="flex-1 p-4 overflow-y-auto">
-                    <!-- AVISO DE PROMOS DE LA SEMANA -->
                     <div class="mb-4 bg-gradient-to-r from-pink-500 to-brand-lightpink text-white p-3 rounded-2xl shadow-sm flex items-center justify-between">
                         <div class="flex items-center space-x-2">
                             <i class="fa-solid fa-gift text-xl"></i>
@@ -117,7 +119,6 @@
                         <span id="day-indicator-badge" class="bg-white/20 px-2 py-1 rounded-lg text-[10px] font-bold">Hoy</span>
                     </div>
 
-                    <!-- CATEGORIES MAIN SCREEN -->
                     <div id="categories-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                         <div onclick="openCategoryProducts('temporada')" class="bg-amber-50 p-5 rounded-3xl border border-amber-200 shadow-sm hover:shadow-md hover:border-amber-400 transition flex flex-col items-center text-center cursor-pointer relative">
                             <span class="absolute top-2 right-2 bg-amber-200 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full">🍂 Otoño</span>
@@ -216,7 +217,6 @@
                     <button onclick="clearCart()" class="text-xs text-red-500 font-bold hover:underline">Vaciar</button>
                 </div>
 
-                <!-- SELECTOR DE UBICACIÓN Y HORA FELIZ -->
                 <div class="p-2 bg-amber-50 border-b border-amber-200 text-xs space-y-1">
                     <div class="flex justify-between items-center">
                         <span class="font-bold text-amber-800">Establecimiento:</span>
@@ -257,8 +257,68 @@
             </div>
         </section>
 
-        <!-- TAB SHIFT & INVENTORY -->
+        <!-- TAB 2: CORTE Y TURNO (ARQUEO DE CAJA) -->
         <section id="tab-shift" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
+            <div class="max-w-3xl mx-auto bg-white p-6 rounded-3xl shadow-sm space-y-6">
+                <div class="flex justify-between items-center border-b pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-cash-register text-brand-pink mr-2"></i> Módulo de Corte de Caja y Arqueo</h2>
+                        <p class="text-xs text-gray-500">Control de fondo inicial, ventas del turno y arqueo de efectivo.</p>
+                    </div>
+                    <span class="bg-pink-100 text-brand-pink text-xs font-bold px-3 py-1 rounded-xl">Turno Activo</span>
+                </div>
+
+                <!-- RESUMEN DE VENTAS DEL TURNO -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-pink-50 p-4 rounded-2xl border border-pink-100">
+                        <span class="text-xs text-gray-500 block">Ventas en Efectivo</span>
+                        <span id="shift-cash-sales" class="text-2xl font-bold text-brand-pink">$0.00</span>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-2xl border border-purple-100">
+                        <span class="text-xs text-gray-500 block">Ventas con Tarjeta</span>
+                        <span id="shift-card-sales" class="text-2xl font-bold text-purple-600">$0.00</span>
+                    </div>
+                    <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+                        <span class="text-xs text-gray-500 block">Venta Total del Turno</span>
+                        <span id="shift-total-sales" class="text-2xl font-bold text-emerald-700">$0.00</span>
+                    </div>
+                </div>
+
+                <!-- ARQUEO DE CAJA -->
+                <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
+                    <h3 class="font-bold text-sm text-gray-800"><i class="fa-solid fa-calculator mr-1"></i> Arqueo Físico de Caja</h3>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs font-bold text-gray-600 block mb-1">Fondo Inicial de Caja (Cambio):</label>
+                            <input type="number" id="initial-fund" value="500" onkeyup="calculateCashCut()" class="w-full p-2 border rounded-xl text-xs bg-white font-bold">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-600 block mb-1">Efectivo Físico Contado en Gaveta:</label>
+                            <input type="number" id="counted-cash" placeholder="Ej. 1250" onkeyup="calculateCashCut()" class="w-full p-2 border rounded-xl text-xs bg-white font-bold text-brand-pink">
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-xl border flex justify-between items-center">
+                        <div>
+                            <p class="text-xs text-gray-500">Efectivo Teórico Esperado (Fondo + Ventas Cash):</p>
+                            <p id="expected-cash-display" class="font-bold text-sm text-gray-800">$500.00</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-gray-500">Diferencia / Resultado:</p>
+                            <p id="cut-difference-display" class="font-bold text-base text-gray-700">$0.00</p>
+                        </div>
+                    </div>
+
+                    <button onclick="performShiftCut()" class="w-full py-3 bg-brand-pink hover:bg-pink-600 text-white font-bold rounded-xl text-xs shadow transition">
+                        🔒 Realizar y Registrar Corte de Caja
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: INVENTARIO -->
+        <section id="tab-inventory" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
             <div class="max-w-3xl mx-auto bg-white p-5 rounded-3xl shadow-sm space-y-5">
                 <div class="flex justify-between items-center border-b pb-3">
                     <div>
@@ -270,7 +330,6 @@
                     </button>
                 </div>
 
-                <!-- SECCIÓN DUEÑO: AÑADIR NUEVO INSUMO -->
                 <div id="owner-add-section" class="bg-pink-50 p-4 rounded-2xl border border-pink-200 space-y-3">
                     <h3 class="font-bold text-xs text-brand-pink uppercase tracking-wide">➕ Añadir Nuevo Insumo al Almacén</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -281,7 +340,6 @@
                     <button onclick="addNewInventoryItem()" class="w-full py-2 bg-brand-pink text-white font-bold rounded-xl text-xs shadow">Guardar Nuevo Insumo</button>
                 </div>
 
-                <!-- TABLA DE INVENTARIO -->
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead>
@@ -289,21 +347,11 @@
                                 <th class="p-3 rounded-l-xl">Insumo / Artículo</th>
                                 <th class="p-3">Stock Actual</th>
                                 <th class="p-3">Unidad</th>
-                                <th class="p-3 rounded-r-xl text-center">Acciones / Rectificación</th>
+                                <th class="p-3 rounded-r-xl text-center">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="inventory-table-body" class="divide-y divide-gray-100">
-                            <!-- Dinámico -->
-                        </tbody>
+                        <tbody id="inventory-table-body" class="divide-y divide-gray-100"></tbody>
                     </table>
-                </div>
-
-                <div class="border-t pt-4 space-y-3">
-                    <h3 class="font-bold text-xs text-gray-700">Configuración de Impresora IP</h3>
-                    <div class="flex space-x-2">
-                        <input type="text" id="printer-ip-input" value="192.168.1.200" placeholder="Ej. 192.168.1.200" class="flex-1 p-2 border rounded-xl text-xs font-mono">
-                        <button onclick="savePrinterIP()" class="px-4 py-2 bg-purple-600 text-white font-bold rounded-xl text-xs">Guardar IP</button>
-                    </div>
                 </div>
             </div>
         </section>
@@ -320,7 +368,6 @@
                 <button onclick="closeCustomModal()" class="text-gray-400 font-bold">✕</button>
             </div>
 
-            <!-- TOPPING INCLUIDO (BASE) -->
             <div id="base-topping-section" style="display: none;">
                 <label class="text-xs font-bold block mb-1 text-gray-700">Topping Incluido:</label>
                 <select id="modal-base-topping-select" class="w-full p-2 border rounded-xl text-xs bg-gray-50 font-semibold">
@@ -334,7 +381,6 @@
                 </select>
             </div>
 
-            <!-- AZÚCAR -->
             <div id="sugar-section" style="display: none;">
                 <label class="text-xs font-bold block mb-1 text-gray-700">Nivel de Azúcar:</label>
                 <div class="grid grid-cols-4 gap-1">
@@ -345,7 +391,6 @@
                 </div>
             </div>
 
-            <!-- HIELO -->
             <div id="ice-section" style="display: none;">
                 <label class="text-xs font-bold block mb-1 text-gray-700">Nivel de Hielo:</label>
                 <div class="grid grid-cols-3 gap-1">
@@ -355,7 +400,6 @@
                 </div>
             </div>
 
-            <!-- TOPPINGS EXTRAS (+$10) -->
             <div id="extra-toppings-section" style="display: none;">
                 <label class="text-xs font-bold block mb-1 text-gray-700">Toppings Extras (+$10 c/u):</label>
                 <div class="grid grid-cols-2 gap-2 text-xs">
@@ -475,12 +519,17 @@
     </div>
 
     <script>
-        let PRINTER_IP = "192.168.1.200";
         let selectedPaymentMethod = 'efectivo';
         let orderCounter = 1;
         let isOwnerMode = true;
 
-        // INVENTARIO ACTUALIZADO CON TUS LIBRETAS (Jarabes, Líquidos y Polvos)
+        // Acumuladores de Turno / Corte
+        let shiftData = {
+            cashSales: 0,
+            cardSales: 0,
+            totalSales: 0
+        };
+
         let inventoryDB = [
             { id: 1, name: 'Jarabe Avellana', stock: 2, unit: 'Litros' },
             { id: 2, name: 'Jarabe Mora', stock: 2, unit: 'Litros' },
@@ -521,6 +570,7 @@
             document.getElementById("daily-promo-banner").innerText = dailyPromos[todayDayIndex] || "¡Disfruta tus bebidas!";
             document.getElementById("order-id-display").innerText = String(orderCounter).padStart(4, '0');
             renderInventoryTable();
+            updateShiftDisplay();
         });
 
         const productsDB = [
@@ -625,10 +675,13 @@
         let discountVal = 0;
 
         function switchTab(id) {
-            ['pos', 'shift'].forEach(t => {
+            ['pos', 'shift', 'inventory'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
             });
             document.getElementById(`tab-${id}`).classList.remove('hidden');
+            if(id === 'shift') {
+                updateShiftDisplay();
+            }
         }
 
         function toggleOwnerMode() {
@@ -639,6 +692,44 @@
             renderInventoryTable();
         }
 
+        function updateShiftDisplay() {
+            document.getElementById('shift-cash-sales').innerText = `$${shiftData.cashSales.toFixed(2)}`;
+            document.getElementById('shift-card-sales').innerText = `$${shiftData.cardSales.toFixed(2)}`;
+            document.getElementById('shift-total-sales').innerText = `$${shiftData.totalSales.toFixed(2)}`;
+            calculateCashCut();
+        }
+
+        function calculateCashCut() {
+            const fund = parseFloat(document.getElementById('initial-fund').value) || 0;
+            const counted = parseFloat(document.getElementById('counted-cash').value) || 0;
+            const expected = fund + shiftData.cashSales;
+            const diff = counted - expected;
+
+            document.getElementById('expected-cash-display').innerText = `$${expected.toFixed(2)}`;
+            const diffDisplay = document.getElementById('cut-difference-display');
+            
+            if (diff === 0) {
+                diffDisplay.innerText = `$0.00 (Exacto ✅)`;
+                diffDisplay.className = "font-bold text-base text-emerald-600";
+            } else if (diff > 0) {
+                diffDisplay.innerText = `+$${diff.toFixed(2)} (Sobrante ⚠️)`;
+                diffDisplay.className = "font-bold text-base text-blue-600";
+            } else {
+                diffDisplay.innerText = `-$${Math.abs(diff).toFixed(2)} (Faltante ❌)`;
+                diffDisplay.className = "font-bold text-base text-red-600";
+            }
+        }
+
+        function performShiftCut() {
+            if(confirm('¿Deseas cerrar y registrar el corte de caja de este turno?')) {
+                alert('¡Corte de caja registrado con éxito!');
+                shiftData = { cashSales: 0, cardSales: 0, totalSales: 0 };
+                document.getElementById('counted-cash').value = '';
+                updateShiftDisplay();
+                switchTab('pos');
+            }
+        }
+
         function renderInventoryTable() {
             const tbody = document.getElementById('inventory-table-body');
             tbody.innerHTML = '';
@@ -647,9 +738,7 @@
                 tr.className = "border-b hover:bg-gray-50";
                 tr.innerHTML = `
                     <td class="p-3 font-bold text-gray-800">${item.name}</td>
-                    <td class="p-3">
-                        <input type="number" id="stock-input-${idx}" value="${item.stock}" ${isOwnerMode ? '' : 'readonly'} class="w-20 p-1 border rounded-lg text-xs font-bold ${isOwnerMode ? 'bg-white' : 'bg-gray-100 text-gray-600'}">
-                    </td>
+                    <td class="p-3"><input type="number" id="stock-input-${idx}" value="${item.stock}" ${isOwnerMode ? '' : 'readonly'} class="w-20 p-1 border rounded-lg text-xs font-bold ${isOwnerMode ? 'bg-white' : 'bg-gray-100 text-gray-600'}"></td>
                     <td class="p-3 text-gray-500">${item.unit}</td>
                     <td class="p-3 text-center space-x-1">
                         ${isOwnerMode ? `
@@ -668,38 +757,244 @@
             const name = document.getElementById('new-item-name').value;
             const stock = parseFloat(document.getElementById('new-item-stock').value);
             const unit = document.getElementById('new-item-unit').value;
-            if(!name || isNaN(stock) || !unit) return alert('Por favor llena todos los campos del insumo.');
+            if(!name || isNaN(stock) || !unit) return alert('Por favor llena todos los campos.');
             inventoryDB.push({ id: Date.now(), name, stock, unit });
             document.getElementById('new-item-name').value = '';
             document.getElementById('new-item-stock').value = '';
             document.getElementById('new-item-unit').value = '';
             renderInventoryTable();
-            alert('¡Insumo añadido con éxito!');
+            alert('¡Insumo añadido!');
         }
 
         function updateStockOwner(idx) {
             const val = parseFloat(document.getElementById(`stock-input-${idx}`).value);
-            if(isNaN(val)) return alert('Ingresa un valor válido');
+            if(isNaN(val)) return alert('Valor inválido');
             inventoryDB[idx].stock = val;
-            alert('¡Stock actualizado por la dueña!');
+            alert('¡Actualizado!');
             renderInventoryTable();
         }
 
         function deleteInventoryItem(idx) {
-            if(confirm('¿Eliminar este insumo del sistema?')) {
-                inventoryDB.splice(idx, 1);
-                renderInventoryTable();
-            }
+            if(confirm('¿Eliminar insumo?')) { inventoryDB.splice(idx, 1); renderInventoryTable(); }
         }
 
         function rectifyStockEmployee(idx) {
             const val = parseFloat(document.getElementById(`stock-input-${idx}`).value);
-            if(isNaN(val)) return alert('Ingresa un valor válido');
+            if(isNaN(val)) return alert('Valor inválido');
             inventoryDB[idx].stock = val;
-            alert('¡Conteo rectificado exitosamente!');
+            alert('¡Rectificado!');
             renderInventoryTable();
         }
 
         function openCategoryProducts(cat) {
             document.getElementById('categories-grid').classList.add('hidden');
-            document.getElementById('products-desglose-
+            document.getElementById('products-desglose-grid').classList.remove('hidden');
+            document.getElementById('btn-back-categories').classList.remove('hidden');
+            document.getElementById('current-view-title').innerText = `Menú: ${cat.toUpperCase()}`;
+            
+            const grid = document.getElementById('products-desglose-grid');
+            grid.innerHTML = '';
+            
+            const filtered = productsDB.filter(p => p.category === cat);
+            filtered.forEach(p => {
+                const div = document.createElement('div');
+                div.className = "bg-white p-3 rounded-2xl border border-gray-100 shadow-sm hover:border-pink-300 transition cursor-pointer flex flex-col justify-between";
+                div.onclick = () => openCustomModal(p);
+                div.innerHTML = `
+                    <h4 class="font-bold text-xs text-gray-800">${p.name}</h4>
+                    <div class="mt-2 flex justify-between items-center pt-2 border-t">
+                        <span class="font-bold text-brand-pink text-xs">$${p.price.toFixed(2)}</span>
+                        <span class="w-5 h-5 rounded-full bg-pink-100 text-brand-pink font-bold flex items-center justify-center text-xs">+</span>
+                    </div>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function showCategoriesView() {
+            document.getElementById('categories-grid').classList.remove('hidden');
+            document.getElementById('products-desglose-grid').classList.add('hidden');
+            document.getElementById('btn-back-categories').classList.add('hidden');
+            document.getElementById('current-view-title').innerText = 'Categorías del Menú';
+        }
+
+        function openCustomModal(product) {
+            activeProduct = product;
+            document.getElementById('modal-product-name').innerText = product.name;
+            document.getElementById('modal-product-price-tag').innerText = `$${product.price.toFixed(2)}`;
+            
+            const cat = product.category;
+            document.getElementById('sugar-section').style.display = ['cafe_frio', 'cafe_caliente', 'temporada'].includes(cat) ? 'block' : 'none';
+            document.getElementById('ice-section').style.display = ['soda', 'cafe_frio', 'tizana', 'temporada'].includes(cat) ? 'block' : 'none';
+            document.getElementById('base-topping-section').style.display = ['boba', 'xolot', 'soda', 'temporada'].includes(cat) ? 'block' : 'none';
+            document.getElementById('extra-toppings-section').style.display = ['boba', 'xolot', 'soda', 'frappe', 'smoothie', 'temporada'].includes(cat) ? 'block' : 'none';
+
+            document.querySelectorAll('.extra-cb').forEach(cb => cb.checked = false);
+            updateModalTotal();
+            document.getElementById('custom-modal').classList.remove('hidden');
+        }
+
+        function selectOpt(btn, group) {
+            document.querySelectorAll(`.opt-${group}`).forEach(b => b.classList.remove('bg-pink-50', 'text-brand-pink', 'border-brand-pink', 'font-bold'));
+            btn.classList.add('bg-pink-50', 'text-brand-pink', 'border-brand-pink', 'font-bold');
+        }
+
+        function updateModalTotal() {
+            if (!activeProduct) return;
+            let total = activeProduct.price;
+            document.querySelectorAll('.extra-cb:checked').forEach(cb => total += parseFloat(cb.dataset.price));
+            document.getElementById('modal-calculated-total').innerText = `$${total.toFixed(2)}`;
+        }
+
+        function closeCustomModal() { document.getElementById('custom-modal').classList.add('hidden'); }
+
+        function confirmCustomProductAdd() {
+            if (!activeProduct) return;
+            let finalPrice = activeProduct.price;
+            let optionsArr = [];
+
+            if (['boba', 'xolot', 'soda', 'temporada'].includes(activeProduct.category)) {
+                optionsArr.push(`Topping: ${document.getElementById('modal-base-topping-select').value}`);
+            }
+
+            document.querySelectorAll('.extra-cb:checked').forEach(cb => {
+                finalPrice += parseFloat(cb.dataset.price);
+                optionsArr.push(cb.value);
+            });
+
+            currentCart.push({ name: activeProduct.name, price: finalPrice, category: activeProduct.category, options: optionsArr.join(' • ') });
+            closeCustomModal();
+            renderCart();
+        }
+
+        function applyEcoDiscount() {
+            discountVal = discountVal === 10 ? 0 : 10;
+            const btnEco = document.getElementById('btn-eco-discount');
+            btnEco.className = discountVal > 0 ? "px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-xl border border-emerald-700 shadow-sm" : "px-3 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-300 shadow-sm";
+            renderCart();
+        }
+
+        function checkAndToggleHappyHour(checkbox) {
+            if (new Date().getHours() < 20) {
+                alert("⚠️ Aún no es la Hora Feliz (8 PM - 9 PM).");
+                checkbox.checked = false;
+            }
+            renderCart();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            const storeLocation = document.getElementById('store-location').value;
+            const isHappyHour = document.getElementById('happy-hour-toggle').checked;
+
+            if (currentCart.length === 0) {
+                container.innerHTML = `<div id="empty-cart-msg" class="h-full flex flex-col items-center justify-center text-gray-400 py-12"><i class="fa-solid fa-basket-shopping text-4xl mb-2 text-gray-300"></i><p class="text-xs font-medium">Carrito vacío.</p></div>`;
+                document.getElementById('cart-subtotal').innerText = '$0.00';
+                document.getElementById('cart-discount').innerText = '-$0.00';
+                document.getElementById('cart-total').innerText = '$0.00';
+                return;
+            }
+
+            container.innerHTML = '';
+            let subtotal = 0, happyHourDiscount = 0;
+
+            currentCart.forEach((item, idx) => {
+                let itemPrice = item.price;
+                let isFree = (storeLocation === 'fortuna' && isHappyHour && item.category === 'fortuna');
+                if (isFree) { happyHourDiscount += itemPrice; itemPrice = 0; }
+
+                subtotal += item.price;
+                const div = document.createElement('div');
+                div.className = "p-2 bg-gray-50 border rounded-xl flex justify-between items-center text-xs";
+                div.innerHTML = `
+                    <div>
+                        <p class="font-bold text-gray-800">${item.name} ${isFree ? '<span class="text-amber-600 font-bold">(¡Gratis!)</span>' : ''}</p>
+                        ${item.options ? `<p class="text-[10px] text-gray-400">${item.options}</p>` : ''}
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-bold text-gray-700">$${itemPrice.toFixed(2)}</span>
+                        <button onclick="currentCart.splice(${idx},1); renderCart();" class="text-red-500 font-bold">✕</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            let totalDiscount = discountVal + happyHourDiscount;
+            let finalTotal = Math.max(0, subtotal - totalDiscount);
+
+            document.getElementById('cart-subtotal').innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById('cart-discount').innerText = `-$${totalDiscount.toFixed(2)}`;
+            document.getElementById('cart-total').innerText = `$${finalTotal.toFixed(2)}`;
+        }
+
+        function clearCart() { currentCart = []; discountVal = 0; renderCart(); }
+
+        function setPaymentMethod(method) {
+            selectedPaymentMethod = method;
+            document.getElementById('btn-pay-cash').className = method === 'efectivo' ? "py-2.5 bg-brand-pink text-white font-bold rounded-xl text-xs shadow transition" : "py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition";
+            document.getElementById('btn-pay-card').className = method === 'tarjeta' ? "py-2.5 bg-purple-600 text-white font-bold rounded-xl text-xs shadow transition" : "py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition";
+            document.getElementById('cash-payment-section').classList.toggle('hidden', method !== 'efectivo');
+            document.getElementById('card-payment-section').classList.toggle('hidden', method !== 'tarjeta');
+        }
+
+        function openCheckoutModal() {
+            if (currentCart.length === 0) return alert('El carrito está vacío');
+            document.getElementById('checkout-total-display').innerText = document.getElementById('cart-total').innerText;
+            document.getElementById('cash-received-input').value = '';
+            document.getElementById('cash-change-display').innerText = '$0.00';
+            setPaymentMethod('efectivo');
+            document.getElementById('checkout-modal').classList.remove('hidden');
+        }
+
+        function closeCheckoutModal() { document.getElementById('checkout-modal').classList.add('hidden'); }
+
+        function calculateChange() {
+            const total = parseFloat(document.getElementById('checkout-total-display').innerText.replace('$','')) || 0;
+            const rec = parseFloat(document.getElementById('cash-received-input').value || 0);
+            document.getElementById('cash-change-display').innerText = `$${Math.max(0, rec - total).toFixed(2)}`;
+        }
+
+        function processFinalPayment() {
+            const total = parseFloat(document.getElementById('checkout-total-display').innerText.replace('$','')) || 0;
+            if (selectedPaymentMethod === 'efectivo') {
+                const rec = parseFloat(document.getElementById('cash-received-input').value || 0);
+                if (rec < total) return alert('Efectivo menor al total.');
+            }
+
+            // Registrar venta en el turno
+            if (selectedPaymentMethod === 'efectivo') {
+                shiftData.cashSales += total;
+            } else {
+                shiftData.cardSales += total;
+            }
+            shiftData.totalSales += total;
+
+            document.getElementById('rec-order-num').innerText = document.getElementById('order-id-display').innerText;
+            document.getElementById('rec-order-mode').innerText = document.getElementById('order-mode').options[document.getElementById('order-mode').selectedIndex].text;
+            document.getElementById('receipt-date').innerText = new Date().toLocaleString();
+            document.getElementById('rec-subtotal').innerText = document.getElementById('cart-subtotal').innerText;
+            document.getElementById('rec-discount').innerText = document.getElementById('cart-discount').innerText;
+            document.getElementById('rec-total').innerText = document.getElementById('cart-total').innerText;
+            document.getElementById('rec-payment').innerText = selectedPaymentMethod.toUpperCase();
+
+            const recItemsList = document.getElementById('rec-items-list');
+            recItemsList.innerHTML = '';
+            currentCart.forEach(item => {
+                const p = document.createElement('div');
+                p.className = "flex justify-between text-[10px]";
+                p.innerHTML = `<span>1x ${item.name}</span><span>$${item.price.toFixed(2)}</span>`;
+                recItemsList.appendChild(p);
+            });
+
+            document.getElementById('checkout-modal').classList.add('hidden');
+            document.getElementById('receipt-modal').classList.remove('hidden');
+
+            orderCounter++;
+            document.getElementById('order-id-display').innerText = String(orderCounter).padStart(4, '0');
+        }
+
+        function printReceiptTicket() { window.print(); }
+        function closeReceiptModal() { document.getElementById('receipt-modal').classList.add('hidden'); clearCart(); }
+    </script>
+</body>
+</html>
