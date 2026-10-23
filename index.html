@@ -524,7 +524,7 @@
 
         let shiftData = { cashSales: 0, cardSales: 0, totalSales: 0 };
 
-        // INVENTARIO INTEGRADO CON JARABES, POLVOS, PERLAS EXPLOSIVAS, LÁCTEOS Y DESECHABLES DE TUS LIBRETAS
+        // INVENTARIO ACTUALIZADO CON TUS DATOS EXACTOS
         let inventoryDB = [
             { key: 'avellana', name: 'Jarabe Avellana', stock: 2000, unit: 'ml' },
             { key: 'mora', name: 'Jarabe Mora', stock: 2000, unit: 'ml' },
@@ -548,8 +548,8 @@
             { key: 'moka', name: 'Moka', stock: 507, unit: 'g' },
             { key: 'matcha', name: 'Matcha', stock: 916, unit: 'g' },
             { key: 'chai_latte', name: 'Chai Latte', stock: 854, unit: 'g' },
-            // NUEVOS INSUMOS DE LIBRETAS
-            { key: 'pop_mora', name: 'Perlas Explosivas Mora Azul', stock: 1521, unit: 'g' },
+            // PERLAS EXPLOSIVAS Y OTROS
+            { key: 'pop_mora', name: 'Perlas Explosivas Mora Azul', stock: 1785, unit: 'g' },
             { key: 'pop_fresa', name: 'Perlas Explosivas Fresa', stock: 2380, unit: 'g' },
             { key: 'pop_arcoiris', name: 'Perlas Explosivas Arcoíris', stock: 900, unit: 'g' },
             { key: 'yogurth_boba', name: 'Yogurth', stock: 1200, unit: 'g' },
@@ -558,11 +558,29 @@
             { key: 'leche', name: 'Leche', stock: 3, unit: 'Litros' },
             { key: 'grano_cafe', name: 'Grano de Café', stock: 747, unit: 'g' },
             { key: 'galleta_oreo', name: 'Galleta Oreo', stock: 21, unit: 'pzas' },
+            { key: 'tizana_fresa_kiwi', name: 'Tizana Fresa Kiwi', stock: 191, unit: 'g' },
+            { key: 'tizana_mora', name: 'Tizana Mora', stock: 188, unit: 'g' },
+            // VASOS
+            { key: 'vaso_boba', name: 'Vasos Boba', stock: 83, unit: 'pzas' },
+            { key: 'vaso_frappe', name: 'Vasos Frappé', stock: 33, unit: 'pzas' },
+            { key: 'vaso_smoothie', name: 'Vasos Smoothie', stock: 33, unit: 'pzas' },
+            { key: 'vaso_soda', name: 'Vasos Soda Italiana', stock: 31, unit: 'pzas' },
+            { key: 'vaso_especial', name: 'Vasos Especial', stock: 29, unit: 'pzas' },
+            { key: 'vaso_cafe_frio', name: 'Vasos Café Frío', stock: 21, unit: 'pzas' },
+            { key: 'vaso_cafe_12oz', name: 'Vasos Café Caliente 12 oz', stock: 16, unit: 'pzas' },
+            { key: 'vaso_cafe_16oz', name: 'Vasos Café Caliente 16 oz', stock: 42, unit: 'pzas' },
+            { key: 'vaso_michelada', name: 'Vasos Michelada', stock: 89, unit: 'pzas' },
+            { key: 'vaso_helado_chico', name: 'Vaso Helado Chico', stock: 16, unit: 'pzas' },
+            { key: 'vaso_helado_grande', name: 'Vaso Helado Grande', stock: 20, unit: 'pzas' },
+            // TAPAS
             { key: 'tapa_caliente', name: 'Tapas Café Caliente', stock: 98, unit: 'pzas' },
-            { key: 'tapa_frio', name: 'Tapas Café Frío / Especial', stock: 48, unit: 'pzas' },
+            { key: 'tapa_frio_especial', name: 'Tapas Café Frío / Especial', stock: 48, unit: 'pzas' },
             { key: 'tapa_frappe', name: 'Tapas Frappé', stock: 170, unit: 'pzas' },
-            { key: 'vaso_grande', name: 'Vasos Clado Grande', stock: 20, unit: 'pzas' },
-            { key: 'vaso_chico', name: 'Vasos Clado Chico', stock: 76, unit: 'pzas' }
+            { key: 'tapa_bowl_grande', name: 'Tapas Bowl Grande', stock: 12, unit: 'pzas' },
+            // PLATOS
+            { key: 'plato_bowl_grande', name: 'Platos Bowl Grande', stock: 12, unit: 'pzas' },
+            { key: 'plato_bowl_chico', name: 'Platos Bowl Chico', stock: 11, unit: 'pzas' },
+            { key: 'plato_pastel', name: 'Platos Pastel Cheesecake', stock: 19, unit: 'pzas' }
         ];
 
         const recipeMapping = {
@@ -1006,7 +1024,6 @@
             }
             shiftData.totalSales += total;
 
-            // APLICAR ESCANDALLO AUTOMÁTICO
             currentCart.forEach(item => {
                 const receta = recipeMapping[item.name];
                 if (receta) {
