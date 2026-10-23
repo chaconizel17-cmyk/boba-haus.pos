@@ -72,7 +72,7 @@
         </div>
 
         <div class="p-3 border-t border-gray-800 text-[11px] text-gray-500 text-center">
-            Boba Haus POS v3.6
+            Boba Haus POS v3.7
         </div>
     </aside>
 
@@ -262,7 +262,7 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 pt-1">
-                            <button onclick="openCheckoutModal()" class="py-2.5 bg-brand-pink hover:bg-pink-600 text-white rounded-xl font-bold text-xs shadow transition col-span-2">
+                            <button onclick="openCheckoutModal()" class="py-2.5 bg-brand-pink hover:bg-pink-600 text-white font-bold rounded-xl text-xs shadow transition col-span-2">
                                 💵 Cobrar Pedido
                             </button>
                             <button onclick="openStaffModal()" class="py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs shadow transition col-span-2">
@@ -273,17 +273,20 @@
                 </div>
             </section>
 
-            <!-- TAB 2: CORTE Y TURNO -->
+            <!-- TAB 2: CORTE Y TURNO (CON BOTONES DE ABRIR Y CERRAR TURNO + HISTORIAL) -->
             <section id="tab-shift" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
                 <div class="max-w-3xl mx-auto bg-white p-6 rounded-3xl shadow-sm space-y-6">
                     <div class="flex justify-between items-center border-b pb-4">
                         <div>
                             <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-cash-register text-brand-pink mr-2"></i> Gestión de Tesorería y Turno</h2>
-                            <p class="text-xs text-gray-500">Control de fondo inicial, cajón de efectivo, ventas netas y cierre.</p>
+                            <p class="text-xs text-gray-500">Control de fondo inicial, cajón de efectivo, ventas netas, apertura y cierre.</p>
                         </div>
                         <div class="space-x-2">
-                            <button onclick="openTurnModal()" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow hover:bg-emerald-700 transition">
-                                <i class="fa-solid fa-play mr-1"></i> Abrir / Cerrar Turno
+                            <button onclick="openTurnModal()" class="px-3 py-2 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow hover:bg-emerald-700 transition">
+                                <i class="fa-solid fa-play mr-1"></i> Abrir Turno
+                            </button>
+                            <button onclick="openCloseTurnModal()" class="px-3 py-2 bg-red-600 text-white font-bold rounded-xl text-xs shadow hover:bg-red-700 transition">
+                                <i class="fa-solid fa-stop mr-1"></i> Cerrar Turno
                             </button>
                         </div>
                     </div>
@@ -322,6 +325,14 @@
                         </div>
                         <div id="expenses-list-container" class="space-y-1 text-xs text-gray-600 pt-1">
                             <p class="text-[11px] italic text-gray-400">No hay gastos registrados en este turno.</p>
+                        </div>
+                    </div>
+
+                    <!-- HISTORIAL DE TURNOS ANTERIORES -->
+                    <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-3">
+                        <h3 class="font-bold text-sm text-gray-800"><i class="fa-solid history mr-1 text-brand-pink"></i> Historial de Cierres de Turno</h3>
+                        <div id="shift-history-container" class="space-y-2 text-xs">
+                            <p class="text-gray-400 italic">No hay turnos cerrados registrados todavía en este historial.</p>
                         </div>
                     </div>
                 </div>
@@ -369,7 +380,7 @@
         </div>
     </main>
 
-    <!-- MODAL: CORTESÍA PERSONAL (IZEL, AGUSTÍN, NICOLÁS, CHEPIS, CLEMENTITO) -->
+    <!-- MODAL: CORTESÍA PERSONAL -->
     <div id="staff-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
             <h3 class="font-bold text-base text-gray-800 text-center">🎁 Registrar Consumo de Personal</h3>
@@ -391,6 +402,37 @@
                     Registrar y Descontar
                 </button>
                 <button onclick="closeStaffModal()" class="py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl text-xs transition">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: CIERRE DE TURNO Y ARQUEO -->
+    <div id="close-turn-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <h3 class="font-bold text-base text-gray-800 text-center">🔒 Cierre de Turno y Arqueo de Caja</h3>
+            <p class="text-xs text-gray-500 text-center">Cuenta el efectivo físico en gaveta para validar sobrantes o faltantes.</p>
+            
+            <div class="bg-gray-50 p-3 rounded-xl space-y-2 text-xs">
+                <div class="flex justify-between"><span>Efectivo Teórico Esperado:</span><strong id="close-expected-cash" class="text-brand-pink">$0.00</strong></div>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-gray-700 block">Efectivo Físico Contado en Gaveta:</label>
+                <input type="number" id="close-counted-cash" placeholder="Ej. 1250" onkeyup="calculateCloseDifference()" class="w-full p-3 border rounded-xl text-base font-bold text-center text-brand-pink outline-none">
+            </div>
+
+            <div class="bg-emerald-50 p-3 rounded-xl text-center">
+                <span class="text-xs text-emerald-700 block">Diferencia / Resultado:</span>
+                <span id="close-diff-display" class="text-base font-bold text-emerald-700">$0.00</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-2">
+                <button onclick="confirmCloseTurn()" class="py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs shadow transition">
+                    Confirmar Cierre de Turno
+                </button>
+                <button onclick="closeCloseTurnModal()" class="py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl text-xs transition">
                     Cancelar
                 </button>
             </div>
@@ -618,6 +660,7 @@
         let currentPinInput = "";
         let initialFund = 500;
         let shiftOpen = false;
+        let shiftHistory = [];
 
         let shiftData = { cashSales: 0, cardSales: 0, totalSales: 0, expenses: [] };
 
@@ -1001,6 +1044,94 @@
             closeTurnModal();
             updateTreasuryDisplay();
             alert('¡Turno abierto con éxito!');
+        }
+
+        // FUNCIONES DE CIERRE DE TURNO Y ARQUEO
+        function openCloseTurnModal() {
+            if(!shiftOpen) return alert('No hay ningún turno abierto actualmente.');
+            let totalExpenses = shiftData.expenses.reduce((sum, e) => sum + e.amount, 0);
+            let expectedCash = initialFund + shiftData.cashSales - totalExpenses;
+            document.getElementById('close-expected-cash').innerText = `$${expectedCash.toFixed(2)}`;
+            document.getElementById('close-counted-cash').value = '';
+            document.getElementById('close-diff-display').innerText = '$0.00';
+            document.getElementById('close-turn-modal').classList.remove('hidden');
+        }
+
+        function closeCloseTurnModal() {
+            document.getElementById('close-turn-modal').classList.add('hidden');
+        }
+
+        function calculateCloseDifference() {
+            let totalExpenses = shiftData.expenses.reduce((sum, e) => sum + e.amount, 0);
+            let expectedCash = initialFund + shiftData.cashSales - totalExpenses;
+            let counted = parseFloat(document.getElementById('close-counted-cash').value) || 0;
+            let diff = counted - expectedCash;
+            let diffDisplay = document.getElementById('close-diff-display');
+
+            if (diff === 0) {
+                diffDisplay.innerText = `$0.00 (Exacto ✅)`;
+                diffDisplay.className = "text-base font-bold text-emerald-600";
+            } else if (diff > 0) {
+                diffDisplay.innerText = `+$${diff.toFixed(2)} (Sobrante ⚠️)`;
+                diffDisplay.className = "text-base font-bold text-blue-600";
+            } else {
+                diffDisplay.innerText = `-$${Math.abs(diff).toFixed(2)} (Faltante ❌)`;
+                diffDisplay.className = "text-base font-bold text-red-600";
+            }
+        }
+
+        function confirmCloseTurn() {
+            let totalExpenses = shiftData.expenses.reduce((sum, e) => sum + e.amount, 0);
+            let expectedCash = initialFund + shiftData.cashSales - totalExpenses;
+            let counted = parseFloat(document.getElementById('close-counted-cash').value) || 0;
+            let diff = counted - expectedCash;
+
+            // Guardar en historial
+            shiftHistory.unshift({
+                date: new Date().toLocaleString(),
+                fund: initialFund,
+                cashSales: shiftData.cashSales,
+                cardSales: shiftData.cardSales,
+                expenses: totalExpenses,
+                expected: expectedCash,
+                counted: counted,
+                diff: diff
+            });
+
+            // Limpiar turno y cerrar
+            shiftOpen = false;
+            shiftData = { cashSales: 0, cardSales: 0, totalSales: 0, expenses: [] };
+            document.getElementById('header-turn-status').innerText = "Turno Cerrado";
+            closeCloseTurnModal();
+            updateTreasuryDisplay();
+            renderShiftHistory();
+            alert('🔒 ¡Turno cerrado y guardado en el historial con éxito!');
+        }
+
+        function renderShiftHistory() {
+            const container = document.getElementById('shift-history-container');
+            if (shiftHistory.length === 0) {
+                container.innerHTML = `<p class="text-gray-400 italic">No hay turnos cerrados registrados todavía en este historial.</p>`;
+                return;
+            }
+            container.innerHTML = '';
+            shiftHistory.forEach((sh, idx) => {
+                const div = document.createElement('div');
+                div.className = "p-3 bg-white border rounded-xl space-y-1 shadow-sm";
+                div.innerHTML = `
+                    <div class="flex justify-between font-bold text-gray-800">
+                        <span>Cierre #${shiftHistory.length - idx} (${sh.date})</span>
+                        <span class="text-brand-pink">Netas: $${(sh.cashSales + sh.cardSales - sh.expenses).toFixed(2)}</span>
+                    </div>
+                    <div class="grid grid-cols-2 text-gray-600 text-[11px]">
+                        <span>Fondo inicial: $${sh.fund.toFixed(2)}</span>
+                        <span>Ventas Cash: $${sh.cashSales.toFixed(2)}</span>
+                        <span>Gastos turno: $${sh.expenses.toFixed(2)}</span>
+                        <span class="${sh.diff === 0 ? 'text-emerald-600 font-bold' : sh.diff > 0 ? 'text-blue-600 font-bold' : 'text-red-600 font-bold'}">Dif: $${sh.diff.toFixed(2)}</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
         }
 
         function registerExpense() {
