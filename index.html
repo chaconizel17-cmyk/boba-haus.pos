@@ -334,7 +334,7 @@
                         <input type="text" id="new-item-key" placeholder="Clave id (ej. taro)" class="p-2 border rounded-xl text-xs bg-white">
                         <input type="text" id="new-item-name" placeholder="Nombre (Ej. Polvo Taro)" class="p-2 border rounded-xl text-xs bg-white">
                         <input type="number" id="new-item-stock" placeholder="Stock Inicial" class="p-2 border rounded-xl text-xs bg-white">
-                        <input type="text" id="new-item-unit" placeholder="Unidad (g, ml, Litros, Kilos)" class="p-2 border rounded-xl text-xs bg-white">
+                        <input type="text" id="new-item-unit" placeholder="Unidad (g, ml, Litros, Kilos, pzas)" class="p-2 border rounded-xl text-xs bg-white">
                     </div>
                     <button onclick="addNewInventoryItem()" class="w-full py-2 bg-brand-pink text-white font-bold rounded-xl text-xs shadow">Guardar Nuevo Insumo</button>
                 </div>
@@ -524,7 +524,7 @@
 
         let shiftData = { cashSales: 0, cardSales: 0, totalSales: 0 };
 
-        // INVENTARIO CON CLAVES (ID) PARA EL ESCANDALLO AUTOMÁTICO
+        // INVENTARIO INTEGRADO CON JARABES, POLVOS, PERLAS EXPLOSIVAS, LÁCTEOS Y DESECHABLES DE TUS LIBRETAS
         let inventoryDB = [
             { key: 'avellana', name: 'Jarabe Avellana', stock: 2000, unit: 'ml' },
             { key: 'mora', name: 'Jarabe Mora', stock: 2000, unit: 'ml' },
@@ -547,10 +547,24 @@
             { key: 'cap_vainilla', name: 'Cap. Vainilla', stock: 1613, unit: 'g' },
             { key: 'moka', name: 'Moka', stock: 507, unit: 'g' },
             { key: 'matcha', name: 'Matcha', stock: 916, unit: 'g' },
-            { key: 'chai_latte', name: 'Chai Latte', stock: 854, unit: 'g' }
+            { key: 'chai_latte', name: 'Chai Latte', stock: 854, unit: 'g' },
+            // NUEVOS INSUMOS DE LIBRETAS
+            { key: 'pop_mora', name: 'Perlas Explosivas Mora Azul', stock: 1521, unit: 'g' },
+            { key: 'pop_fresa', name: 'Perlas Explosivas Fresa', stock: 2380, unit: 'g' },
+            { key: 'pop_arcoiris', name: 'Perlas Explosivas Arcoíris', stock: 900, unit: 'g' },
+            { key: 'yogurth_boba', name: 'Yogurth', stock: 1200, unit: 'g' },
+            { key: 'pop_manzana', name: 'Perlas Explosivas Manzana Verde', stock: 509, unit: 'g' },
+            { key: 'pop_mango', name: 'Perlas Explosivas Mango', stock: 1190, unit: 'g' },
+            { key: 'leche', name: 'Leche', stock: 3, unit: 'Litros' },
+            { key: 'grano_cafe', name: 'Grano de Café', stock: 747, unit: 'g' },
+            { key: 'galleta_oreo', name: 'Galleta Oreo', stock: 21, unit: 'pzas' },
+            { key: 'tapa_caliente', name: 'Tapas Café Caliente', stock: 98, unit: 'pzas' },
+            { key: 'tapa_frio', name: 'Tapas Café Frío / Especial', stock: 48, unit: 'pzas' },
+            { key: 'tapa_frappe', name: 'Tapas Frappé', stock: 170, unit: 'pzas' },
+            { key: 'vaso_grande', name: 'Vasos Clado Grande', stock: 20, unit: 'pzas' },
+            { key: 'vaso_chico', name: 'Vasos Clado Chico', stock: 76, unit: 'pzas' }
         ];
 
-        // RECETAS / ESCANDALLO (Insumo consumido por cada venta)
         const recipeMapping = {
             'Boba Taro': { key: 'taro', qty: 50 },
             'Boba Fresas c/ crema': { key: 'fresa_crema', qty: 50 },
@@ -985,7 +999,6 @@
                 if (rec < total) return alert('Efectivo menor al total.');
             }
 
-            // 1. REGISTRAR VENTA EN TURNO
             if (selectedPaymentMethod === 'efectivo') {
                 shiftData.cashSales += total;
             } else {
@@ -993,7 +1006,7 @@
             }
             shiftData.totalSales += total;
 
-            // 2. APLICAR ESCANDALLO (DESCUENTO AUTOMÁTICO DE INVENTARIO)
+            // APLICAR ESCANDALLO AUTOMÁTICO
             currentCart.forEach(item => {
                 const receta = recipeMapping[item.name];
                 if (receta) {
