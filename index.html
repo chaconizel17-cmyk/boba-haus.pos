@@ -41,342 +41,380 @@
         }
     </style>
 </head>
-<body class="h-screen overflow-hidden flex flex-col text-gray-800">
+<body class="h-screen overflow-hidden flex text-gray-800">
 
-    <!-- HEADER / NAVBAR -->
-    <header class="bg-brand-pink text-white px-4 py-2 flex items-center justify-between shadow-md z-20 shrink-0">
-        <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 bg-white rounded-2xl p-1 shadow flex items-center justify-center shrink-0">
-                <svg viewBox="0 0 200 200" class="w-full h-full">
-                    <rect width="200" height="200" fill="#fdeef4" rx="20"/>
-                    <path d="M0 0h100v100H0zM100 100h100v100H100z" fill="#fbdbe7" opacity="0.5"/>
-                    <circle cx="100" cy="50" r="18" fill="#3a2318" stroke="#ffffff" stroke-dasharray="3,3" stroke-width="2"/>
-                    <circle cx="75" cy="80" r="18" fill="#3a2318" stroke="#ffffff" stroke-dasharray="3,3" stroke-width="2"/>
-                    <circle cx="125" cy="80" r="18" fill="#3a2318" stroke="#ffffff" stroke-dasharray="3,3" stroke-width="2"/>
-                    <text x="100" y="130" font-family="'Fredoka', sans-serif" font-weight="700" font-size="28" fill="#2d3436" text-anchor="middle">boba <tspan fill="#e84393">haus</tspan></text>
-                    <text x="100" y="152" font-family="'Quicksand', sans-serif" font-weight="600" font-size="14" fill="#636e72" text-anchor="middle">bubble tea</text>
-                    <line x1="25" y1="148" x2="55" y2="148" stroke="#e84393" stroke-width="3" stroke-linecap="round"/>
-                    <line x1="145" y1="148" x2="175" y2="148" stroke="#e84393" stroke-width="3" stroke-linecap="round"/>
-                </svg>
+    <!-- MENÚ LATERAL ESTILO TPV (LOYVERSE STYLE) -->
+    <aside class="w-64 bg-gray-900 text-gray-300 flex flex-col justify-between shrink-0 shadow-xl z-30">
+        <div>
+            <!-- Header de Perfil / Negocio -->
+            <div class="p-4 bg-gray-950 border-b border-gray-800 flex items-center justify-between">
+                <div>
+                    <h2 id="sidebar-role-title" class="font-bold text-white text-sm">Propietario</h2>
+                    <p class="text-[11px] text-gray-400">TPV 1 • Boba Haus</p>
+                </div>
+                <button onclick="lockSystem()" class="p-2 text-gray-400 hover:text-white bg-gray-800 rounded-xl" title="Bloquear TPV">
+                    <i class="fa-solid fa-lock"></i>
+                </button>
             </div>
-            <div>
-                <h1 class="text-xl font-bold tracking-wide leading-none">boba haus</h1>
-                <span class="text-xs text-pink-200">bubble tea & food pos</span>
-            </div>
+
+            <!-- Enlaces de Navegación -->
+            <nav class="p-2 space-y-1 text-xs font-semibold">
+                <button onclick="switchTab('pos')" id="nav-pos" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl bg-brand-pink text-white transition">
+                    <i class="fa-solid fa-store text-base w-5"></i> <span>Ventas</span>
+                </button>
+                <button onclick="switchTab('shift')" id="nav-shift" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800 hover:text-white transition">
+                    <i class="fa-solid fa-clock-rotate-left text-base w-5"></i> <span>Turno / Caja</span>
+                </button>
+                <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800 hover:text-white transition">
+                    <i class="fa-solid fa-boxes-stacked text-base w-5"></i> <span>Artículos / Inventario</span>
+                </button>
+            </nav>
         </div>
 
-        <nav class="flex items-center space-x-2">
-            <button onclick="switchTab('pos')" id="nav-pos" class="px-3 py-1.5 rounded-xl bg-white/30 text-sm font-bold flex items-center space-x-1">
-                <i class="fa-solid fa-store"></i> <span>Punto de Venta</span>
-            </button>
-            <button onclick="switchTab('shift')" id="nav-shift" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-sm font-semibold flex items-center space-x-1">
-                <i class="fa-solid fa-cash-register"></i> <span>Corte y Turno</span>
-            </button>
-            <button onclick="switchTab('inventory')" id="nav-inventory" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-sm font-semibold flex items-center space-x-1">
-                <i class="fa-solid fa-boxes-stacked"></i> <span>Inventario & Recetas</span>
-            </button>
-        </nav>
-
-        <div class="flex items-center space-x-3 border-l border-pink-400/50 pl-3">
-            <div class="text-right">
-                <p id="current-user-role" class="text-xs font-bold leading-tight">Turno General</p>
-                <button onclick="promptSecurityPin()" class="text-[10px] bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-lg mt-0.5 font-bold">Ingresar Código</button>
-            </div>
+        <div class="p-3 border-t border-gray-800 text-[11px] text-gray-500 text-center">
+            Boba Haus POS v3.5
         </div>
-    </header>
+    </aside>
 
     <!-- MAIN BODY -->
-    <main class="flex-1 overflow-hidden relative">
+    <main class="flex-1 overflow-hidden relative flex flex-col h-full">
 
-        <!-- TAB 1: POS -->
-        <section id="tab-pos" class="h-full flex flex-col md:flex-row">
-            <div class="flex-1 flex flex-col h-full bg-brand-bg border-r border-gray-200 overflow-hidden">
-                <div class="p-3 bg-white border-b border-gray-200 flex items-center justify-between shrink-0 shadow-sm">
-                    <div class="flex items-center space-x-2">
-                        <button id="btn-back-categories" onclick="showCategoriesView()" class="hidden px-3 py-1.5 bg-pink-100 hover:bg-pink-200 text-brand-pink font-bold text-xs rounded-xl flex items-center space-x-1">
-                            <i class="fa-solid fa-arrow-left"></i>
-                            <span>Volver a Categorías</span>
-                        </button>
-                        <h2 id="current-view-title" class="font-bold text-gray-800 text-base">Categorías del Menú</h2>
-                    </div>
+        <!-- HEADER SUPERIOR -->
+        <header class="bg-white border-b border-gray-200 px-4 py-2.5 flex items-center justify-between shadow-sm z-20 shrink-0">
+            <div class="flex items-center space-x-3">
+                <h1 id="header-section-title" class="text-base font-bold text-gray-800">Punto de Venta</h1>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="openTurnModal()" class="px-3 py-1 bg-amber-100 text-amber-900 text-xs font-bold rounded-xl border border-amber-300">
+                    ⏱️ <span id="header-turn-status">Turno Cerrado</span>
+                </button>
+                <button onclick="openPinPadModal()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl flex items-center space-x-1">
+                    <i class="fa-solid fa-key text-brand-pink"></i>
+                    <span>Cambiar Usuario / PIN</span>
+                </button>
+            </div>
+        </header>
 
-                    <div class="flex items-center space-x-2">
-                        <button id="btn-eco-discount" onclick="applyEcoDiscount()" class="px-3 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-300">
-                            🌱 Vaso Reutilizable (-$10)
-                        </button>
-                    </div>
-                </div>
+        <!-- CONTENEDOR DE PESTAÑAS -->
+        <div class="flex-1 overflow-hidden relative flex flex-col">
 
-                <div class="flex-1 p-4 overflow-y-auto">
-                    <div class="mb-4 bg-gradient-to-r from-pink-500 to-brand-lightpink text-white p-3 rounded-2xl shadow-sm flex items-center justify-between">
+            <!-- TAB 1: POS -->
+            <section id="tab-pos" class="h-full flex flex-col md:flex-row">
+                <div class="flex-1 flex flex-col h-full bg-brand-bg border-r border-gray-200 overflow-hidden">
+                    <div class="p-3 bg-white border-b border-gray-200 flex items-center justify-between shrink-0 shadow-sm">
                         <div class="flex items-center space-x-2">
-                            <i class="fa-solid fa-gift text-xl"></i>
-                            <div>
-                                <p class="text-xs font-bold">Promoción de la Semana:</p>
-                                <p id="daily-promo-banner" class="text-[11px] text-pink-100 font-semibold">Lunes a Miércoles: ¡3x2 en Smoothies!</p>
+                            <button id="btn-back-categories" onclick="showCategoriesView()" class="hidden px-3 py-1.5 bg-pink-100 hover:bg-pink-200 text-brand-pink font-bold text-xs rounded-xl flex items-center space-x-1">
+                                <i class="fa-solid fa-arrow-left"></i>
+                                <span>Volver a Categorías</span>
+                            </button>
+                            <h2 id="current-view-title" class="font-bold text-gray-800 text-base">Categorías del Menú</h2>
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                            <button id="btn-eco-discount" onclick="applyEcoDiscount()" class="px-3 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-300">
+                                🌱 Vaso Reutilizable (-$10)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 p-4 overflow-y-auto">
+                        <div class="mb-4 bg-gradient-to-r from-pink-500 to-brand-lightpink text-white p-3 rounded-2xl shadow-sm flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid fa-gift text-xl"></i>
+                                <div>
+                                    <p class="text-xs font-bold">Promoción de la Semana:</p>
+                                    <p id="daily-promo-banner" class="text-[11px] text-pink-100 font-semibold">Lunes a Miércoles: ¡3x2 en Smoothies!</p>
+                                </div>
+                            </div>
+                            <span id="day-indicator-badge" class="bg-white/20 px-2 py-1 rounded-lg text-[10px] font-bold">Hoy</span>
+                        </div>
+
+                        <div id="categories-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div onclick="openCategoryProducts('temporada')" class="bg-amber-50 p-5 rounded-3xl border border-amber-200 shadow-sm hover:shadow-md hover:border-amber-400 transition flex flex-col items-center text-center cursor-pointer relative">
+                                <span class="absolute top-2 right-2 bg-amber-200 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full">🍂 Otoño</span>
+                                <span class="text-4xl mb-2">☕</span>
+                                <h3 class="font-bold text-amber-900 text-base">TEMPORADA</h3>
+                                <span class="text-xs text-amber-700 mt-1">Otoño Caramelo • $75</span>
+                            </div>
+                            <div onclick="openCategoryProducts('boba')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🧋</span>
+                                <h3 class="font-bold text-gray-800 text-base">BOBA</h3>
+                                <span class="text-xs text-gray-400 mt-1">Sabores • $70 - $75</span>
+                            </div>
+                            <div onclick="openCategoryProducts('xolot')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🥤</span>
+                                <h3 class="font-bold text-gray-800 text-base">XOLOT</h3>
+                                <span class="text-xs text-gray-400 mt-1">Piña, Frutos, Fresa • $70</span>
+                            </div>
+                            <div onclick="openCategoryProducts('fortuna')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer relative">
+                                <span class="absolute top-2 right-2 bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">🍻 H. Feliz</span>
+                                <span class="text-4xl mb-2">🍺</span>
+                                <h3 class="font-bold text-gray-800 text-base">FORTUNA</h3>
+                                <span class="text-xs text-gray-400 mt-1">Cerveza, Copeo, Michelada</span>
+                            </div>
+                            <div onclick="openCategoryProducts('soda')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🍹</span>
+                                <h3 class="font-bold text-gray-800 text-base">SODA ITALIANA</h3>
+                                <span class="text-xs text-gray-400 mt-1">9 Sabores • $45</span>
+                            </div>
+                            <div onclick="openCategoryProducts('frappe')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🥤</span>
+                                <h3 class="font-bold text-gray-800 text-base">FRAPPÉ</h3>
+                                <span class="text-xs text-gray-400 mt-1">Todos los Sabores • $70 - $80</span>
+                            </div>
+                            <div onclick="openCategoryProducts('smoothie')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🥭</span>
+                                <h3 class="font-bold text-gray-800 text-base">SMOOTHIE</h3>
+                                <span class="text-xs text-gray-400 mt-1">Sabores • $70</span>
+                            </div>
+                            <div onclick="openCategoryProducts('cafe_frio')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🧊</span>
+                                <h3 class="font-bold text-gray-800 text-base">CAFÉ FRÍO</h3>
+                                <span class="text-xs text-gray-400 mt-1">Capuchinos, Americano</span>
+                            </div>
+                            <div onclick="openCategoryProducts('cafe_caliente')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">☕</span>
+                                <h3 class="font-bold text-gray-800 text-base">CAFÉ CALIENTE</h3>
+                                <span class="text-xs text-gray-400 mt-1">Espresso, Latte, Olla...</span>
+                            </div>
+                            <div onclick="openCategoryProducts('tizana')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🫖</span>
+                                <h3 class="font-bold text-gray-800 text-base">TIZANA</h3>
+                                <span class="text-xs text-gray-400 mt-1">12 oz y 16 oz • $50 - $65</span>
+                            </div>
+                            <div onclick="openCategoryProducts('bowl')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🥗</span>
+                                <h3 class="font-bold text-gray-800 text-base">BOWL</h3>
+                                <span class="text-xs text-gray-400 mt-1">Chico / Grande • $65 - $95</span>
+                            </div>
+                            <div onclick="openCategoryProducts('crepas')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🥞</span>
+                                <h3 class="font-bold text-gray-800 text-base">CREPAS</h3>
+                                <span class="text-xs text-gray-400 mt-1">Dulces y Saladas • $50 - $80</span>
+                            </div>
+                            <div onclick="openCategoryProducts('banderillas')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🌭</span>
+                                <h3 class="font-bold text-gray-800 text-base">BANDERILLAS</h3>
+                                <span class="text-xs text-gray-400 mt-1">Ramen, Papa, Panko • $55 - $65</span>
+                            </div>
+                            <div onclick="openCategoryProducts('pasteles')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🍰</span>
+                                <h3 class="font-bold text-gray-800 text-base">PASTELES</h3>
+                                <span class="text-xs text-gray-400 mt-1">Matilde, Cheesecakes • $45 - $50</span>
+                            </div>
+                            <div onclick="openCategoryProducts('comida')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                                <span class="text-4xl mb-2">🥪</span>
+                                <h3 class="font-bold text-gray-800 text-base">COMIDA</h3>
+                                <span class="text-xs text-gray-400 mt-1">Sandwiches, Waffles, Hot Cakes</span>
                             </div>
                         </div>
-                        <span id="day-indicator-badge" class="bg-white/20 px-2 py-1 rounded-lg text-[10px] font-bold">Hoy</span>
-                    </div>
 
-                    <div id="categories-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                        <div onclick="openCategoryProducts('temporada')" class="bg-amber-50 p-5 rounded-3xl border border-amber-200 shadow-sm hover:shadow-md hover:border-amber-400 transition flex flex-col items-center text-center cursor-pointer relative">
-                            <span class="absolute top-2 right-2 bg-amber-200 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full">🍂 Otoño</span>
-                            <span class="text-4xl mb-2">☕</span>
-                            <h3 class="font-bold text-amber-900 text-base">TEMPORADA</h3>
-                            <span class="text-xs text-amber-700 mt-1">Otoño Caramelo • $75</span>
-                        </div>
-                        <div onclick="openCategoryProducts('boba')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
-                            <span class="text-4xl mb-2">🧋</span>
-                            <h3 class="font-bold text-gray-800 text-base">BOBA</h3>
-                            <span class="text-xs text-gray-400 mt-1">Sabores • $70 - $75</span>
-                        </div>
-                        <div onclick="openCategoryProducts('xolot')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
-                            <span class="text-4xl mb-2">🥤</span>
-                            <h3 class="font-bold text-gray-800 text-base">XOLOT</h3>
-                            <span class="text-xs text-gray-400 mt-1">Piña, Frutos, Fresa • $70</span>
-                        </div>
-                        <div onclick="openCategoryProducts('fortuna')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer relative">
-                            <span class="absolute top-2 right-2 bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">🍻 H. Feliz</span>
-                            <span class="text-4xl mb-2">🍺</span>
-                            <h3 class="font-bold text-gray-800 text-base">FORTUNA</h3>
-                            <span class="text-xs text-gray-400 mt-1">Cerveza, Copeo, Michelada</span>
-                        </div>
-                        <div onclick="openCategoryProducts('soda')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
-                            <span class="text-4xl mb-2">🍹</span>
-                            <h3 class="font-bold text-gray-800 text-base">SODA ITALIANA</h3>
-                            <span class="text-xs text-gray-400 mt-1">9 Sabores • $45</span>
-                        </div>
-                        <div onclick="openCategoryProducts('frappe')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
-                            <span class="text-4xl mb-2">🥤</span>
-                            <h3 class="font-bold text-gray-800 text-base">FRAPPÉ</h3>
-                            <span class="text-xs text-gray-400 mt-1">Todos los Sabores • $70 - $80</span>
-                        </div>
-                        <div onclick="openCategoryProducts('smoothie')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
-                            <span class="text-4xl mb-2">🥭</span>
-                            <h3 class="font-bold text-gray-800 text-base">SMOOTHIE</h3>
-                            <span class="text-xs text-gray-400 mt-1">Sabores • $70</span>
-                        </div>
-                        <div onclick="openCategoryProducts('cafe_frio')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
-                            <span class="text-4xl mb-2">🧊</span>
-                            <h3 class="font-bold text-gray-800 text-base">CAFÉ FRÍO</h3>
-                            <span class="text-xs text-gray-400 mt-1">Capuchinos, Americano</span>
-                        </div>
-                        <div onclick="openCategoryProducts('cafe_caliente')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
-                            <span class="text-4xl mb-2">☕</span>
-                            <h3 class="font-bold text-gray-800 text-base">CAFÉ CALIENTE</h3>
-                            <span class="text-xs text-gray-400 mt-1">Espresso, Latte, Olla...</span>
-                        </div>
-                        <div onclick="openCategoryProducts('tizana')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
-                            <span class="text-4xl mb-2">🫖</span>
-                            <h3 class="font-bold text-gray-800 text-base">TIZANA</h3>
-                            <span class="text-xs text-gray-400 mt-1">12 oz y 16 oz • $50 - $65</span>
-                        </div>
-                        <div onclick="openCategoryProducts('bowl')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
-                            <span class="text-4xl mb-2">🥗</span>
-                            <h3 class="font-bold text-gray-800 text-base">BOWL</h3>
-                            <span class="text-xs text-gray-400 mt-1">Chico / Grande • $65 - $95</span>
-                        </div>
-                        <div onclick="openCategoryProducts('crepas')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
-                            <span class="text-4xl mb-2">🥞</span>
-                            <h3 class="font-bold text-gray-800 text-base">CREPAS</h3>
-                            <span class="text-xs text-gray-400 mt-1">Dulces y Saladas • $50 - $80</span>
-                        </div>
-                        <div onclick="openCategoryProducts('banderillas')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
-                            <span class="text-4xl mb-2">🌭</span>
-                            <h3 class="font-bold text-gray-800 text-base">BANDERILLAS</h3>
-                            <span class="text-xs text-gray-400 mt-1">Ramen, Papa, Panko • $55 - $65</span>
-                        </div>
-                        <div onclick="openCategoryProducts('pasteles')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
-                            <span class="text-4xl mb-2">🍰</span>
-                            <h3 class="font-bold text-gray-800 text-base">PASTELES</h3>
-                            <span class="text-xs text-gray-400 mt-1">Matilde, Cheesecakes • $45 - $50</span>
-                        </div>
-                        <div onclick="openCategoryProducts('comida')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
-                            <span class="text-4xl mb-2">🥪</span>
-                            <h3 class="font-bold text-gray-800 text-base">COMIDA</h3>
-                            <span class="text-xs text-gray-400 mt-1">Sandwiches, Waffles, Hot Cakes</span>
-                        </div>
-                    </div>
-
-                    <div id="products-desglose-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 hidden"></div>
-                </div>
-            </div>
-
-            <!-- CART -->
-            <div class="w-full md:w-96 lg:w-[400px] bg-white flex flex-col h-full shadow-lg shrink-0">
-                <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between shrink-0">
-                    <div class="flex items-center space-x-2">
-                        <span class="font-bold text-gray-700 text-base">Orden #<span id="order-id-display">0001</span></span>
-                        <select id="order-mode" class="text-xs bg-white border border-gray-300 rounded-lg px-2 py-1 font-semibold text-brand-pink outline-none">
-                            <option value="local">🍽️ Comer Aquí</option>
-                            <option value="llevar">🛍️ Para Llevar</option>
-                            <option value="domicilio">🛵 Domicilio</option>
-                        </select>
-                    </div>
-                    <button onclick="clearCart()" class="text-xs text-red-500 font-bold hover:underline">Vaciar</button>
-                </div>
-
-                <div class="p-2 bg-amber-50 border-b border-amber-200 text-xs space-y-1">
-                    <div class="flex justify-between items-center">
-                        <span class="font-bold text-amber-800">Establecimiento:</span>
-                        <select id="store-location" onchange="renderCart()" class="bg-white border border-amber-300 rounded px-2 py-0.5 font-semibold text-amber-900 outline-none">
-                            <option value="boba_haus">Boba Haus</option>
-                            <option value="fortuna">Fortuna 🍻</option>
-                        </select>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-amber-700">Hora Feliz (8 PM - 9 PM):</span>
-                        <label class="flex items-center space-x-1 cursor-pointer">
-                            <input type="checkbox" id="happy-hour-toggle" onchange="checkAndToggleHappyHour(this)" class="rounded text-amber-600 focus:ring-amber-500">
-                            <span class="font-semibold text-amber-800">Aplicar Gratis (Solo Fortuna)</span>
-                        </label>
+                        <div id="products-desglose-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 hidden"></div>
                     </div>
                 </div>
 
-                <div id="cart-items-container" class="flex-1 overflow-y-auto p-3 space-y-2">
-                    <div id="empty-cart-msg" class="h-full flex flex-col items-center justify-center text-gray-400 py-12">
-                        <i class="fa-solid fa-basket-shopping text-4xl mb-2 text-gray-300"></i>
-                        <p class="text-xs font-medium">Carrito vacío. Selecciona una categoría.</p>
+                <!-- CART -->
+                <div class="w-full md:w-96 lg:w-[400px] bg-white flex flex-col h-full shadow-lg shrink-0">
+                    <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between shrink-0">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-gray-700 text-base">Orden #<span id="order-id-display">0001</span></span>
+                            <select id="order-mode" class="text-xs bg-white border border-gray-300 rounded-lg px-2 py-1 font-semibold text-brand-pink outline-none">
+                                <option value="local">🍽️ Comer Aquí</option>
+                                <option value="llevar">🛍️ Para Llevar</option>
+                                <option value="domicilio">🛵 Domicilio</option>
+                            </select>
+                        </div>
+                        <button onclick="clearCart()" class="text-xs text-red-500 font-bold hover:underline">Vaciar</button>
+                    </div>
+
+                    <div class="p-2 bg-amber-50 border-b border-amber-200 text-xs space-y-1">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-amber-800">Establecimiento:</span>
+                            <select id="store-location" onchange="renderCart()" class="bg-white border border-amber-300 rounded px-2 py-0.5 font-semibold text-amber-900 outline-none">
+                                <option value="boba_haus">Boba Haus</option>
+                                <option value="fortuna">Fortuna 🍻</option>
+                            </select>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-amber-700">Hora Feliz (8 PM - 9 PM):</span>
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="checkbox" id="happy-hour-toggle" onchange="checkAndToggleHappyHour(this)" class="rounded text-amber-600 focus:ring-amber-500">
+                                <span class="font-semibold text-amber-800">Aplicar Gratis (Solo Fortuna)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="cart-items-container" class="flex-1 overflow-y-auto p-3 space-y-2">
+                        <div id="empty-cart-msg" class="h-full flex flex-col items-center justify-center text-gray-400 py-12">
+                            <i class="fa-solid fa-basket-shopping text-4xl mb-2 text-gray-300"></i>
+                            <p class="text-xs font-medium">Carrito vacío. Selecciona una categoría.</p>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-gray-50 border-t border-gray-200 shrink-0 space-y-2">
+                        <div class="space-y-1 text-xs text-gray-600">
+                            <div class="flex justify-between"><span>Subtotal:</span><span id="cart-subtotal">$0.00</span></div>
+                            <div class="flex justify-between text-emerald-600 font-semibold"><span>Descuento / Promo:</span><span id="cart-discount">-$0.00</span></div>
+                            <div class="flex justify-between text-gray-800 font-bold text-lg border-t pt-1"><span>Total:</span><span id="cart-total" class="text-brand-pink">$0.00</span></div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <button onclick="openCheckoutModal()" class="py-3 bg-brand-pink hover:bg-pink-600 text-white rounded-xl font-bold text-sm shadow transition col-span-2">
+                                💵 Cobrar Pedido
+                            </button>
+                        </div>
                     </div>
                 </div>
+            </section>
 
-                <div class="p-3 bg-gray-50 border-t border-gray-200 shrink-0 space-y-2">
-                    <div class="space-y-1 text-xs text-gray-600">
-                        <div class="flex justify-between"><span>Subtotal:</span><span id="cart-subtotal">$0.00</span></div>
-                        <div class="flex justify-between text-emerald-600 font-semibold"><span>Descuento / Promo:</span><span id="cart-discount">-$0.00</span></div>
-                        <div class="flex justify-between text-gray-800 font-bold text-lg border-t pt-1"><span>Total:</span><span id="cart-total" class="text-brand-pink">$0.00</span></div>
+            <!-- TAB 2: CORTE Y TURNO (ESTILO LOYVERSE TESORERÍA) -->
+            <section id="tab-shift" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
+                <div class="max-w-3xl mx-auto bg-white p-6 rounded-3xl shadow-sm space-y-6">
+                    <div class="flex justify-between items-center border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-cash-register text-brand-pink mr-2"></i> Gestión de Tesorería y Turno</h2>
+                            <p class="text-xs text-gray-500">Control de fondo inicial, cajón de efectivo, ventas netas y cierre[cite: 19].</p>
+                        </div>
+                        <div class="space-x-2">
+                            <button onclick="openTurnModal()" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow hover:bg-emerald-700 transition">
+                                <i class="fa-solid fa-play mr-1"></i> Abrir / Cerrar Turno[cite: 19]
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2 pt-1">
-                        <button onclick="openCheckoutModal()" class="py-3 bg-brand-pink hover:bg-pink-600 text-white rounded-xl font-bold text-sm shadow transition col-span-2">
-                            💵 Cobrar Pedido
+                    <!-- CAJÓN DE EFECTIVO (ESTILO FOTO 3) -->
+                    <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-3">
+                        <h3 class="font-bold text-sm text-gray-800"><i class="fa-solid fa-vault mr-1 text-brand-pink"></i> Cajón de efectivo</h3>
+                        <div class="space-y-2 text-xs divide-y divide-gray-200">
+                            <div class="flex justify-between pt-1"><span>Fondo de caja anterior:</span><strong id="rep-fund">$0.00</strong></div>
+                            <div class="flex justify-between pt-1"><span>Cobros en efectivo:</span><strong id="rep-cash-sales" class="text-emerald-600">$0.00</strong></div>
+                            <div class="flex justify-between pt-1"><span>Reembolsos en efectivo:</span><strong id="rep-refunds">$0.00</strong></div>
+                            <div class="flex justify-between pt-1"><span>Depositado:</span><strong>$0.00</strong></div>
+                            <div class="flex justify-between pt-1"><span>Pagos / Salidas (Gastos):</span><strong id="rep-expenses" class="text-red-600">$0.00</strong></div>
+                            <div class="flex justify-between pt-2 text-sm font-bold text-gray-900 border-t border-gray-300"><span>Efectivo teórico en caja:</span><span id="rep-expected-cash">$0.00</span></div>
+                        </div>
+                    </div>
+
+                    <!-- RESUMEN DE VENTAS (ESTILO FOTO 3) -->
+                    <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-3">
+                        <h3 class="font-bold text-sm text-gray-800"><i class="fa-solid fa-chart-line mr-1 text-brand-pink"></i> Resumen de ventas</h3>
+                        <div class="space-y-2 text-xs divide-y divide-gray-200">
+                            <div class="flex justify-between pt-1"><span>Ventas brutas:</span><strong id="rep-gross-sales">$0.00</strong></div>
+                            <div class="flex justify-between pt-1"><span>Reembolsos:</span><strong>$0.00</strong></div>
+                            <div class="flex justify-between pt-1"><span>Descuentos:</span><strong id="rep-discounts" class="text-emerald-600">$0.00</strong></div>
+                            <div class="flex justify-between pt-2 text-sm font-bold text-brand-pink border-t border-gray-300"><span>Ventas netas:</span><span id="rep-net-sales">$0.00</span></div>
+                        </div>
+                    </div>
+
+                    <!-- REGISTRAR GASTO EN TURNO -->
+                    <div class="bg-red-50/50 p-4 rounded-2xl border border-red-200 space-y-3">
+                        <h3 class="font-bold text-xs text-red-700 uppercase tracking-wide"><i class="fa-solid fa-receipt mr-1"></i> Registrar Gasto / Salida de Efectivo en Turno</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <input type="text" id="expense-reason" placeholder="Concepto (Ej. Compra hielo)" class="p-2 border rounded-xl text-xs bg-white">
+                            <input type="number" id="expense-amount" placeholder="Monto (Ej. 60)" class="p-2 border rounded-xl text-xs bg-white">
+                            <button onclick="registerExpense()" class="py-2 bg-red-600 text-white font-bold rounded-xl text-xs shadow hover:bg-red-700 transition">Registrar Gasto</button>
+                        </div>
+                        <div id="expenses-list-container" class="space-y-1 text-xs text-gray-600 pt-1">
+                            <p class="text-[11px] italic text-gray-400">No hay gastos registrados en este turno.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: INVENTARIO & RECETAS (ESCANDALLO) -->
+            <section id="tab-inventory" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
+                <div class="max-w-4xl mx-auto bg-white p-6 rounded-3xl shadow-sm space-y-6">
+                    <div class="flex justify-between items-center border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-boxes-stacked text-brand-pink mr-2"></i> Inventario & Control de Recetas</h2>
+                            <p id="mode-subtitle" class="text-xs text-gray-500">Gestión de artículos y stock en tiempo real</p>
+                        </div>
+                        <button onclick="openPinPadModal()" class="px-3 py-1.5 bg-pink-100 text-brand-pink font-bold text-xs rounded-xl">
+                            🔑 Validar PIN Dueña
                         </button>
                     </div>
-                </div>
-            </div>
-        </section>
 
-        <!-- TAB 2: CORTE Y TURNO (FONDO INICIAL PROTEGIDO) -->
-        <section id="tab-shift" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
-            <div class="max-w-3xl mx-auto bg-white p-6 rounded-3xl shadow-sm space-y-6">
-                <div class="flex justify-between items-center border-b pb-4">
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-cash-register text-brand-pink mr-2"></i> Módulo de Corte de Caja y Arqueo</h2>
-                        <p class="text-xs text-gray-500">Control de fondo inicial, ventas, gastos de turno y arqueo de efectivo.</p>
-                    </div>
-                    <span id="current-shift-badge" class="bg-pink-100 text-brand-pink text-xs font-bold px-3 py-1 rounded-xl">Turno General</span>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                    <div class="bg-pink-50 p-3 rounded-2xl border border-pink-100">
-                        <span class="text-[11px] text-gray-500 block">Ventas Efectivo</span>
-                        <span id="shift-cash-sales" class="text-xl font-bold text-brand-pink">$0.00</span>
-                    </div>
-                    <div class="bg-purple-50 p-3 rounded-2xl border border-purple-100">
-                        <span class="text-[11px] text-gray-500 block">Ventas Tarjeta</span>
-                        <span id="shift-card-sales" class="text-xl font-bold text-purple-600">$0.00</span>
-                    </div>
-                    <div class="bg-red-50 p-3 rounded-2xl border border-red-100">
-                        <span class="text-[11px] text-gray-500 block">Gastos en Turno</span>
-                        <span id="shift-expenses-display" class="text-xl font-bold text-red-600">$0.00</span>
-                    </div>
-                    <div class="bg-emerald-50 p-3 rounded-2xl border border-emerald-100">
-                        <span class="text-[11px] text-gray-500 block">Venta Neta</span>
-                        <span id="shift-total-sales" class="text-xl font-bold text-emerald-700">$0.00</span>
-                    </div>
-                </div>
-
-                <!-- SECCIÓN DE GASTOS EN TURNO -->
-                <div class="bg-red-50/50 p-4 rounded-2xl border border-red-200 space-y-3">
-                    <h3 class="font-bold text-xs text-red-700 uppercase tracking-wide"><i class="fa-solid fa-receipt mr-1"></i> Registrar Gasto de Caja / Turno</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <input type="text" id="expense-reason" placeholder="Concepto (Ej. Compra hielo)" class="p-2 border rounded-xl text-xs bg-white">
-                        <input type="number" id="expense-amount" placeholder="Monto (Ej. 60)" class="p-2 border rounded-xl text-xs bg-white">
-                        <button onclick="registerExpense()" class="py-2 bg-red-600 text-white font-bold rounded-xl text-xs shadow hover:bg-red-700 transition">Registrar Gasto</button>
-                    </div>
-                    <div id="expenses-list-container" class="space-y-1 text-xs text-gray-600 pt-1">
-                        <p class="text-[11px] italic text-gray-400">No hay gastos registrados en este turno.</p>
-                    </div>
-                </div>
-
-                <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-sm text-gray-800"><i class="fa-solid fa-calculator mr-1"></i> Arqueo Físico de Caja</h3>
-                        <button onclick="unlockInitialFund()" class="text-[11px] bg-pink-100 text-brand-pink px-2.5 py-1 rounded-lg font-bold hover:bg-pink-200 transition">
-                            🔓 Desbloquear Fondo (Requiere Código)
-                        </button>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="text-xs font-bold text-gray-600 block mb-1">Fondo Inicial de Caja (Cambio):</label>
-                            <input type="number" id="initial-fund" value="500" readonly onkeyup="calculateCashCut()" class="w-full p-2 border rounded-xl text-xs bg-gray-100 text-gray-600 font-bold cursor-not-allowed">
+                    <div id="owner-add-section" class="bg-pink-50 p-4 rounded-2xl border border-pink-200 space-y-3 hidden">
+                        <h3 class="font-bold text-xs text-brand-pink uppercase tracking-wide">➕ Añadir Nuevo Insumo al Almacén</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <input type="text" id="new-item-key" placeholder="Clave id (ej. taro)" class="p-2 border rounded-xl text-xs bg-white">
+                            <input type="text" id="new-item-name" placeholder="Nombre (Ej. Polvo Taro)" class="p-2 border rounded-xl text-xs bg-white">
+                            <input type="number" id="new-item-stock" placeholder="Stock Inicial" class="p-2 border rounded-xl text-xs bg-white">
+                            <input type="text" id="new-item-unit" placeholder="Unidad (g, ml, Litros, Kilos, pzas)" class="p-2 border rounded-xl text-xs bg-white">
                         </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-600 block mb-1">Efectivo Físico Contado en Gaveta:</label>
-                            <input type="number" id="counted-cash" placeholder="Ej. 1250" onkeyup="calculateCashCut()" class="w-full p-2 border rounded-xl text-xs bg-white font-bold text-brand-pink">
-                        </div>
+                        <button onclick="addNewInventoryItem()" class="w-full py-2 bg-brand-pink text-white font-bold rounded-xl text-xs shadow">Guardar Nuevo Insumo</button>
                     </div>
 
-                    <div class="bg-white p-4 rounded-xl border flex justify-between items-center">
-                        <div>
-                            <p class="text-xs text-gray-500">Efectivo Teórico Esperado (Fondo + Cash - Gastos):</p>
-                            <p id="expected-cash-display" class="font-bold text-sm text-gray-800">$500.00</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-xs text-gray-500">Diferencia / Resultado:</p>
-                            <p id="cut-difference-display" class="font-bold text-base text-gray-700">$0.00</p>
-                        </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-700">
+                                    <th class="p-3 rounded-l-xl">Insumo / Artículo</th>
+                                    <th class="p-3">Stock Actual</th>
+                                    <th class="p-3">Unidad</th>
+                                    <th class="p-3 rounded-r-xl text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-table-body" class="divide-y divide-gray-100"></tbody>
+                        </table>
                     </div>
-
-                    <button onclick="performShiftCut()" class="w-full py-3 bg-brand-pink hover:bg-pink-600 text-white font-bold rounded-xl text-xs shadow transition">
-                        🔒 Realizar y Registrar Corte de Caja
-                    </button>
                 </div>
-            </div>
-        </section>
-
-        <!-- TAB 3: INVENTARIO & RECETAS (ESCANDALLO) -->
-        <section id="tab-inventory" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
-            <div class="max-w-4xl mx-auto bg-white p-6 rounded-3xl shadow-sm space-y-6">
-                <div class="flex justify-between items-center border-b pb-4">
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-boxes-stacked text-brand-pink mr-2"></i> Inventario & Control de Recetas</h2>
-                        <p id="mode-subtitle" class="text-xs text-gray-500">Bloqueado para empleadas (Requiere PIN de Acceso)</p>
-                    </div>
-                    <button onclick="promptSecurityPin()" class="px-3 py-1.5 bg-pink-100 text-brand-pink font-bold text-xs rounded-xl">
-                        🔑 Ingresar PIN de Acceso
-                    </button>
-                </div>
-
-                <div id="owner-add-section" class="bg-pink-50 p-4 rounded-2xl border border-pink-200 space-y-3 hidden">
-                    <h3 class="font-bold text-xs text-brand-pink uppercase tracking-wide">➕ Añadir Nuevo Insumo al Almacén</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <input type="text" id="new-item-key" placeholder="Clave id (ej. taro)" class="p-2 border rounded-xl text-xs bg-white">
-                        <input type="text" id="new-item-name" placeholder="Nombre (Ej. Polvo Taro)" class="p-2 border rounded-xl text-xs bg-white">
-                        <input type="number" id="new-item-stock" placeholder="Stock Inicial" class="p-2 border rounded-xl text-xs bg-white">
-                        <input type="text" id="new-item-unit" placeholder="Unidad (g, ml, Litros, Kilos, pzas)" class="p-2 border rounded-xl text-xs bg-white">
-                    </div>
-                    <button onclick="addNewInventoryItem()" class="w-full py-2 bg-brand-pink text-white font-bold rounded-xl text-xs shadow">Guardar Nuevo Insumo</button>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs border-collapse">
-                        <thead>
-                            <tr class="bg-gray-100 text-gray-700">
-                                <th class="p-3 rounded-l-xl">Insumo / Artículo</th>
-                                <th class="p-3">Stock Actual</th>
-                                <th class="p-3">Unidad</th>
-                                <th class="p-3 rounded-r-xl text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inventory-table-body" class="divide-y divide-gray-100"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+            </section>
+        </div>
     </main>
+
+    <!-- VENTANA EMERGENTE: TECLADO NUMÉRICO TÁCTIL (ESTILO FOTO 1) -->
+    <div id="pinpad-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-gray-900 rounded-3xl max-w-sm w-full p-6 text-white space-y-6 shadow-2xl border border-gray-800">
+            <div class="text-center space-y-2">
+                <h3 class="text-lg font-bold">Introduzca el PIN[cite: 17]</h3>
+                <div id="pin-dots" class="flex justify-center space-x-3 text-2xl tracking-widest text-brand-pink">
+                    ○ ○ ○ ○
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+                <button type="button" onclick="pressPinNum(1)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">1</button>
+                <button type="button" onclick="pressPinNum(2)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">2</button>
+                <button type="button" onclick="pressPinNum(3)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">3</button>
+                <button type="button" onclick="pressPinNum(4)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">4</button>
+                <button type="button" onclick="pressPinNum(5)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">5</button>
+                <button type="button" onclick="pressPinNum(6)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">6</button>
+                <button type="button" onclick="pressPinNum(7)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">7</button>
+                <button type="button" onclick="pressPinNum(8)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">8</button>
+                <button type="button" onclick="pressPinNum(9)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">9</button>
+                <button type="button" onclick="clearPin()" class="p-5 bg-red-900/40 hover:bg-red-900/60 text-red-300 rounded-2xl text-xs font-bold transition">Limpiar</button>
+                <button type="button" onclick="pressPinNum(0)" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xl font-bold active:scale-95 transition">0</button>
+                <button type="button" onclick="backspacePin()" class="p-5 bg-gray-800 hover:bg-gray-700 rounded-2xl text-xs font-bold transition">Borrar[cite: 17]</button>
+            </div>
+
+            <button onclick="closePinPadModal()" class="w-full py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-2xl font-bold text-xs transition">
+                Cancelar
+            </button>
+        </div>
+    </div>
+
+    <!-- VENTANA EMERGENTE: APERTURA DE TURNO (ESTILO FOTO 2) -->
+    <div id="turn-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-gray-900 rounded-3xl max-w-md w-full p-6 text-white space-y-5 shadow-2xl border border-gray-800">
+            <h3 class="text-base font-bold text-gray-200">Apertura de Turno</h3>
+            <p class="text-xs text-gray-400">Especifique la cantidad de efectivo de la caja con el que empezará su turno[cite: 18].</p>
+            
+            <div class="space-y-1">
+                <label class="text-xs text-gray-400 font-semibold">Cantidad[cite: 18]:</label>
+                <input type="number" id="input-turn-fund" value="500" class="w-full text-xl font-bold p-3 bg-gray-800 border border-gray-700 rounded-2xl text-brand-pink outline-none">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button onclick="confirmOpenTurn()" class="py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl text-xs shadow transition">
+                    ABRIR EL TURNO[cite: 18]
+                </button>
+                <button onclick="closeTurnModal()" class="py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold rounded-2xl text-xs transition">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- CUSTOM PRODUCT MODAL -->
     <div id="custom-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
@@ -543,7 +581,9 @@
         let selectedPaymentMethod = 'efectivo';
         let orderCounter = 1;
         let isOwnerMode = false;
-        let currentShiftName = 'Turno General';
+        let currentPinInput = "";
+        let initialFund = 500;
+        let shiftOpen = false;
 
         let shiftData = { cashSales: 0, cardSales: 0, totalSales: 0, expenses: [] };
 
@@ -812,59 +852,116 @@
         function switchTab(id) {
             ['pos', 'shift', 'inventory'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
+                const navBtn = document.getElementById(`nav-${t}`);
+                if(navBtn) navBtn.className = "w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-800 hover:text-white transition";
             });
             document.getElementById(`tab-${id}`).classList.remove('hidden');
-            if(id === 'shift') { updateShiftDisplay(); }
+            const activeNav = document.getElementById(`nav-${id}`);
+            if(activeNav) activeNav.className = "w-full flex items-center space-x-3 px-3 py-3 rounded-xl bg-brand-pink text-white transition";
+            
+            const titles = { pos: 'Punto de Venta', shift: 'Turno / Caja', inventory: 'Artículos / Inventario' };
+            document.getElementById('header-section-title').innerText = titles[id];
+
+            if(id === 'shift') { updateTreasuryDisplay(); }
             if(id === 'inventory') { renderInventoryTable(); }
         }
 
-        function promptSecurityPin() {
-            const pin = prompt("🔐 Ingrese su código de acceso autorizado:");
-            if (pin === "2107") {
-                isOwnerMode = true;
-                currentShiftName = "Modo Propietaria (Dueña)";
-                document.getElementById('current-user-role').innerText = "Izel (Dueña)";
-                document.getElementById('mode-subtitle').innerText = "Acceso Total Autorizado (Dueña)";
-                document.getElementById('owner-add-section').classList.remove('hidden');
-                document.getElementById('current-shift-badge').innerText = currentShiftName;
-                alert("✅ Acceso de Propietaria concedido.");
-                renderInventoryTable();
-            } else if (pin === "0805") {
-                isOwnerMode = false;
-                currentShiftName = "Turno Mañana";
-                document.getElementById('current-user-role').innerText = "Turno Mañana";
-                document.getElementById('mode-subtitle').innerText = "Vista de Empleada (Solo Rectificar Insumos)";
-                document.getElementById('owner-add-section').classList.add('hidden');
-                document.getElementById('current-shift-badge').innerText = currentShiftName;
-                alert("☀️ Turno Mañana activado.");
-                renderInventoryTable();
-            } else if (pin === "3240") {
-                isOwnerMode = false;
-                currentShiftName = "Turno Tarde";
-                document.getElementById('current-user-role').innerText = "Turno Tarde";
-                document.getElementById('mode-subtitle').innerText = "Vista de Empleada (Solo Rectificar Insumos)";
-                document.getElementById('owner-add-section').classList.add('hidden');
-                document.getElementById('current-shift-badge').innerText = currentShiftName;
-                alert("🌙 Turno Tarde activado.");
-                renderInventoryTable();
-            } else if (pin !== null) {
-                alert("❌ Código incorrecto.");
+        // CONTROL DE TECLADO NUMÉRICO TÁCTIL (PIN)
+        function openPinPadModal() {
+            currentPinInput = "";
+            updatePinDots();
+            document.getElementById('pinpad-modal').classList.remove('hidden');
+        }
+
+        function closePinPadModal() {
+            document.getElementById('pinpad-modal').classList.add('hidden');
+        }
+
+        function pressPinNum(num) {
+            if (currentPinInput.length < 4) {
+                currentPinInput += num;
+                updatePinDots();
+                if (currentPinInput.length === 4) {
+                    validatePin(currentPinInput);
+                }
             }
         }
 
-        // DESBLOQUEAR CAMPO DE FONDO INICIAL CON CÓDIGO
-        function unlockInitialFund() {
-            const pin = prompt("🔐 Ingrese código para desbloquear el Fondo Inicial:");
-            if (pin === "2107" || pin === "0805" || pin === "3240") {
-                const fundInput = document.getElementById('initial-fund');
-                fundInput.removeAttribute('readonly');
-                fundInput.classList.remove('bg-gray-100', 'text-gray-600', 'cursor-not-allowed');
-                fundInput.classList.add('bg-white', 'text-brand-pink');
-                fundInput.focus();
-                alert("🔓 Fondo inicial desbloqueado para edición.");
-            } else if (pin !== null) {
-                alert("❌ Código incorrecto.");
+        function backspacePin() {
+            if (currentPinInput.length > 0) {
+                currentPinInput = currentPinInput.slice(0, -1);
+                updatePinDots();
             }
+        }
+
+        function clearPin() {
+            currentPinInput = "";
+            updatePinDots();
+        }
+
+        function updatePinDots() {
+            let dotsHTML = "";
+            for (let i = 0; i < 4; i++) {
+                if (i < currentPinInput.length) {
+                    dotsHTML += "● ";
+                } else {
+                    dotsHTML += "○ ";
+                }
+            }
+            document.getElementById('pin-dots').innerText = dotsHTML.trim();
+        }
+
+        function validatePin(pin) {
+            setTimeout(() => {
+                closePinPadModal();
+                if (pin === "2107") {
+                    isOwnerMode = true;
+                    document.getElementById('sidebar-role-title').innerText = "Propietario";
+                    document.getElementById('owner-add-section').classList.remove('hidden');
+                    alert("✅ Acceso de Propietario concedido.");
+                    renderInventoryTable();
+                } else if (pin === "0805") {
+                    isOwnerMode = false;
+                    document.getElementById('sidebar-role-title').innerText = "Turno Mañana (0805)";
+                    document.getElementById('owner-add-section').classList.add('hidden');
+                    alert("☀️ Turno Mañana activado.");
+                    renderInventoryTable();
+                } else if (pin === "3240") {
+                    isOwnerMode = false;
+                    document.getElementById('sidebar-role-title').innerText = "Turno Tarde (3240)";
+                    document.getElementById('owner-add-section').classList.add('hidden');
+                    alert("🌙 Turno Tarde activado.");
+                    renderInventoryTable();
+                } else {
+                    alert("❌ PIN Incorrecto.");
+                }
+            }, 200);
+        }
+
+        function lockSystem() {
+            isOwnerMode = false;
+            document.getElementById('sidebar-role-title').innerText = "Sistema Bloqueado";
+            openPinPadModal();
+        }
+
+        // APERTURA DE TURNO (ESTILO FOTO 2)
+        function openTurnModal() {
+            document.getElementById('turn-modal').classList.remove('hidden');
+        }
+
+        function closeTurnModal() {
+            document.getElementById('turn-modal').classList.add('hidden');
+        }
+
+        function confirmOpenTurn() {
+            const fund = parseFloat(document.getElementById('input-turn-fund').value);
+            if(isNaN(fund) || fund < 0) return alert('Ingrese una cantidad válida.');
+            initialFund = fund;
+            shiftOpen = true;
+            document.getElementById('header-turn-status').innerText = "Turno Abierto";
+            closeTurnModal();
+            updateTreasuryDisplay();
+            alert('¡Turno abierto con éxito!');
         }
 
         function registerExpense() {
@@ -875,7 +972,7 @@
             shiftData.expenses.push({ reason, amount });
             document.getElementById('expense-reason').value = '';
             document.getElementById('expense-amount').value = '';
-            updateShiftDisplay();
+            updateTreasuryDisplay();
             renderExpensesList();
             alert('¡Gasto registrado en el turno!');
         }
@@ -890,51 +987,25 @@
             shiftData.expenses.forEach((exp, idx) => {
                 const row = document.createElement('div');
                 row.className = "flex justify-between items-center bg-white p-1.5 rounded-lg border text-xs";
-                row.innerHTML = `<span>${exp.reason}</span><div class="space-x-2"><strong class="text-red-600">-$${exp.amount.toFixed(2)}</strong><button onclick="shiftData.expenses.splice(${idx},1); updateShiftDisplay(); renderExpensesList();" class="text-red-400 font-bold">✕</button></div>`;
+                row.innerHTML = `<span>${exp.reason}</span><div class="space-x-2"><strong class="text-red-600">-$${exp.amount.toFixed(2)}</strong><button onclick="shiftData.expenses.splice(${idx},1); updateTreasuryDisplay(); renderExpensesList();" class="text-red-400 font-bold">✕</button></div>`;
                 container.appendChild(row);
             });
         }
 
-        function updateShiftDisplay() {
-            document.getElementById('shift-cash-sales').innerText = `$${shiftData.cashSales.toFixed(2)}`;
-            document.getElementById('shift-card-sales').innerText = `$${shiftData.cardSales.toFixed(2)}`;
+        function updateTreasuryDisplay() {
             let totalExpenses = shiftData.expenses.reduce((sum, e) => sum + e.amount, 0);
-            document.getElementById('shift-expenses-display').innerText = `$${totalExpenses.toFixed(2)}`;
-            document.getElementById('shift-total-sales').innerText = `$${(shiftData.totalSales - totalExpenses).toFixed(2)}`;
-            calculateCashCut();
-        }
+            let grossSales = shiftData.cashSales + shiftData.cardSales;
+            let expectedCash = initialFund + shiftData.cashSales - totalExpenses;
 
-        function calculateCashCut() {
-            const fund = parseFloat(document.getElementById('initial-fund').value) || 0;
-            const counted = parseFloat(document.getElementById('counted-cash').value) || 0;
-            let totalExpenses = shiftData.expenses.reduce((sum, e) => sum + e.amount, 0);
-            const expected = fund + shiftData.cashSales - totalExpenses;
-            const diff = counted - expected;
+            document.getElementById('rep-fund').innerText = `$${initialFund.toFixed(2)}`;
+            document.getElementById('rep-cash-sales').innerText = `$${shiftData.cashSales.toFixed(2)}`;
+            document.getElementById('rep-refunds').innerText = `$0.00`;
+            document.getElementById('rep-expenses').innerText = `$${totalExpenses.toFixed(2)}`;
+            document.getElementById('rep-expected-cash').innerText = `$${expectedCash.toFixed(2)}`;
 
-            document.getElementById('expected-cash-display').innerText = `$${expected.toFixed(2)}`;
-            const diffDisplay = document.getElementById('cut-difference-display');
-            
-            if (diff === 0) {
-                diffDisplay.innerText = `$0.00 (Exacto ✅)`;
-                diffDisplay.className = "font-bold text-base text-emerald-600";
-            } else if (diff > 0) {
-                diffDisplay.innerText = `+$${diff.toFixed(2)} (Sobrante ⚠️)`;
-                diffDisplay.className = "font-bold text-base text-blue-600";
-            } else {
-                diffDisplay.innerText = `-$${Math.abs(diff).toFixed(2)} (Faltante ❌)`;
-                diffDisplay.className = "font-bold text-base text-red-600";
-            }
-        }
-
-        function performShiftCut() {
-            if(confirm('¿Deseas cerrar y registrar el corte de caja de este turno?')) {
-                alert('¡Corte de caja registrado con éxito!');
-                shiftData = { cashSales: 0, cardSales: 0, totalSales: 0, expenses: [] };
-                document.getElementById('counted-cash').value = '';
-                renderExpensesList();
-                updateShiftDisplay();
-                switchTab('pos');
-            }
+            document.getElementById('rep-gross-sales').innerText = `$${grossSales.toFixed(2)}`;
+            document.getElementById('rep-discounts').innerText = `$${(discountVal + (window.lastHappyDiscount || 0)).toFixed(2)}`;
+            document.getElementById('rep-net-sales').innerText = `$${Math.max(0, grossSales - (discountVal + (window.lastHappyDiscount || 0))).toFixed(2)}`;
         }
 
         function renderInventoryTable() {
@@ -1135,6 +1206,7 @@
                 container.appendChild(div);
             });
 
+            window.lastHappyDiscount = happyHourDiscount;
             let totalDiscount = discountVal + happyHourDiscount;
             let finalTotal = Math.max(0, subtotal - totalDiscount);
 
