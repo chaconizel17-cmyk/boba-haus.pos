@@ -16,7 +16,8 @@
                             pink: '#e84393',
                             lightpink: '#fd79a8',
                             softpink: '#f8a5c2',
-                            cream: '#fdfee0',
+                            cream: '#fdfbfe',
+                            bg: '#f5f0eb',
                             dark: '#2d3436'
                         }
                     },
@@ -28,284 +29,941 @@
             }
         }
     </script>
+    <style>
+        body { font-family: 'Quicksand', sans-serif; background-color: #f5f0eb; user-select: none; }
+        h1, h2, h3, h4 { font-family: 'Fredoka', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: #f8a5c2; border-radius: 10px; }
+        @media print {
+            body * { visibility: hidden; }
+            #receipt-print-area, #receipt-print-area * { visibility: visible; }
+            #receipt-print-area { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
 </head>
-<body class="bg-brand-cream font-quicksand text-brand-dark min-h-screen flex flex-col">
+<body class="h-screen overflow-hidden flex flex-col text-gray-800">
 
-    <!-- Header -->
-    <header class="bg-brand-dark text-white shadow-md py-3 px-6 flex justify-between items-center">
+    <!-- HEADER / NAVBAR -->
+    <header class="bg-brand-pink text-white px-4 py-2 flex items-center justify-between shadow-md z-20 shrink-0">
         <div class="flex items-center space-x-3">
-            <div class="bg-brand-pink text-white p-2 rounded-full font-fredoka text-xl font-bold w-10 h-10 flex items-center justify-center">BH</div>
+            <div class="w-12 h-12 bg-white rounded-2xl p-1 shadow flex items-center justify-center shrink-0">
+                <svg viewBox="0 0 200 200" class="w-full h-full">
+                    <rect width="200" height="200" fill="#fdeef4" rx="20"/>
+                    <path d="M0 0h100v100H0zM100 100h100v100H100z" fill="#fbdbe7" opacity="0.5"/>
+                    <circle cx="100" cy="50" r="18" fill="#3a2318" stroke="#ffffff" stroke-dasharray="3,3" stroke-width="2"/>
+                    <circle cx="75" cy="80" r="18" fill="#3a2318" stroke="#ffffff" stroke-dasharray="3,3" stroke-width="2"/>
+                    <circle cx="125" cy="80" r="18" fill="#3a2318" stroke="#ffffff" stroke-dasharray="3,3" stroke-width="2"/>
+                    <text x="100" y="130" font-family="'Fredoka', sans-serif" font-weight="700" font-size="28" fill="#2d3436" text-anchor="middle">boba <tspan fill="#e84393">haus</tspan></text>
+                    <text x="100" y="152" font-family="'Quicksand', sans-serif" font-weight="600" font-size="14" fill="#636e72" text-anchor="middle">bubble tea</text>
+                    <line x1="25" y1="148" x2="55" y2="148" stroke="#e84393" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="145" y1="148" x2="175" y2="148" stroke="#e84393" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+            </div>
             <div>
-                <h1 class="font-fredoka text-xl tracking-wide">Boba Haus</h1>
-                <p class="text-xs text-brand-softpink">Sistema POS & Control de Inventarios con Alertas</p>
+                <h1 class="text-xl font-bold tracking-wide leading-none">boba haus</h1>
+                <span class="text-xs text-pink-200">bubble tea & food pos</span>
             </div>
         </div>
-        <div class="flex items-center space-x-4">
-            <button onclick="cambiarVista('pos')" id="btn-pos" class="bg-brand-pink px-4 py-2 rounded-lg font-medium text-sm transition hover:bg-brand-lightpink shadow">
-                <i class="fas fa-cash-register mr-1"></i> Caja / POS
+
+        <nav class="flex items-center space-x-2">
+            <button onclick="switchTab('pos')" id="nav-pos" class="px-3 py-1.5 rounded-xl bg-white/30 text-sm font-bold flex items-center space-x-1">
+                <i class="fa-solid fa-store"></i> <span>Punto de Venta</span>
             </button>
-            <button onclick="cambiarVista('inventario')" id="btn-inv" class="bg-gray-700 px-4 py-2 rounded-lg font-medium text-sm transition hover:bg-gray-600 shadow">
-                <i class="fas fa-boxes mr-1"></i> Inventario & Alertas
+            <button onclick="switchTab('shift')" id="nav-shift" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-sm font-semibold flex items-center space-x-1">
+                <i class="fa-solid fa-boxes-stacked"></i> <span>Caja e Inventario</span>
             </button>
+        </nav>
+
+        <div class="flex items-center space-x-3 border-l border-pink-400/50 pl-3">
+            <div class="text-right">
+                <p id="current-user-role" class="text-xs font-bold leading-tight">Izel (Dueña)</p>
+                <button onclick="toggleOwnerMode()" class="text-[10px] bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-lg mt-0.5 font-bold">Cambiar Modo</button>
+            </div>
         </div>
     </header>
 
-    <!-- Contenedor Principal -->
-    <main class="flex-1 p-6 max-w-7xl mx-auto w-full">
+    <!-- MAIN BODY -->
+    <main class="flex-1 overflow-hidden relative">
 
-        <!-- VISTA POS / CAJA -->
-        <div id="vista-pos" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Menú de Productos -->
-            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-pink-100">
-                <h2 class="font-fredoka text-xl mb-4 text-brand-dark flex items-center">
-                    <i class="fas fa-mug-hot text-brand-pink mr-2"></i> Menú Completo de Bebidas
-                </h2>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[600px] overflow-y-auto pr-2" id="catalogo-productos">
-                    <!-- Productos inyectados por JS -->
+        <!-- TAB 1: POS -->
+        <section id="tab-pos" class="h-full flex flex-col md:flex-row">
+            <div class="flex-1 flex flex-col h-full bg-brand-bg border-r border-gray-200 overflow-hidden">
+                <div class="p-3 bg-white border-b border-gray-200 flex items-center justify-between shrink-0 shadow-sm">
+                    <div class="flex items-center space-x-2">
+                        <button id="btn-back-categories" onclick="showCategoriesView()" class="hidden px-3 py-1.5 bg-pink-100 hover:bg-pink-200 text-brand-pink font-bold text-xs rounded-xl flex items-center space-x-1">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            <span>Volver a Categorías</span>
+                        </button>
+                        <h2 id="current-view-title" class="font-bold text-gray-800 text-base">Categorías del Menú</h2>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <button id="btn-eco-discount" onclick="applyEcoDiscount()" class="px-3 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-300">
+                            🌱 Vaso Reutilizable (-$10)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex-1 p-4 overflow-y-auto">
+                    <!-- AVISO DE PROMOS DE LA SEMANA -->
+                    <div class="mb-4 bg-gradient-to-r from-pink-500 to-brand-lightpink text-white p-3 rounded-2xl shadow-sm flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-gift text-xl"></i>
+                            <div>
+                                <p class="text-xs font-bold">Promoción de la Semana:</p>
+                                <p id="daily-promo-banner" class="text-[11px] text-pink-100 font-semibold">Lunes a Miércoles: ¡3x2 en Smoothies!</p>
+                            </div>
+                        </div>
+                        <span id="day-indicator-badge" class="bg-white/20 px-2 py-1 rounded-lg text-[10px] font-bold">Hoy</span>
+                    </div>
+
+                    <!-- CATEGORIES MAIN SCREEN -->
+                    <div id="categories-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <div onclick="openCategoryProducts('temporada')" class="bg-amber-50 p-5 rounded-3xl border border-amber-200 shadow-sm hover:shadow-md hover:border-amber-400 transition flex flex-col items-center text-center cursor-pointer relative">
+                            <span class="absolute top-2 right-2 bg-amber-200 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full">🍂 Otoño</span>
+                            <span class="text-4xl mb-2">☕</span>
+                            <h3 class="font-bold text-amber-900 text-base">TEMPORADA</h3>
+                            <span class="text-xs text-amber-700 mt-1">Otoño Caramelo • $75</span>
+                        </div>
+                        <div onclick="openCategoryProducts('boba')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                            <span class="text-4xl mb-2">🧋</span>
+                            <h3 class="font-bold text-gray-800 text-base">BOBA</h3>
+                            <span class="text-xs text-gray-400 mt-1">Sabores • $70 - $75</span>
+                        </div>
+                        <div onclick="openCategoryProducts('xolot')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                            <span class="text-4xl mb-2">🥤</span>
+                            <h3 class="font-bold text-gray-800 text-base">XOLOT</h3>
+                            <span class="text-xs text-gray-400 mt-1">Piña, Frutos, Fresa • $70</span>
+                        </div>
+                        <div onclick="openCategoryProducts('fortuna')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer relative">
+                            <span class="absolute top-2 right-2 bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">🍻 H. Feliz</span>
+                            <span class="text-4xl mb-2">🍺</span>
+                            <h3 class="font-bold text-gray-800 text-base">FORTUNA</h3>
+                            <span class="text-xs text-gray-400 mt-1">Cerveza, Copeo, Michelada</span>
+                        </div>
+                        <div onclick="openCategoryProducts('soda')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                            <span class="text-4xl mb-2">🍹</span>
+                            <h3 class="font-bold text-gray-800 text-base">SODA ITALIANA</h3>
+                            <span class="text-xs text-gray-400 mt-1">9 Sabores • $45</span>
+                        </div>
+                        <div onclick="openCategoryProducts('frappe')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                            <span class="text-4xl mb-2">🥤</span>
+                            <h3 class="font-bold text-gray-800 text-base">FRAPPÉ</h3>
+                            <span class="text-xs text-gray-400 mt-1">Sabores • $70 - $80</span>
+                        </div>
+                        <div onclick="openCategoryProducts('smoothie')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                            <span class="text-4xl mb-2">🥭</span>
+                            <h3 class="font-bold text-gray-800 text-base">SMOOTHIE</h3>
+                            <span class="text-xs text-gray-400 mt-1">Sabores • $70</span>
+                        </div>
+                        <div onclick="openCategoryProducts('cafe_frio')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                            <span class="text-4xl mb-2">🧊</span>
+                            <h3 class="font-bold text-gray-800 text-base">CAFÉ FRÍO</h3>
+                            <span class="text-xs text-gray-400 mt-1">Capuchinos, Americano</span>
+                        </div>
+                        <div onclick="openCategoryProducts('cafe_caliente')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                            <span class="text-4xl mb-2">☕</span>
+                            <h3 class="font-bold text-gray-800 text-base">CAFÉ CALIENTE</h3>
+                            <span class="text-xs text-gray-400 mt-1">Espresso, Latte, Olla...</span>
+                        </div>
+                        <div onclick="openCategoryProducts('tizana')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                            <span class="text-4xl mb-2">🫖</span>
+                            <h3 class="font-bold text-gray-800 text-base">TIZANA</h3>
+                            <span class="text-xs text-gray-400 mt-1">12 oz y 16 oz • $50 - $65</span>
+                        </div>
+                        <div onclick="openCategoryProducts('bowl')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                            <span class="text-4xl mb-2">🥗</span>
+                            <h3 class="font-bold text-gray-800 text-base">BOWL</h3>
+                            <span class="text-xs text-gray-400 mt-1">Chico / Grande • $65 - $95</span>
+                        </div>
+                        <div onclick="openCategoryProducts('crepas')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                            <span class="text-4xl mb-2">🥞</span>
+                            <h3 class="font-bold text-gray-800 text-base">CREPAS</h3>
+                            <span class="text-xs text-gray-400 mt-1">Dulces y Saladas • $50 - $80</span>
+                        </div>
+                        <div onclick="openCategoryProducts('banderillas')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                            <span class="text-4xl mb-2">🌭</span>
+                            <h3 class="font-bold text-gray-800 text-base">BANDERILLAS</h3>
+                            <span class="text-xs text-gray-400 mt-1">Ramen, Papa, Panko • $55 - $65</span>
+                        </div>
+                        <div onclick="openCategoryProducts('pasteles')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                            <span class="text-4xl mb-2">🍰</span>
+                            <h3 class="font-bold text-gray-800 text-base">PASTELES</h3>
+                            <span class="text-xs text-gray-400 mt-1">Matilde, Cheesecakes • $45 - $50</span>
+                        </div>
+                        <div onclick="openCategoryProducts('comida')" class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
+                            <span class="text-4xl mb-2">🥪</span>
+                            <h3 class="font-bold text-gray-800 text-base">COMIDA</h3>
+                            <span class="text-xs text-gray-400 mt-1">Sandwiches, Waffles, Hot Cakes</span>
+                        </div>
+                    </div>
+
+                    <div id="products-desglose-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 hidden"></div>
                 </div>
             </div>
 
-            <!-- Ticket de Venta -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-pink-100 flex flex-col justify-between">
-                <div>
-                    <h2 class="font-fredoka text-xl mb-4 text-brand-dark flex items-center">
-                        <i class="fas fa-receipt text-brand-pink mr-2"></i> Ticket Actual
-                    </h2>
-                    <div id="lista-ticket" class="divide-y divide-gray-100 max-h-72 overflow-y-auto mb-4">
-                        <p class="text-gray-400 text-sm text-center py-8">No hay productos agregados</p>
+            <!-- CART -->
+            <div class="w-full md:w-96 lg:w-[400px] bg-white flex flex-col h-full shadow-lg shrink-0">
+                <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between shrink-0">
+                    <div class="flex items-center space-x-2">
+                        <span class="font-bold text-gray-700 text-base">Orden #<span id="order-id-display">0001</span></span>
+                        <select id="order-mode" class="text-xs bg-white border border-gray-300 rounded-lg px-2 py-1 font-semibold text-brand-pink outline-none">
+                            <option value="local">🍽️ Comer Aquí</option>
+                            <option value="llevar">🛍️ Para Llevar</option>
+                            <option value="domicilio">🛵 Domicilio</option>
+                        </select>
+                    </div>
+                    <button onclick="clearCart()" class="text-xs text-red-500 font-bold hover:underline">Vaciar</button>
+                </div>
+
+                <!-- SELECTOR DE UBICACIÓN Y HORA FELIZ -->
+                <div class="p-2 bg-amber-50 border-b border-amber-200 text-xs space-y-1">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-amber-800">Establecimiento:</span>
+                        <select id="store-location" onchange="renderCart()" class="bg-white border border-amber-300 rounded px-2 py-0.5 font-semibold text-amber-900 outline-none">
+                            <option value="boba_haus">Boba Haus</option>
+                            <option value="fortuna">Fortuna 🍻</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-amber-700">Hora Feliz (8 PM - 9 PM):</span>
+                        <label class="flex items-center space-x-1 cursor-pointer">
+                            <input type="checkbox" id="happy-hour-toggle" onchange="checkAndToggleHappyHour(this)" class="rounded text-amber-600 focus:ring-amber-500">
+                            <span class="font-semibold text-amber-800">Aplicar Gratis (Solo Fortuna)</span>
+                        </label>
                     </div>
                 </div>
-                <div>
-                    <div class="border-t pt-4 mb-4">
-                        <div class="flex justify-between font-fredoka text-lg">
-                            <span>Total:</span>
-                            <span id="total-ticket" class="text-brand-pink">$0.00</span>
-                        </div>
+
+                <div id="cart-items-container" class="flex-1 overflow-y-auto p-3 space-y-2">
+                    <div id="empty-cart-msg" class="h-full flex flex-col items-center justify-center text-gray-400 py-12">
+                        <i class="fa-solid fa-basket-shopping text-4xl mb-2 text-gray-300"></i>
+                        <p class="text-xs font-medium">Carrito vacío. Selecciona una categoría.</p>
                     </div>
-                    <button onclick="realizarVenta()" class="w-full bg-brand-pink text-white py-3 rounded-xl font-fredoka font-semibold shadow-md hover:bg-brand-lightpink transition">
-                        <i class="fas fa-check-circle mr-2"></i> Cobrar y Descontar Inventario
+                </div>
+
+                <div class="p-3 bg-gray-50 border-t border-gray-200 shrink-0 space-y-2">
+                    <div class="space-y-1 text-xs text-gray-600">
+                        <div class="flex justify-between"><span>Subtotal:</span><span id="cart-subtotal">$0.00</span></div>
+                        <div class="flex justify-between text-emerald-600 font-semibold"><span>Descuento / Promo:</span><span id="cart-discount">-$0.00</span></div>
+                        <div class="flex justify-between text-gray-800 font-bold text-lg border-t pt-1"><span>Total:</span><span id="cart-total" class="text-brand-pink">$0.00</span></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <button onclick="openCheckoutModal()" class="py-3 bg-brand-pink hover:bg-pink-600 text-white rounded-xl font-bold text-sm shadow transition col-span-2">
+                            💵 Cobrar Pedido
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB SHIFT & INVENTORY -->
+        <section id="tab-shift" class="h-full bg-brand-bg p-4 overflow-y-auto hidden">
+            <div class="max-w-3xl mx-auto bg-white p-5 rounded-3xl shadow-sm space-y-5">
+                <div class="flex justify-between items-center border-b pb-3">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800">Gestión de Inventario e Insumos</h2>
+                        <p id="mode-subtitle" class="text-xs text-gray-500">Vista de Dueña (Edición y Control Total)</p>
+                    </div>
+                    <button onclick="toggleOwnerMode()" class="px-3 py-1.5 bg-pink-100 text-brand-pink font-bold text-xs rounded-xl">
+                        🔒 Cambiar a Vista Empleada
                     </button>
                 </div>
-            </div>
-        </div>
 
-        <!-- VISTA INVENTARIO & ALERTAS -->
-        <div id="vista-inventario" class="hidden space-y-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-pink-100 flex justify-between items-center">
-                <div>
-                    <h2 class="font-fredoka text-2xl text-brand-dark">Control de Inventario y Alertas en Vivo</h2>
-                    <p class="text-sm text-gray-500">Jarabes, polvos y existencias actuales en el local de Chiautla de Tapia.</p>
+                <!-- SECCIÓN DUEÑO: AÑADIR NUEVO INSUMO -->
+                <div id="owner-add-section" class="bg-pink-50 p-4 rounded-2xl border border-pink-200 space-y-3">
+                    <h3 class="font-bold text-xs text-brand-pink uppercase tracking-wide">➕ Añadir Nuevo Insumo al Almacén</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <input type="text" id="new-item-name" placeholder="Nombre (Ej. Vasos 16oz)" class="p-2 border rounded-xl text-xs bg-white">
+                        <input type="number" id="new-item-stock" placeholder="Stock Inicial" class="p-2 border rounded-xl text-xs bg-white">
+                        <input type="text" id="new-item-unit" placeholder="Unidad (Pzas, Kilos, Litros)" class="p-2 border rounded-xl text-xs bg-white">
+                    </div>
+                    <button onclick="addNewInventoryItem()" class="w-full py-2 bg-brand-pink text-white font-bold rounded-xl text-xs shadow">Guardar Nuevo Insumo</button>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">🟢 Normal</span>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">🟡 Stock Bajo</span>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">🔴 Agotado</span>
+
+                <!-- TABLA DE INVENTARIO -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-700">
+                                <th class="p-3 rounded-l-xl">Insumo / Artículo</th>
+                                <th class="p-3">Stock Actual</th>
+                                <th class="p-3">Unidad</th>
+                                <th class="p-3 rounded-r-xl text-center">Acciones / Rectificación</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body" class="divide-y divide-gray-100">
+                            <!-- Dinámico -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="border-t pt-4 space-y-3">
+                    <h3 class="font-bold text-xs text-gray-700">Configuración de Impresora IP</h3>
+                    <div class="flex space-x-2">
+                        <input type="text" id="printer-ip-input" value="192.168.1.200" placeholder="Ej. 192.168.1.200" class="flex-1 p-2 border rounded-xl text-xs font-mono">
+                        <button onclick="savePrinterIP()" class="px-4 py-2 bg-purple-600 text-white font-bold rounded-xl text-xs">Guardar IP</button>
+                    </div>
                 </div>
             </div>
-
-            <!-- Tabla de Inventario -->
-            <div class="bg-white rounded-2xl shadow-sm border border-pink-100 overflow-hidden">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-500 font-fredoka">
-                        <tr>
-                            <th class="p-4">Insumo / Producto</th>
-                            <th class="p-4">Categoría</th>
-                            <th class="p-4">Existencia Actual</th>
-                            <th class="p-4">Estado / Semáforo</th>
-                            <th class="p-4 text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-inventario-body" class="divide-y divide-gray-100 text-sm">
-                        <!-- Inyectado por JS -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
+        </section>
     </main>
 
-    <!-- Script de Gestión e Inventario -->
+    <!-- CUSTOM PRODUCT MODAL -->
+    <div id="custom-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-2">
+                <div>
+                    <h3 id="modal-product-name" class="font-bold text-base text-gray-800">Producto</h3>
+                    <span id="modal-product-price-tag" class="text-xs font-bold text-brand-pink">$0.00</span>
+                </div>
+                <button onclick="closeCustomModal()" class="text-gray-400 font-bold">✕</button>
+            </div>
+
+            <!-- TOPPING INCLUIDO (BASE) -->
+            <div id="base-topping-section" style="display: none;">
+                <label class="text-xs font-bold block mb-1 text-gray-700">Topping Incluido:</label>
+                <select id="modal-base-topping-select" class="w-full p-2 border rounded-xl text-xs bg-gray-50 font-semibold">
+                    <option value="Tapioca">Perlas Tapioca</option>
+                    <option value="POP Fresa">POP Fresa</option>
+                    <option value="POP Mango">POP Mango</option>
+                    <option value="POP Blue Berry">POP Blue Berry</option>
+                    <option value="POP Arcoíris">POP Arcoíris</option>
+                    <option value="POP Manzana Verde">POP Manzana Verde</option>
+                    <option value="POP Yogurth">POP Yogurth</option>
+                </select>
+            </div>
+
+            <!-- AZÚCAR -->
+            <div id="sugar-section" style="display: none;">
+                <label class="text-xs font-bold block mb-1 text-gray-700">Nivel de Azúcar:</label>
+                <div class="grid grid-cols-4 gap-1">
+                    <button type="button" onclick="selectOpt(this, 'azucar')" class="opt-azucar p-2 border rounded-xl font-bold bg-pink-50 text-brand-pink border-brand-pink text-xs">100%</button>
+                    <button type="button" onclick="selectOpt(this, 'azucar')" class="opt-azucar p-2 border rounded-xl font-semibold text-xs">75%</button>
+                    <button type="button" onclick="selectOpt(this, 'azucar')" class="opt-azucar p-2 border rounded-xl font-semibold text-xs">50%</button>
+                    <button type="button" onclick="selectOpt(this, 'azucar')" class="opt-azucar p-2 border rounded-xl font-semibold text-xs">Sin Azúcar</button>
+                </div>
+            </div>
+
+            <!-- HIELO -->
+            <div id="ice-section" style="display: none;">
+                <label class="text-xs font-bold block mb-1 text-gray-700">Nivel de Hielo:</label>
+                <div class="grid grid-cols-3 gap-1">
+                    <button type="button" onclick="selectOpt(this, 'hielo')" class="opt-hielo p-2 border rounded-xl font-bold bg-pink-50 text-brand-pink border-brand-pink text-xs">Normal</button>
+                    <button type="button" onclick="selectOpt(this, 'hielo')" class="opt-hielo p-2 border rounded-xl font-semibold text-xs">Poco Hielo</button>
+                    <button type="button" onclick="selectOpt(this, 'hielo')" class="opt-hielo p-2 border rounded-xl font-semibold text-xs">Sin Hielo</button>
+                </div>
+            </div>
+
+            <!-- TOPPINGS EXTRAS (+$10) -->
+            <div id="extra-toppings-section" style="display: none;">
+                <label class="text-xs font-bold block mb-1 text-gray-700">Toppings Extras (+$10 c/u):</label>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <label class="flex items-center space-x-1 border p-2 rounded-xl cursor-pointer">
+                        <input type="checkbox" value="Extra Tapioca" data-price="10" class="extra-cb text-brand-pink" onchange="updateModalTotal()">
+                        <span>Extra Tapioca (+$10)</span>
+                    </label>
+                    <label class="flex items-center space-x-1 border p-2 rounded-xl cursor-pointer">
+                        <input type="checkbox" value="Base Yogurth" data-price="10" class="extra-cb text-brand-pink" onchange="updateModalTotal()">
+                        <span>Base Yogurth (+$10)</span>
+                    </label>
+                    <label class="flex items-center space-x-1 border p-2 rounded-xl cursor-pointer">
+                        <input type="checkbox" value="POP Extra" data-price="10" class="extra-cb text-brand-pink" onchange="updateModalTotal()">
+                        <span>POP Extra (+$10)</span>
+                    </label>
+                    <label class="flex items-center space-x-1 border p-2 rounded-xl cursor-pointer">
+                        <input type="checkbox" value="Combinación" data-price="10" class="extra-cb text-brand-pink" onchange="updateModalTotal()">
+                        <span>Combinación (+$10)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-2 border-t">
+                <span id="modal-calculated-total" class="font-bold text-brand-pink text-base">$0.00</span>
+                <button onclick="confirmCustomProductAdd()" class="px-4 py-2 bg-brand-pink text-white font-bold rounded-xl text-xs">Añadir al Carrito</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHECKOUT MODAL -->
+    <div id="checkout-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-5 space-y-4 relative">
+            <button onclick="closeCheckoutModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 font-bold text-base">✕</button>
+            
+            <h3 class="font-bold text-lg text-center mt-2">Cobrar Pedido</h3>
+            <span id="checkout-total-display" class="text-2xl font-bold text-brand-pink block text-center">$0.00</span>
+            
+            <div class="grid grid-cols-2 gap-2">
+                <button type="button" onclick="setPaymentMethod('efectivo')" id="btn-pay-cash" class="py-2.5 bg-brand-pink text-white font-bold rounded-xl text-xs shadow transition">
+                    💵 Efectivo
+                </button>
+                <button type="button" onclick="setPaymentMethod('tarjeta')" id="btn-pay-card" class="py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition">
+                    💳 Tarjeta
+                </button>
+            </div>
+
+            <div id="cash-payment-section" class="space-y-2">
+                <input type="number" id="cash-received-input" onkeyup="calculateChange()" placeholder="Efectivo recibido..." class="w-full text-lg font-bold p-2 border rounded-xl text-center outline-none focus:border-brand-pink">
+                <div class="bg-emerald-50 p-2 rounded-xl text-center">
+                    <span class="text-xs text-emerald-700 block">Cambio:</span>
+                    <span id="cash-change-display" class="text-lg font-bold text-emerald-700">$0.00</span>
+                </div>
+            </div>
+
+            <div id="card-payment-section" class="bg-purple-50 p-3 rounded-xl text-center hidden">
+                <p class="text-xs text-purple-800 font-semibold"><i class="fa-solid fa-credit-card mr-1"></i> Cobro seleccionado mediante Terminal / Tarjeta.</p>
+            </div>
+
+            <button onclick="processFinalPayment()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow transition">
+                Confirmar y Registrar Venta
+            </button>
+        </div>
+    </div>
+
+    <!-- TICKET MODAL -->
+    <div id="receipt-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-xs w-full p-5 space-y-3 shadow-2xl">
+            <div id="receipt-print-area" class="font-mono text-[11px] text-gray-800 space-y-2 bg-gray-50 p-3 rounded-xl border text-center">
+                <div class="flex justify-center mb-1">
+                    <div class="w-10 h-10 bg-brand-pink rounded-xl p-1 shadow flex items-center justify-center">
+                        <svg viewBox="0 0 200 200" class="w-full h-full">
+                            <circle cx="100" cy="50" r="18" fill="#ffffff" stroke="#3a2318" stroke-dasharray="3,3" stroke-width="2"/>
+                            <circle cx="75" cy="80" r="18" fill="#ffffff" stroke="#3a2318" stroke-dasharray="3,3" stroke-width="2"/>
+                            <circle cx="125" cy="80" r="18" fill="#ffffff" stroke="#3a2318" stroke-dasharray="3,3" stroke-width="2"/>
+                            <text x="100" y="130" font-family="'Fredoka', sans-serif" font-weight="700" font-size="28" fill="#ffffff" text-anchor="middle">boba haus</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="border-b pb-2">
+                    <h4 class="font-bold text-sm tracking-wide">BOBA HAUS</h4>
+                    <p class="text-[9px] text-pink-600 italic font-semibold">"Hecho con cariño, servido con pasión"</p>
+                    <p class="text-[9px] text-gray-500 mt-1">Tel: 275 105 73 79</p>
+                    <p class="text-[9px] text-gray-500">Chiautla de Tapia, Puebla</p>
+                    <p id="receipt-date" class="text-[9px] text-gray-500"></p>
+                </div>
+
+                <div class="space-y-0.5 border-b pb-2 text-left">
+                    <p><strong>Orden #:</strong> <span id="rec-order-num">0001</span></p>
+                    <p><strong>Tipo:</strong> <span id="rec-order-mode">Comer Aquí</span></p>
+                </div>
+
+                <div id="rec-items-list" class="space-y-1 border-b pb-2 text-left"></div>
+
+                <div class="space-y-0.5 text-right font-bold">
+                    <p>Subtotal: <span id="rec-subtotal" class="font-normal">$0.00</span></p>
+                    <p>Descuento/Promo: <span id="rec-discount" class="font-normal text-emerald-600">-$0.00</span></p>
+                    <p class="text-sm">TOTAL: <span id="rec-total" class="text-brand-pink">$0.00</span></p>
+                    <p class="text-[10px] font-normal">Pago: <span id="rec-payment">Efectivo</span></p>
+                    <p class="text-[10px] font-normal" id="rec-change-line">Cambio: <span id="rec-change">$0.00</span></p>
+                </div>
+
+                <div class="text-center pt-2 text-[9px] text-gray-500 border-t space-y-1">
+                    <p class="font-semibold text-brand-pink">Comparte tu experiencia y etiqueta a Boba Haus. ¡Nos encanta verte disfrutar tu bebida!</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-1">
+                <button onclick="printReceiptTicket()" class="py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs shadow transition">
+                    🖨️ Imprimir Ticket
+                </button>
+                <button onclick="closeReceiptModal()" class="py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl text-xs transition">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        let inventario = [
-            { id: 'avellana', nombre: 'Jarabe Avellana', categoria: 'Jarabes', cantidad: 2000, unidad: 'ml', min: 400 },
-            { id: 'mora', nombre: 'Jarabe Mora', categoria: 'Jarabes', cantidad: 2000, unidad: 'ml', min: 400 },
-            { id: 'maracuya', nombre: 'Jarabe Maracuyá', categoria: 'Jarabes', cantidad: 1760, unidad: 'ml', min: 400 },
-            { id: 'frutos_rojos', nombre: 'Jarabe Frutos Rojos', categoria: 'Jarabes', cantidad: 1000, unidad: 'ml', min: 300 },
-            { id: 'fresa', nombre: 'Jarabe Fresa', categoria: 'Jarabes', cantidad: 1930, unidad: 'ml', min: 400 },
-            { id: 'manzana_verde', nombre: 'Jarabe Manzana Verde', categoria: 'Jarabes', cantidad: 809, unidad: 'ml', min: 250 },
-            { id: 'cereza', nombre: 'Jarabe Cereza', categoria: 'Jarabes', cantidad: 801, unidad: 'ml', min: 250 },
-            { id: 'mango', nombre: 'Jarabe Mango', categoria: 'Jarabes', cantidad: 796, unidad: 'ml', min: 250 },
-            { id: 'dubai', nombre: 'Polvos Dubái', categoria: 'Polvos', cantidad: 556, unidad: 'g', min: 150 },
-            { id: 'choco_negro', nombre: 'Chocolate Negro', categoria: 'Polvos', cantidad: 2000, unidad: 'g', min: 500 },
-            { id: 'blanco', nombre: 'Chocolate Blanco', categoria: 'Polvos', cantidad: 2000, unidad: 'g', min: 500 },
-            { id: 'taro', nombre: 'Taro', categoria: 'Polvos', cantidad: 6000, unidad: 'g', min: 1000 },
-            { id: 'caramelo', nombre: 'Caramelo', categoria: 'Polvos', cantidad: 3000, unidad: 'g', min: 600 },
-            { id: 'techai', nombre: 'Te Chai', categoria: 'Polvos', cantidad: 670, unidad: 'g', min: 200 },
-            { id: 'lychee', nombre: 'Lychee', categoria: 'Polvos', cantidad: 344, unidad: 'g', min: 100 },
-            { id: 'fresa_crema', nombre: 'Fresas c/ crema', categoria: 'Polvos', cantidad: 646, unidad: 'g', min: 200 },
-            { id: 'cookies_cream', nombre: 'Cookies and Cream', categoria: 'Polvos', cantidad: 1586, unidad: 'g', min: 400 },
-            { id: 'chai_negro', nombre: 'Chai Negro', categoria: 'Polvos', cantidad: 1573, unidad: 'g', min: 400 },
-            { id: 'cap_vainilla', nombre: 'Cap. Vainilla', categoria: 'Polvos', cantidad: 1613, unidad: 'g', min: 400 },
-            { id: 'moka', nombre: 'Moka', categoria: 'Polvos', cantidad: 507, unidad: 'g', min: 150 },
-            { id: 'matcha', nombre: 'Matcha', categoria: 'Polvos', cantidad: 916, unidad: 'g', min: 250 },
-            { id: 'chai_latte', nombre: 'Chai Latte', categoria: 'Polvos', cantidad: 854, unidad: 'g', min: 250 }
+        let PRINTER_IP = "192.168.1.200";
+        let selectedPaymentMethod = 'efectivo';
+        let orderCounter = 1;
+        let isOwnerMode = true;
+
+        let inventoryDB = [
+            { id: 1, name: 'Vasos 12 oz + Tapa', stock: 250, unit: 'Pzas' },
+            { id: 2, name: 'Vasos 16 oz + Tapa', stock: 300, unit: 'Pzas' },
+            { id: 3, name: 'Perlas de Tapioca', stock: 5, unit: 'Kilos' },
+            { id: 4, name: 'Polvo Base Taro', stock: 3, unit: 'Kilos' },
+            { id: 5, name: 'Polvo Fresas con Crema', stock: 4, unit: 'Kilos' },
+            { id: 6, name: 'Popotes Gruesos', stock: 500, unit: 'Pzas' },
+            { id: 7, name: 'Cajeta / Caramelo', stock: 2, unit: 'Litros' },
+            { id: 8, name: 'Chocolate / Avellana', stock: 3, unit: 'Litros' },
+            { id: 9, name: 'Preparado Michelada', stock: 5, unit: 'Litros' }
         ];
 
-        let productosPOS = [
-            { id: 1, nombre: 'Boba Te de Taro', precio: 65, insumoReq: 'taro', consumo: 50 },
-            { id: 2, nombre: 'Boba Te de Chocolate Negro', precio: 65, insumoReq: 'choco_negro', consumo: 50 },
-            { id: 3, nombre: 'Boba Te de Chocolate Blanco', precio: 65, insumoReq: 'blanco', consumo: 50 },
-            { id: 4, nombre: 'Boba Matcha', precio: 70, insumoReq: 'matcha', consumo: 45 },
-            { id: 5, nombre: 'Boba Fresa con Crema', precio: 65, insumoReq: 'fresa_crema', consumo: 50 },
-            { id: 6, nombre: 'Boba Cookies and Cream', precio: 70, insumoReq: 'cookies_cream', consumo: 50 },
-            { id: 7, nombre: 'Boba Caramelo', precio: 65, insumoReq: 'caramelo', consumo: 50 },
-            { id: 8, nombre: 'Boba Moka', precio: 65, insumoReq: 'moka', consumo: 50 },
-            { id: 9, nombre: 'Boba Chai Latte', precio: 65, insumoReq: 'chai_latte', consumo: 50 },
-            { id: 10, nombre: 'Boba Frutos Rojos', precio: 60, insumoReq: 'frutos_rojos', consumo: 40 },
-            { id: 11, nombre: 'Boba Maracuyá', precio: 60, insumoReq: 'maracuya', consumo: 40 },
-            { id: 12, nombre: 'Boba Mango', precio: 60, insumoReq: 'mango', consumo: 40 },
-            { id: 13, nombre: 'Boba Manzana Verde', precio: 60, insumoReq: 'manzana_verde', consumo: 40 },
-            { id: 14, nombre: 'Boba Lychee', precio: 65, insumoReq: 'lychee', consumo: 40 },
-            { id: 15, nombre: 'Boba Avellana', precio: 65, insumoReq: 'avellana', consumo: 40 },
-            { id: 16, nombre: 'Boba Mora', precio: 60, insumoReq: 'mora', consumo: 40 }
+        const dailyPromos = {
+            1: "Lunes: ¡3x2 en Smoothies!",
+            2: "Martes: ¡3x2 en Smoothies!",
+            3: "Miércoles: ¡3x2 en Smoothies!",
+            4: "Jueves: ¡Promoción Especial del Día!",
+            5: "Viernes: ¡Fin de semana en Boba Haus!",
+            6: "Sábado: ¡Disfruta tus bebidas favoritas!",
+            0: "Domingo: ¡Familiar en Boba Haus!"
+        };
+
+        const todayDayIndex = new Date().getDay();
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("daily-promo-banner").innerText = dailyPromos[todayDayIndex] || "¡Disfruta tus bebidas!";
+            document.getElementById("order-id-display").innerText = String(orderCounter).padStart(4, '0');
+            renderInventoryTable();
+        });
+
+        const productsDB = [
+            { name: 'Otoño Caramelo (Especial)', price: 75, category: 'temporada' },
+            { name: 'Boba Fresas c/ crema', price: 70, category: 'boba' },
+            { name: 'Boba Taro', price: 70, category: 'boba' },
+            { name: 'Boba Caramelo', price: 70, category: 'boba' },
+            { name: 'Boba Matcha', price: 70, category: 'boba' },
+            { name: 'Boba Ferrero', price: 75, category: 'boba' },
+            { name: 'Boba Chocolate Blanco', price: 70, category: 'boba' },
+            { name: 'Boba Mazapán', price: 70, category: 'boba' },
+            { name: 'Boba Cajeta', price: 70, category: 'boba' },
+            { name: 'Boba Chocolate', price: 70, category: 'boba' },
+            { name: 'Boba Chai Latte', price: 70, category: 'boba' },
+            { name: 'Boba Lychee', price: 70, category: 'boba' },
+            { name: 'Boba Chai Negro', price: 70, category: 'boba' },
+            { name: 'Boba Chocolate de dubai', price: 70, category: 'boba' },
+            { name: 'Xolot Piña', price: 70, category: 'xolot' },
+            { name: 'Xolot Frutos Rojos', price: 70, category: 'xolot' },
+            { name: 'Xolot Fresa', price: 70, category: 'xolot' },
+            { name: 'Cerveza Victoria', price: 45, category: 'fortuna' },
+            { name: 'Cerveza Corona', price: 45, category: 'fortuna' },
+            { name: 'Copeo Johnnie Walker', price: 90, category: 'fortuna' },
+            { name: 'Copeo Torres 10', price: 90, category: 'fortuna' },
+            { name: 'Copeo Tequila', price: 80, category: 'fortuna' },
+            { name: 'Michelada (Adicional)', price: 25, category: 'fortuna' },
+            { name: 'Soda Italiana Mora Azul', price: 45, category: 'soda' },
+            { name: 'Soda Italiana Mango', price: 45, category: 'soda' },
+            { name: 'Soda Italiana Fresa', price: 45, category: 'soda' },
+            { name: 'Soda Italiana Frutos Rojos', price: 45, category: 'soda' },
+            { name: 'Soda Italiana Maracuyá', price: 45, category: 'soda' },
+            { name: 'Soda Italiana Manzana Verde', price: 45, category: 'soda' },
+            { name: 'Soda Italiana Durazno', price: 45, category: 'soda' },
+            { name: 'Soda Italiana Cereza', price: 45, category: 'soda' },
+            { name: 'Soda Italiana Frambuesa', price: 45, category: 'soda' },
+            { name: 'Frappé Cap. Vainilla', price: 75, category: 'frappe' },
+            { name: 'Frappé Cap. Moka', price: 75, category: 'frappe' },
+            { name: 'Frappé Ferrero', price: 80, category: 'frappe' },
+            { name: 'Frappé Chocolate', price: 75, category: 'frappe' },
+            { name: 'Frappé Oreo', price: 75, category: 'frappe' },
+            { name: 'Frappé Chocolate blanco', price: 75, category: 'frappe' },
+            { name: 'Frappé Cookies and cream', price: 70, category: 'frappe' },
+            { name: 'Frappé Chocolate de dubai', price: 70, category: 'frappe' },
+            { name: 'Smoothie Mora Azul', price: 70, category: 'smoothie' },
+            { name: 'Smoothie Mango', price: 70, category: 'smoothie' },
+            { name: 'Smoothie Fresa', price: 70, category: 'smoothie' },
+            { name: 'Smoothie Frutos Rojos', price: 70, category: 'smoothie' },
+            { name: 'Smoothie Maracuyá', price: 70, category: 'smoothie' },
+            { name: 'Smoothie Manzana Verde', price: 70, category: 'smoothie' },
+            { name: 'Smoothie Durazno', price: 70, category: 'smoothie' },
+            { name: 'Smoothie Frambuesa', price: 70, category: 'smoothie' },
+            { name: 'Smoothie Piña', price: 70, category: 'smoothie' },
+            { name: 'Capuchino Vainilla 12 oz (Frío)', price: 55, category: 'cafe_frio' },
+            { name: 'Capuchino Vainilla 16 oz (Frío)', price: 65, category: 'cafe_frio' },
+            { name: 'Capuchino Moka 12 oz (Frío)', price: 55, category: 'cafe_frio' },
+            { name: 'Capuchino Moka 16 oz (Frío)', price: 65, category: 'cafe_frio' },
+            { name: 'Americano 12 oz (Frío)', price: 45, category: 'cafe_frio' },
+            { name: 'Americano 16 oz (Frío)', price: 55, category: 'cafe_frio' },
+            { name: 'Espresso', price: 35, category: 'cafe_caliente' },
+            { name: 'Espresso Doble', price: 45, category: 'cafe_caliente' },
+            { name: 'Capuchino Sencillo', price: 55, category: 'cafe_caliente' },
+            { name: 'Capuchino Doble', price: 65, category: 'cafe_caliente' },
+            { name: 'Latte Sencillo', price: 50, category: 'cafe_caliente' },
+            { name: 'Latte Doble', price: 60, category: 'cafe_caliente' },
+            { name: 'Café de olla chico', price: 10, category: 'cafe_caliente' },
+            { name: 'Café de olla grande', price: 20, category: 'cafe_caliente' },
+            { name: 'Americano Caliente', price: 35, category: 'cafe_caliente' },
+            { name: 'Chocolate Grande', price: 35, category: 'cafe_caliente' },
+            { name: 'Chocolate Chico', price: 45, category: 'cafe_caliente' },
+            { name: 'Moka Extra 12 oz (Caliente)', price: 42, category: 'cafe_caliente' },
+            { name: 'Moka Extra 16 oz (Caliente)', price: 50, category: 'cafe_caliente' },
+            { name: 'Matcha Mango (Frío)', price: 70, category: 'cafe_caliente' },
+            { name: 'Tizana Fusión de Moras 12 oz', price: 50, category: 'tizana' },
+            { name: 'Tizana Fusión de Moras 16 oz', price: 65, category: 'tizana' },
+            { name: 'Tizana Esencia Fresa Kiwi 12 oz', price: 50, category: 'tizana' },
+            { name: 'Tizana Esencia Fresa Kiwi 16 oz', price: 65, category: 'tizana' },
+            { name: 'Bowl Chico', price: 65, category: 'bowl' },
+            { name: 'Bowl Grande', price: 95, category: 'bowl' },
+            { name: 'Crepa Cajeta', price: 50, category: 'crepas' },
+            { name: 'Crepa Mermelada de Fresa', price: 50, category: 'crepas' },
+            { name: 'Crepa Nutella', price: 55, category: 'crepas' },
+            { name: 'Crepa Crema de Cacahuate', price: 50, category: 'crepas' },
+            { name: 'Crepa Queso Crema', price: 80, category: 'crepas' },
+            { name: 'Crepa Queso Manchego', price: 80, category: 'crepas' },
+            { name: 'Banderilla Ramen Crunch', price: 65, category: 'banderillas' },
+            { name: 'Banderilla Papa Crunch', price: 65, category: 'banderillas' },
+            { name: 'Banderilla Panko Crunch Salchicha', price: 55, category: 'banderillas' },
+            { name: 'Banderilla Panko Crunch Mozzarella', price: 55, category: 'banderillas' },
+            { name: 'Pastel Matilde', price: 50, category: 'pasteles' },
+            { name: 'Cheesecake Tortuga', price: 45, category: 'pasteles' },
+            { name: 'Cheesecake Zarzamora', price: 45, category: 'pasteles' },
+            { name: 'Pay de Limón', price: 45, category: 'pasteles' },
+            { name: 'Club Sandwich', price: 85, category: 'comida' },
+            { name: 'Sincronizadas', price: 80, category: 'comida' },
+            { name: 'Waffles (2 pzs)', price: 35, category: 'comida' },
+            { name: 'Hot Cakes (3 pzs)', price: 55, category: 'comida' },
+            { name: 'Sandwich Sencillo', price: 55, category: 'comida' }
         ];
 
-        let ticket = [];
+        let currentCart = [];
+        let activeProduct = null;
+        let discountVal = 0;
 
-        function cambiarVista(vista) {
-            if (vista === 'pos') {
-                document.getElementById('vista-pos').classList.remove('hidden');
-                document.getElementById('vista-inventario').classList.add('hidden');
-                document.getElementById('btn-pos').className = 'bg-brand-pink px-4 py-2 rounded-lg font-medium text-sm transition hover:bg-brand-lightpink shadow';
-                document.getElementById('btn-inv').className = 'bg-gray-700 px-4 py-2 rounded-lg font-medium text-sm transition hover:bg-gray-600 shadow';
-            } else {
-                document.getElementById('vista-pos').classList.add('hidden');
-                document.getElementById('vista-inventario').classList.remove('hidden');
-                document.getElementById('btn-inv').className = 'bg-brand-pink px-4 py-2 rounded-lg font-medium text-sm transition hover:bg-brand-lightpink shadow';
-                document.getElementById('btn-pos').className = 'bg-gray-700 px-4 py-2 rounded-lg font-medium text-sm transition hover:bg-gray-600 shadow';
-                renderizarInventario();
-            }
+        function switchTab(id) {
+            ['pos', 'shift'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+            });
+            document.getElementById(`tab-${id}`).classList.remove('hidden');
         }
 
-        function renderizarPOS() {
-            const contenedor = document.getElementById('catalogo-productos');
-            contenedor.innerHTML = '';
-            productosPOS.forEach(p => {
-                contenedor.innerHTML += `
-                    <div onclick="agregarAlTicket(${p.id})" class="bg-pink-50 border border-pink-100 p-4 rounded-xl cursor-pointer hover:bg-pink-100 transition flex flex-col justify-between">
-                        <span class="font-fredoka font-medium text-brand-dark">${p.nombre}</span>
-                        <span class="text-brand-pink font-bold mt-2">$${p.precio}.00</span>
-                    </div>
+        function toggleOwnerMode() {
+            isOwnerMode = !isOwnerMode;
+            document.getElementById('current-user-role').innerText = isOwnerMode ? "Izel (Dueña)" : "Barista (Empleada)";
+            document.getElementById('mode-subtitle').innerText = isOwnerMode ? "Vista de Dueña (Edición y Control Total)" : "Vista de Barista (Solo Rectificar Insumos)";
+            document.getElementById('owner-add-section').style.display = isOwnerMode ? 'block' : 'none';
+            renderInventoryTable();
+        }
+
+        function renderInventoryTable() {
+            const tbody = document.getElementById('inventory-table-body');
+            tbody.innerHTML = '';
+            inventoryDB.forEach((item, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-gray-800">${item.name}</td>
+                    <td class="p-3">
+                        <input type="number" id="stock-input-${idx}" value="${item.stock}" ${isOwnerMode ? '' : 'readonly'} class="w-20 p-1 border rounded-lg text-xs font-bold ${isOwnerMode ? 'bg-white' : 'bg-gray-100 text-gray-600'}">
+                    </td>
+                    <td class="p-3 text-gray-500">${item.unit}</td>
+                    <td class="p-3 text-center space-x-1">
+                        ${isOwnerMode ? `
+                            <button onclick="updateStockOwner(${idx})" class="px-2 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-bold">Actualizar</button>
+                            <button onclick="deleteInventoryItem(${idx})" class="px-2 py-1 bg-red-500 text-white rounded-lg text-[10px] font-bold">Eliminar</button>
+                        ` : `
+                            <button onclick="rectifyStockEmployee(${idx})" class="px-3 py-1 bg-amber-500 text-white rounded-lg text-[10px] font-bold">Rectificar</button>
+                        `}
+                    </td>
                 `;
+                tbody.appendChild(tr);
             });
         }
 
-        function agregarAlTicket(id) {
-            const prod = productosPOS.find(p => p.id === id);
-            const itemExistente = ticket.find(i => i.id === id);
-            if (itemExistente) {
-                itemExistente.cantidad++;
-            } else {
-                ticket.push({ ...prod, cantidad: 1 });
-            }
-            renderizarTicket();
+        function addNewInventoryItem() {
+            const name = document.getElementById('new-item-name').value;
+            const stock = parseFloat(document.getElementById('new-item-stock').value);
+            const unit = document.getElementById('new-item-unit').value;
+            if(!name || isNaN(stock) || !unit) return alert('Por favor llena todos los campos del insumo.');
+            inventoryDB.push({ id: Date.now(), name, stock, unit });
+            document.getElementById('new-item-name').value = '';
+            document.getElementById('new-item-stock').value = '';
+            document.getElementById('new-item-unit').value = '';
+            renderInventoryTable();
+            alert('¡Insumo añadido con éxito!');
         }
 
-        function renderizarTicket() {
-            const contenedor = document.getElementById('lista-ticket');
-            if (ticket.length === 0) {
-                contenedor.innerHTML = `<p class="text-gray-400 text-sm text-center py-8">No hay productos agregados</p>`;
-                document.getElementById('total-ticket').innerText = '$0.00';
+        function updateStockOwner(idx) {
+            const val = parseFloat(document.getElementById(`stock-input-${idx}`).value);
+            if(isNaN(val)) return alert('Ingresa un valor válido');
+            inventoryDB[idx].stock = val;
+            alert('¡Stock actualizado por la dueña!');
+            renderInventoryTable();
+        }
+
+        function deleteInventoryItem(idx) {
+            if(confirm('¿Eliminar este insumo del sistema?')) {
+                inventoryDB.splice(idx, 1);
+                renderInventoryTable();
+            }
+        }
+
+        function rectifyStockEmployee(idx) {
+            const val = parseFloat(document.getElementById(`stock-input-${idx}`).value);
+            if(isNaN(val)) return alert('Ingresa un valor válido');
+            inventoryDB[idx].stock = val;
+            alert('¡Conteo rectificado exitosamente!');
+            renderInventoryTable();
+        }
+
+        function openCategoryProducts(cat) {
+            document.getElementById('categories-grid').classList.add('hidden');
+            document.getElementById('products-desglose-grid').classList.remove('hidden');
+            document.getElementById('btn-back-categories').classList.remove('hidden');
+            document.getElementById('current-view-title').innerText = `Menú: ${cat.toUpperCase()}`;
+            
+            const grid = document.getElementById('products-desglose-grid');
+            grid.innerHTML = '';
+            
+            const filtered = productsDB.filter(p => p.category === cat);
+            filtered.forEach(p => {
+                const div = document.createElement('div');
+                div.className = "bg-white p-3 rounded-2xl border border-gray-100 shadow-sm hover:border-pink-300 transition cursor-pointer flex flex-col justify-between";
+                div.onclick = () => openCustomModal(p);
+                div.innerHTML = `
+                    <h4 class="font-bold text-xs text-gray-800">${p.name}</h4>
+                    <div class="mt-2 flex justify-between items-center pt-2 border-t">
+                        <span class="font-bold text-brand-pink text-xs">$${p.price.toFixed(2)}</span>
+                        <span class="w-5 h-5 rounded-full bg-pink-100 text-brand-pink font-bold flex items-center justify-center text-xs">+</span>
+                    </div>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function showCategoriesView() {
+            document.getElementById('categories-grid').classList.remove('hidden');
+            document.getElementById('products-desglose-grid').classList.add('hidden');
+            document.getElementById('btn-back-categories').classList.add('hidden');
+            document.getElementById('current-view-title').innerText = 'Categorías del Menú';
+        }
+
+        function openCustomModal(product) {
+            activeProduct = product;
+            document.getElementById('modal-product-name').innerText = product.name;
+            document.getElementById('modal-product-price-tag').innerText = `$${product.price.toFixed(2)}`;
+            
+            const cat = product.category;
+            const hasSugar = ['cafe_frio', 'cafe_caliente', 'temporada'].includes(cat);
+            const hasIce = ['soda', 'cafe_frio', 'tizana', 'temporada'].includes(cat);
+            const hasToppings = ['boba', 'xolot', 'soda', 'frappe', 'smoothie', 'temporada'].includes(cat);
+            
+            document.getElementById('sugar-section').style.display = hasSugar ? 'block' : 'none';
+            document.getElementById('ice-section').style.display = hasIce ? 'block' : 'none';
+            document.getElementById('base-topping-section').style.display = ['boba', 'xolot', 'soda', 'temporada'].includes(cat) ? 'block' : 'none';
+            document.getElementById('extra-toppings-section').style.display = hasToppings ? 'block' : 'none';
+
+            document.querySelectorAll('.extra-cb').forEach(cb => cb.checked = false);
+
+            updateModalTotal();
+            document.getElementById('custom-modal').classList.remove('hidden');
+        }
+
+        function selectOpt(btn, group) {
+            document.querySelectorAll(`.opt-${group}`).forEach(b => {
+                b.classList.remove('bg-pink-50', 'text-brand-pink', 'border-brand-pink', 'font-bold');
+            });
+            btn.classList.add('bg-pink-50', 'text-brand-pink', 'border-brand-pink', 'font-bold');
+        }
+
+        function updateModalTotal() {
+            if (!activeProduct) return;
+            let total = activeProduct.price;
+            document.querySelectorAll('.extra-cb:checked').forEach(cb => {
+                total += parseFloat(cb.dataset.price);
+            });
+            document.getElementById('modal-calculated-total').innerText = `$${total.toFixed(2)}`;
+        }
+
+        function closeCustomModal() {
+            document.getElementById('custom-modal').classList.add('hidden');
+        }
+
+        function confirmCustomProductAdd() {
+            if (!activeProduct) return;
+            let finalPrice = activeProduct.price;
+            let optionsArr = [];
+
+            const cat = activeProduct.category;
+            if (['boba', 'xolot', 'soda', 'temporada'].includes(cat)) {
+                const topping = document.getElementById('modal-base-topping-select').value;
+                optionsArr.push(`Topping: ${topping}`);
+            }
+
+            document.querySelectorAll('.extra-cb:checked').forEach(cb => {
+                finalPrice += parseFloat(cb.dataset.price);
+                optionsArr.push(cb.value);
+            });
+
+            currentCart.push({
+                name: activeProduct.name,
+                price: finalPrice,
+                category: activeProduct.category,
+                options: optionsArr.join(' • ')
+            });
+
+            closeCustomModal();
+            renderCart();
+        }
+
+        function applyEcoDiscount() {
+            discountVal = discountVal === 10 ? 0 : 10;
+            const btnEco = document.getElementById('btn-eco-discount');
+            if(discountVal > 0) {
+                btnEco.className = "px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-xl border border-emerald-700 transition shadow-sm";
+            } else {
+                btnEco.className = "px-3 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-300 transition shadow-sm";
+            }
+            renderCart();
+        }
+
+        function checkAndToggleHappyHour(checkbox) {
+            const currentHour = new Date().getHours();
+            if (currentHour < 20 || currentHour >= 21) {
+                alert("⚠️ Aún no es la Hora Feliz. La Hora Feliz en Fortuna es de 8:00 PM a 9:00 PM.");
+                checkbox.checked = false;
+            }
+            renderCart();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            const storeLocation = document.getElementById('store-location').value;
+            const isHappyHour = document.getElementById('happy-hour-toggle').checked;
+
+            if (currentCart.length === 0) {
+                container.innerHTML = `<div id="empty-cart-msg" class="h-full flex flex-col items-center justify-center text-gray-400 py-12"><i class="fa-solid fa-basket-shopping text-4xl mb-2 text-gray-300"></i><p class="text-xs font-medium">Carrito vacío. Selecciona una categoría.</p></div>`;
+                document.getElementById('cart-subtotal').innerText = '$0.00';
+                document.getElementById('cart-discount').innerText = '-$0.00';
+                document.getElementById('cart-total').innerText = '$0.00';
                 return;
             }
-            contenedor.innerHTML = '';
-            let total = 0;
-            ticket.forEach((item, index) => {
-                total += item.precio * item.cantidad;
-                contenedor.innerHTML += `
-                    <div class="py-2 flex justify-between items-center text-sm">
-                        <div>
-                            <p class="font-medium">${item.nombre}</p>
-                            <p class="text-xs text-gray-400">$${item.precio} x ${item.cantidad}</p>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="font-bold">$${item.precio * item.cantidad}</span>
-                            <button onclick="eliminarDelTicket(${index})" class="text-red-400 hover:text-red-600 px-1"><i class="fas fa-trash-alt"></i></button>
-                        </div>
+
+            container.innerHTML = '';
+            let subtotal = 0;
+            let happyHourDiscount = 0;
+
+            currentCart.forEach((item, idx) => {
+                let itemPrice = item.price;
+                let isFreeByHappyHour = (storeLocation === 'fortuna' && isHappyHour && item.category === 'fortuna');
+
+                if (isFreeByHappyHour) {
+                    happyHourDiscount += itemPrice;
+                    itemPrice = 0;
+                }
+
+                subtotal += item.price;
+                const div = document.createElement('div');
+                div.className = "p-2 bg-gray-50 border rounded-xl flex justify-between items-center text-xs";
+                div.innerHTML = `
+                    <div>
+                        <p class="font-bold text-gray-800">${item.name} ${isFreeByHappyHour ? '<span class="text-amber-600 font-bold">(¡Gratis Hora Feliz!)</span>' : ''}</p>
+                        ${item.options ? `<p class="text-[10px] text-gray-400">${item.options}</p>` : ''}
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-bold text-gray-700">$${itemPrice.toFixed(2)}</span>
+                        <button onclick="currentCart.splice(${idx},1); renderCart();" class="text-red-500 font-bold">✕</button>
                     </div>
                 `;
+                container.appendChild(div);
             });
-            document.getElementById('total-ticket').innerText = `$${total}.00`;
+
+            let totalDiscount = discountVal + happyHourDiscount;
+            let finalTotal = Math.max(0, subtotal - totalDiscount);
+
+            document.getElementById('cart-subtotal').innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById('cart-discount').innerText = `-$${totalDiscount.toFixed(2)}`;
+            document.getElementById('cart-total').innerText = `$${finalTotal.toFixed(2)}`;
         }
 
-        function eliminarDelTicket(index) {
-            ticket.splice(index, 1);
-            renderizarTicket();
+        function clearCart() { currentCart = []; discountVal = 0; renderCart(); }
+
+        function setPaymentMethod(method) {
+            selectedPaymentMethod = method;
+            const btnCash = document.getElementById('btn-pay-cash');
+            const btnCard = document.getElementById('btn-pay-card');
+            const cashSec = document.getElementById('cash-payment-section');
+            const cardSec = document.getElementById('card-payment-section');
+
+            if (method === 'efectivo') {
+                btnCash.className = "py-2.5 bg-brand-pink text-white font-bold rounded-xl text-xs shadow transition";
+                btnCard.className = "py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition";
+                cashSec.classList.remove('hidden');
+                cardSec.classList.add('hidden');
+            } else {
+                btnCard.className = "py-2.5 bg-purple-600 text-white font-bold rounded-xl text-xs shadow transition";
+                btnCash.className = "py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition";
+                cardSec.classList.remove('hidden');
+                cashSec.classList.add('hidden');
+            }
         }
 
-        function realizarVenta() {
-            if (ticket.length === 0) return alert('Agrega productos al ticket primero.');
+        function openCheckoutModal() {
+            if (currentCart.length === 0) return alert('El carrito está vacío');
+            const total = document.getElementById('cart-total').innerText;
+            document.getElementById('checkout-total-display').innerText = total;
+            document.getElementById('cash-received-input').value = '';
+            document.getElementById('cash-change-display').innerText = '$0.00';
+            setPaymentMethod('efectivo');
+            document.getElementById('checkout-modal').classList.remove('hidden');
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkout-modal').classList.add('hidden');
+        }
+
+        function calculateChange() {
+            const totalDisplay = document.getElementById('checkout-total-display').innerText;
+            const total = parseFloat(totalDisplay.replace('$','')) || 0;
+            const rec = parseFloat(document.getElementById('cash-received-input').value || 0);
+            document.getElementById('cash-change-display').innerText = `$${Math.max(0, rec - total).toFixed(2)}`;
+        }
+
+        function processFinalPayment() {
+            const total = parseFloat(document.getElementById('checkout-total-display').innerText.replace('$','')) || 0;
+            let rec = 0;
+            let change = 0;
+
+            if (selectedPaymentMethod === 'efectivo') {
+                rec = parseFloat(document.getElementById('cash-received-input').value || 0);
+                if (rec < total) {
+                    return alert('El efectivo recibido es menor al total del pedido.');
+                }
+                change = rec - total;
+            }
+
+            const orderNum = document.getElementById('order-id-display').innerText;
+            const orderMode = document.getElementById('order-mode').options[document.getElementById('order-mode').selectedIndex].text;
             
-            ticket.forEach(item => {
-                const prodMenu = productosPOS.find(p => p.id === item.id);
-                if (prodMenu) {
-                    const insumo = inventario.find(i => i.id === prodMenu.insumoReq);
-                    if (insumo) {
-                        insumo.cantidad -= (prodMenu.consumo * item.cantidad);
-                        if (insumo.cantidad < 0) insumo.cantidad = 0;
-                        verificarAlertaStock(insumo);
-                    }
-                }
+            document.getElementById('rec-order-num').innerText = orderNum;
+            document.getElementById('rec-order-mode').innerText = orderMode;
+            document.getElementById('receipt-date').innerText = new Date().toLocaleString();
+
+            const subtotalText = document.getElementById('cart-subtotal').innerText;
+            const discountText = document.getElementById('cart-discount').innerText;
+            const totalText = document.getElementById('cart-total').innerText;
+
+            document.getElementById('rec-subtotal').innerText = subtotalText;
+            document.getElementById('rec-discount').innerText = discountText;
+            document.getElementById('rec-total').innerText = totalText;
+            document.getElementById('rec-payment').innerText = selectedPaymentMethod.toUpperCase();
+
+            if(selectedPaymentMethod === 'efectivo') {
+                document.getElementById('rec-change-line').style.display = 'block';
+                document.getElementById('rec-change').innerText = `$${change.toFixed(2)}`;
+            } else {
+                document.getElementById('rec-change-line').style.display = 'none';
+            }
+
+            const recItemsList = document.getElementById('rec-items-list');
+            recItemsList.innerHTML = '';
+            currentCart.forEach(item => {
+                const p = document.createElement('div');
+                p.className = "flex justify-between text-[10px]";
+                p.innerHTML = `<span>1x ${item.name} ${item.options ? '('+item.options+')' : ''}</span><span>$${item.price.toFixed(2)}</span>`;
+                recItemsList.appendChild(p);
             });
 
-            alert('¡Venta realizada con éxito! Inventario actualizado.');
-            ticket = [];
-            renderizarTicket();
+            document.getElementById('checkout-modal').classList.add('hidden');
+            document.getElementById('receipt-modal').classList.remove('hidden');
+
+            orderCounter++;
+            document.getElementById('order-id-display').innerText = String(orderCounter).padStart(4, '0');
         }
 
-        function verificarAlertaStock(insumo) {
-            if (insumo.cantidad === 0) {
-                console.warn(`[ALERTA TELEGRAM] ¡PRODUCTO AGOTADO!: ${insumo.nombre}`);
-            } else if (insumo.cantidad <= insumo.min) {
-                console.warn(`[AVISO TELEGRAM] Stock bajo de: ${insumo.nombre} (Quedan ${insumo.cantidad} ${insumo.unidad})`);
-            }
+        function printReceiptTicket() {
+            window.print();
         }
 
-        function renderizarInventario() {
-            const tbody = document.getElementById('tabla-inventario-body');
-            tbody.innerHTML = '';
-            inventario.forEach(i => {
-                let semaforo = '<span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">🟢 Normal</span>';
-                if (i.cantidad === 0) {
-                    semaforo = '<span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold">🔴 Agotado</span>';
-                } else if (i.cantidad <= i.min) {
-                    semaforo = '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">🟡 Stock Bajo</span>';
-                }
-
-                tbody.innerHTML += `
-                    <tr class="border-b border-gray-50 hover:bg-gray-50">
-                        <td class="p-4 font-medium text-brand-dark">${i.nombre}</td>
-                        <td class="p-4 text-gray-500">${i.categoria}</td>
-                        <td class="p-4 font-bold">${i.cantidad} ${i.unidad}</td>
-                        <td class="p-4">${semaforo}</td>
-                        <td class="p-4 text-center">
-                            <button onclick="ajustarStock('${i.id}')" class="text-xs bg-pink-100 text-brand-pink px-3 py-1 rounded-lg hover:bg-brand-pink hover:text-white transition">Actualizar</button>
-                        </td>
-                    </tr>
-                `;
-            });
+        function closeReceiptModal() {
+            document.getElementById('receipt-modal').classList.add('hidden');
+            clearCart();
         }
 
-        function ajustarStock(id) {
-            const insumo = inventario.find(i => i.id === id);
-            const nuevoVal = prompt(`Actualizar existencia para ${insumo.nombre} (en ${insumo.unidad}):`, insumo.cantidad);
-            if (nuevoVal !== null && !isNaN(nuevoVal)) {
-                insumo.cantidad = parseFloat(nuevoVal);
-                renderizarInventario();
-            }
+        function savePrinterIP() {
+            PRINTER_IP = document.getElementById('printer-ip-input').value;
+            alert('IP Guardada: ' + PRINTER_IP);
         }
-
-        renderizarPOS();
     </script>
 </body>
 </html>
