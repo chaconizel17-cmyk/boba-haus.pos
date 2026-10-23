@@ -124,11 +124,9 @@
 
     </main>
 
-    <!-- Script de Gestión e Inventario con base en tus libretas -->
+    <!-- Script de Gestión e Inventario -->
     <script>
-        // Inventario exacto basado en tus registros del local
         let inventario = [
-            // Jarabes y Líquidos
             { id: 'avellana', nombre: 'Jarabe Avellana', categoria: 'Jarabes', cantidad: 2000, unidad: 'ml', min: 400 },
             { id: 'mora', nombre: 'Jarabe Mora', categoria: 'Jarabes', cantidad: 2000, unidad: 'ml', min: 400 },
             { id: 'maracuya', nombre: 'Jarabe Maracuyá', categoria: 'Jarabes', cantidad: 1760, unidad: 'ml', min: 400 },
@@ -137,8 +135,6 @@
             { id: 'manzana_verde', nombre: 'Jarabe Manzana Verde', categoria: 'Jarabes', cantidad: 809, unidad: 'ml', min: 250 },
             { id: 'cereza', nombre: 'Jarabe Cereza', categoria: 'Jarabes', cantidad: 801, unidad: 'ml', min: 250 },
             { id: 'mango', nombre: 'Jarabe Mango', categoria: 'Jarabes', cantidad: 796, unidad: 'ml', min: 250 },
-
-            // Polvos y Bases
             { id: 'dubai', nombre: 'Polvos Dubái', categoria: 'Polvos', cantidad: 556, unidad: 'g', min: 150 },
             { id: 'choco_negro', nombre: 'Chocolate Negro', categoria: 'Polvos', cantidad: 2000, unidad: 'g', min: 500 },
             { id: 'blanco', nombre: 'Chocolate Blanco', categoria: 'Polvos', cantidad: 2000, unidad: 'g', min: 500 },
@@ -239,7 +235,6 @@
         function realizarVenta() {
             if (ticket.length === 0) return alert('Agrega productos al ticket primero.');
             
-            // Descontar inventario según ventas
             ticket.forEach(item => {
                 const prodMenu = productosPOS.find(p => p.id === item.id);
                 if (prodMenu) {
@@ -247,7 +242,6 @@
                     if (insumo) {
                         insumo.cantidad -= (prodMenu.consumo * item.cantidad);
                         if (insumo.cantidad < 0) insumo.cantidad = 0;
-                        
                         verificarAlertaStock(insumo);
                     }
                 }
