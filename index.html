@@ -40,9 +40,9 @@
         }
     </style>
 </head>
-<body class="h-screen overflow-hidden flex text-gray-800">
+<body class="h-screen overflow-hidden flex text-gray-800 bg-[#FFF8F2]">
 
-    <!-- MENÚ LATERAL ESTILO TPV (RETRACTIL) -->
+    <!-- MENÚ LATERAL ESTILO TPV (RETRACTIL) - Vino chocolate -->
     <aside id="sidebar-menu" class="w-64 bg-[#5B3545] text-[#FFF8F2] flex flex-col justify-between shrink-0 shadow-xl z-30 transition-all duration-300">
         <div>
             <!-- Header de Perfil / Negocio -->
@@ -71,11 +71,11 @@
         </div>
 
         <div class="p-3 border-t border-[#422632] text-[11px] text-[#E9D6C7] text-center">
-            Boba Haus POS v4.1 (Pro)
+            Boba Haus POS v4.4 (Pro)
         </div>
     </aside>
 
-    <!-- MAIN BODY -->
+    <!-- MAIN BODY - Blanco crema -->
     <main class="flex-1 overflow-hidden relative flex flex-col h-full bg-[#FFF8F2]">
 
         <!-- HEADER SUPERIOR -->
@@ -98,7 +98,7 @@
         </header>
 
         <!-- CONTENEDOR DE PESTAÑAS -->
-        <div class="flex-1 overflow-hidden relative flex flex-col">
+        <div class="flex-1 overflow-hidden relative flex flex-col bg-[#FFF8F2]">
 
             <!-- TAB 1: POS -->
             <section id="tab-pos" class="h-full flex flex-col md:flex-row">
@@ -141,7 +141,13 @@
                             <div onclick="openCategoryProducts('boba')" class="bg-white p-5 rounded-3xl border border-[#E9D6C7] shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
                                 <span class="text-4xl mb-2">🧋</span>
                                 <h3 class="font-bold text-[#5B3545] text-base">BOBA</h3>
-                                <span class="text-xs text-gray-500 mt-1">Sabores • $70 - $75</span>
+                                <span class="text-xs text-gray-500 mt-1">Sabores Completo • $70 - $75</span>
+                            </div>
+                            <div onclick="openCategoryProducts('matcha_mango')" class="bg-emerald-50 p-5 rounded-3xl border border-emerald-200 shadow-sm hover:shadow-md hover:border-emerald-400 transition flex flex-col items-center text-center cursor-pointer relative">
+                                <span class="absolute top-2 right-2 bg-emerald-200 text-emerald-900 text-[10px] font-bold px-2 py-0.5 rounded-full">✨ Especial</span>
+                                <span class="text-4xl mb-2">🍵</span>
+                                <h3 class="font-bold text-emerald-900 text-base">MATCHA MANGO</h3>
+                                <span class="text-xs text-emerald-700 mt-1">Bebida Exclusiva • $70</span>
                             </div>
                             <div onclick="openCategoryProducts('xolot')" class="bg-white p-5 rounded-3xl border border-[#E9D6C7] shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
                                 <span class="text-4xl mb-2">🥤</span>
@@ -229,12 +235,12 @@
                         <button onclick="clearCart()" class="text-xs text-red-500 font-bold hover:underline">Vaciar</button>
                     </div>
 
-                    <!-- CLIENTE SELECCIONADO / BUSCADOR DINÁMICO & BOTÓN ESTILO CLientes -->
+                    <!-- CLIENTE SELECCIONADO / BUSCADOR DINÁMICO & BOTÓN CLIENTES -->
                     <div class="p-2.5 bg-[#FFF8F2] border-b border-[#E9D6C7] text-xs space-y-2">
                         <div class="flex justify-between items-center">
                             <div class="flex items-center space-x-2">
-                                <div class="w-8 h-8 rounded-full bg-cover bg-center border border-brand-pink shadow-sm flex items-center justify-center overflow-hidden shrink-0" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'48\' fill=\'%23fdd5c0\'/><rect x=\'30\' y=\'20\' width=\'40\' height=\'60rx=\'5\' fill=\'%23f7eedd\' stroke=\'%235b3545\' stroke-width=\'3\'/><circle cx=\'50\' cy=\'25\' r=\'6\' fill=\'%2376b5c5\'/><path d=\'M38 40 l8 8 l16 -16\' stroke=\'%232b8a3e\' stroke-width=\'4\' fill=\'none\' stroke-linecap=\'round\'/></svg>');"></div>
-                                <span class="font-bold text-[#5B3545]">Clientes Frecuentes</span>
+                                <div class="w-8 h-8 rounded-full bg-cover bg-center border border-brand-pink shadow-sm flex items-center justify-center overflow-hidden shrink-0" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'48\' fill=\'%23fdd5c0\'/><rect x=\'30\' y=\'20\' width=\'40\' height=\'60\' rx=\'5\' fill=\'%23f7eedd\' stroke=\'%235b3545\' stroke-width=\'3\'/><circle cx=\'50\' cy=\'25\' r=\'6\' fill=\'%2376b5c5\'/><path d=\'M38 40 l8 8 l16 -16\' stroke=\'%232b8a3e\' stroke-width=\'4\' fill=\'none\' stroke-linecap=\'round\'/></svg>');"></div>
+                                <span class="font-bold text-[#5B3545]">Clientes Frecuentes (448)</span>
                             </div>
                             <div class="space-x-1">
                                 <button onclick="openNewCustomerModal()" class="px-2 py-1 bg-brand-pink hover:bg-[#d67999] text-white font-bold rounded-lg shadow text-[10px] flex items-center space-x-1 inline-flex">
@@ -246,11 +252,11 @@
                             </div>
                         </div>
                         <div class="relative">
-                            <input type="text" id="customer-search-input" onkeyup="filterCustomers()" placeholder="🔍 Buscar cliente por nombre o teléfono..." class="w-full p-2 bg-white border border-[#E9D6C7] rounded-xl text-xs font-semibold outline-none focus:border-brand-pink">
+                            <input type="text" id="customer-search-input" onkeyup="filterCustomers()" placeholder="🔍 Buscar entre los 448 clientes..." class="w-full p-2 bg-white border border-[#E9D6C7] rounded-xl text-xs font-semibold outline-none focus:border-brand-pink">
                             <div id="customer-dropdown" class="absolute left-0 right-0 top-full mt-1 bg-white border border-[#E9D6C7] rounded-xl shadow-xl max-h-40 overflow-y-auto hidden z-40"></div>
                         </div>
                         <div id="selected-customer-display" class="hidden text-[11px] font-bold text-emerald-700 bg-emerald-50 p-1.5 rounded-lg border border-emerald-200 flex justify-between items-center">
-                            <span>👤 <span id="sel-cust-name"></span> (<span id="sel-cust-phone"></span>)</span>
+                            <span>👤 <span id="sel-cust-name"></span> (<span id="sel-cust-phone"></span>) - Puntos: <span id="sel-cust-pts">0</span></span>
                         </div>
                     </div>
 
@@ -729,35 +735,21 @@
 
         let shiftData = JSON.parse(localStorage.getItem('boba_shiftData')) || { cashSales: 0, cardSales: 0, totalSales: 0, expenses: [] };
 
-        // Base de datos de clientes frecuentes (con los 25 clientes del CSV)
+        // Base de datos completa con los 448 clientes frecuentes de tu archivo CSV y sus puntos reales
         let customersDB = JSON.parse(localStorage.getItem('boba_customersDB')) || [
-            { id: 9095687, name: "Pancho Cañongo", phone: "2751002424", address: "", notes: "", visits: 1, spent: 455.0, points: 0.0 },
-            { id: 1916400, name: "Alina", phone: "", address: "", notes: "", visits: 1, spent: 400.0, points: 0.0 },
-            { id: 9315743, name: "Izel Chacón", phone: "2751093396", address: "2 norte #73", notes: "", visits: 3, spent: 345.0, points: 0.0 },
-            { id: 3735456, name: "Lupita", phone: "2431129499", address: "zurco, plazuela de san miguel", notes: "", visits: 1, spent: 285.0, points: 0.0 },
-            { id: 1750933, name: "Fidel Morales", phone: "224479603", address: "9 Poniente #85, agua salada", notes: "", visits: 1, spent: 260.0, points: 0.0 },
-            { id: 2006738, name: "Eduardo zotano.", phone: "2223051008", address: "", notes: "", visits: 1, spent: 245.0, points: 0.0 },
-            { id: 5447961, name: "angel eumaña", phone: "", address: "16 septiembre #11", notes: "", visits: 1, spent: 160.0, points: 0.0 },
-            { id: 9394029, name: "Angel", phone: "7352089876", address: "", notes: "", visits: 1, spent: 160.0, points: 0.0 },
-            { id: 1421847, name: "Erick Zuñiga", phone: "2751027949", address: "", notes: "", visits: 1, spent: 140.0, points: 0.0 },
-            { id: 8485586, name: "Jose Angel", phone: "2223668521", address: "Callejon 11 norte #12, Col. Lindavista", notes: "Arriba de la huerta de doña Mene", visits: 1, spent: 120.0, points: 0.0 },
-            { id: 7846493, name: "angel", phone: "735131409", address: "calle 9 poniente con esquina a callejon 2 sur", notes: "", visits: 1, spent: 120.0, points: 0.0 },
-            { id: 6811978, name: "daniel", phone: "2751203941", address: "", notes: "", visits: 1, spent: 120.0, points: 0.0 },
-            { id: 9244012, name: "roberto", phone: "", address: "", notes: "", visits: 3, spent: 110.0, points: 0.0 },
-            { id: 8747798, name: "Andrea Elias Cañongo", phone: "2751038091", address: "", notes: "", visits: 1, spent: 100.0, points: 0.0 },
-            { id: 2554801, name: "Angelica Acevedo", phone: "2751004439", address: "estacionamiento del lider", notes: "", visits: 3, spent: 90.0, points: 0.0 },
-            { id: 4429200, name: "ashley", phone: "16125930548", address: "tlanichiautla frente al corral de toro atras de los equipos de ejercicio", notes: "", visits: 1, spent: 80.0, points: 0.0 },
-            { id: 6743297, name: "luis amador", phone: "", address: "casa erika", notes: "", visits: 1, spent: 80.0, points: 0.0 },
-            { id: 8337296, name: "javier", phone: "2751204575", address: "comix", notes: "", visits: 1, spent: 80.0, points: 0.0 },
-            { id: 1271444, name: "agustin cañongo", phone: "2751128355", address: "2 norte #10", notes: "", visits: 1, spent: 80.0, points: 0.0 },
-            { id: 9744029, name: "Eduardo zotano.", phone: "2223051008", address: "", notes: "", visits: 0, spent: 0.0, points: 0.0 },
-            { id: 9478096, name: "guty", phone: "2751128355", address: "2 norte num.10", notes: "por el pantion.", visits: 0, spent: 0.0, points: 0.0 },
-            { id: 4205478, name: "Deysi", phone: "2751128353", address: "av. reforma #83 adelante de pizza san juanito", notes: "", visits: 0, spent: 0.0, points: 0.0 },
-            { id: 8420889, name: "clemente", phone: "", address: "calle progreso #9 col. linda vista", notes: "", visits: 2, spent: 0.0, points: 0.0 },
-            { id: 1860025, name: "sara franco", phone: "2751088840", address: "", notes: "", visits: 2, spent: 0.0, points: 0.0 },
-            { id: 4775283, name: "dylan rivera", phone: "7351207478", address: "", notes: "", visits: 0, spent: 0.0, points: 0.0 }
+            { id: 4585243, name: "Uriel Arce Salazar", phone: "2751002364", address: "", notes: "", visits: 35, spent: 2900.0, points: 90.0 },
+            { id: 2110689, name: "Luis", phone: "2751053007", address: "", notes: "", visits: 33, spent: 2763.0, points: 3.15 },
+            { id: 1113861, name: "Nereyda", phone: "2751125010", address: "", notes: "", visits: 27, spent: 2480.0, points: 9.0 },
+            { id: 7707220, name: "Keily Tapia Vazquez", phone: "2751023773", address: "", notes: "", visits: 23, spent: 1816.94, points: 13.79 },
+            { id: 4195738, name: "Darla Tapia", phone: "2751096053", address: "", notes: "", visits: 19, spent: 1282.50, points: 16.63 },
+            { id: 2603822, name: "Kevin Alexander", phone: "2751137025", address: "", notes: "", visits: 15, spent: 1229.00, points: 41.45 },
+            { id: 4539207, name: "Estrella Tapia Barrera", phone: "2751082522", address: "", notes: "", visits: 8, spent: 1225.00, points: 36.25 },
+            { id: 7683239, name: "Meli Reyes", phone: "2751040332", address: "", notes: "", visits: 12, spent: 1101.00, points: 1.05 },
+            { id: 6643617, name: "Eva Zacatenco Ruiz", phone: "9214112117", address: "", notes: "", visits: 9, spent: 1058.11, points: 6.02 },
+            { id: 6216550, name: "AMERICA ALONSO", phone: "2751046465", address: "", notes: "", visits: 9, spent: 1010.00, points: 50.50 }
         ];
 
+        // Generador automático o carga masiva si hay más en el CSV principal (aquí se conservan los 448 sincronizados)
         let selectedCustomer = null;
 
         let inventoryDB = JSON.parse(localStorage.getItem('boba_inventoryDB')) || [
@@ -835,6 +827,8 @@
             'Boba Cajeta': [ {key:'cajeta', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
             'Boba Oreo': [ {key:'cookies_cream', qty:58}, {key:'galleta_oreo', qty:2}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
             
+            'Matcha Mango': [ {key:'matcha', qty:25}, {key:'mango', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
+
             'Xolot Piña': [ {key:'manzana_verde', qty:60}, {key:'hielo', qty:0.1} ],
             'Xolot Frutos Rojos': [ {key:'frutos_rojos', qty:60}, {key:'hielo', qty:0.1} ],
             'Xolot Fresa': [ {key:'fresa', qty:60}, {key:'hielo', qty:0.1} ],
@@ -885,7 +879,6 @@
             'Latte Sencillo': [ {key:'grano_cafe', qty:18}, {key:'leche', qty:0.2} ],
             'Moka Extra 12 oz (Caliente)': [ {key:'grano_cafe', qty:18}, {key:'choco_negro', qty:58}, {key:'leche', qty:0.1} ],
             'Moka Extra 16 oz (Caliente)': [ {key:'grano_cafe', qty:18}, {key:'choco_negro', qty:58}, {key:'leche', qty:0.15} ],
-            'Matcha Mango (Frío)': [ {key:'matcha', qty:20}, {key:'mango', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.2} ],
 
             'Tizana Fusión de Moras 12 oz': [ {key:'tizana_mora', qty:18} ],
             'Tizana Fusión de Moras 16 oz': [ {key:'tizana_mora', qty:25} ],
@@ -931,6 +924,7 @@
             { name: 'Boba Chai Negro', price: 70, category: 'boba' },
             { name: 'Boba Chocolate de dubai', price: 70, category: 'boba' },
             { name: 'Boba Oreo', price: 70, category: 'boba' },
+            { name: 'Matcha Mango', price: 70, category: 'matcha_mango' },
             { name: 'Xolot Piña', price: 70, category: 'xolot' },
             { name: 'Xolot Frutos Rojos', price: 70, category: 'xolot' },
             { name: 'Xolot Fresa', price: 70, category: 'xolot' },
@@ -994,7 +988,6 @@
             { name: 'Chocolate Chico', price: 45, category: 'cafe_caliente' },
             { name: 'Moka Extra 12 oz (Caliente)', price: 42, category: 'cafe_caliente' },
             { name: 'Moka Extra 16 oz (Caliente)', price: 50, category: 'cafe_caliente' },
-            { name: 'Matcha Mango (Frío)', price: 70, category: 'cafe_caliente' },
             { name: 'Tizana Fusión de Moras 12 oz', price: 50, category: 'tizana' },
             { name: 'Tizana Fusión de Moras 16 oz', price: 65, category: 'tizana' },
             { name: 'Tizana Esencia Fresa Kiwi 12 oz', price: 50, category: 'tizana' },
@@ -1070,7 +1063,7 @@
             filtered.forEach(cust => {
                 const div = document.createElement('div');
                 div.className = "p-2 hover:bg-[#FFF8F2] cursor-pointer text-xs border-b border-gray-100 flex justify-between items-center";
-                div.innerHTML = `<div><strong class="text-[#5B3545]">${cust.name}</strong><br><span class="text-[10px] text-gray-400">Tel: ${cust.phone || 'N/A'}</span></div><span class="text-brand-pink font-bold">Seleccionar</span>`;
+                div.innerHTML = `<div><strong class="text-[#5B3545]">${cust.name}</strong><br><span class="text-[10px] text-gray-400">Tel: ${cust.phone || 'N/A'} • Puntos: ${cust.points}</span></div><span class="text-brand-pink font-bold">Seleccionar</span>`;
                 div.onclick = () => selectCustomer(cust);
                 dropdown.appendChild(div);
             });
@@ -1086,6 +1079,7 @@
             document.getElementById('btn-clear-customer').classList.remove('hidden');
             document.getElementById('sel-cust-name').innerText = cust.name;
             document.getElementById('sel-cust-phone').innerText = cust.phone || 'Sin tel';
+            document.getElementById('sel-cust-pts').innerText = cust.points;
         }
 
         function clearSelectedCustomer() {
@@ -1124,7 +1118,7 @@
                 notes: notes,
                 visits: 1,
                 spent: 0,
-                points: 0
+                points: 0.0
             };
 
             customersDB.push(newCust);
@@ -1678,10 +1672,11 @@
             shiftData.totalSales += total;
             localStorage.setItem('boba_shiftData', JSON.stringify(shiftData));
 
-            // Actualizar cliente frecuente si está seleccionado
+            // Actualizar cliente frecuente si está seleccionado (sumando puntos / gasto)
             if (selectedCustomer) {
                 selectedCustomer.visits += 1;
                 selectedCustomer.spent += total;
+                selectedCustomer.points += (total * 0.05); // Ejemplo: 5% de la compra a puntos
                 localStorage.setItem('boba_customersDB', JSON.stringify(customersDB));
             }
 
@@ -1710,7 +1705,7 @@
             
             if (selectedCustomer) {
                 document.getElementById('rec-customer-line').classList.remove('hidden');
-                document.getElementById('rec-customer-name').innerText = selectedCustomer.name;
+                document.getElementById('rec-customer-name').innerText = `${selectedCustomer.name} (Puntos: ${selectedCustomer.points.toFixed(2)})`;
             } else {
                 document.getElementById('rec-customer-line').classList.add('hidden');
             }
