@@ -35,8 +35,13 @@
         ::-webkit-scrollbar-thumb { background: #F4B6CE; border-radius: 10px; }
         @media print {
             body * { visibility: hidden; }
-            #receipt-print-area, #receipt-print-area * { visibility: visible; }
-            #receipt-print-area { position: absolute; left: 0; top: 0; width: 100%; }
+            body:not(.printing-kitchen) #receipt-print-area,
+            body:not(.printing-kitchen) #receipt-print-area * { visibility: visible; }
+            body:not(.printing-kitchen) #receipt-print-area { position: absolute; left: 0; top: 0; width: 100%; }
+
+            body.printing-kitchen #kitchen-print-area,
+            body.printing-kitchen #kitchen-print-area * { visibility: visible; }
+            body.printing-kitchen #kitchen-print-area { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
         }
     </style>
 </head>
@@ -71,7 +76,7 @@
         </div>
 
         <div class="p-3 border-t border-[#422632] text-[11px] text-[#E9D6C7] text-center">
-            Boba Haus POS v4.6 (Pro)
+            Boba Haus POS v4.7 (Pro)
         </div>
     </aside>
 
@@ -139,9 +144,20 @@
                                 <span class="text-xs text-amber-700 mt-1">Otoño Caramelo • $75</span>
                             </div>
                             <div onclick="openCategoryProducts('boba')" class="bg-white p-5 rounded-3xl border border-[#E9D6C7] shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
-                                <span class="text-4xl mb-2">🧋</span>
+                                <!-- Ícono SVG Boba (compatible con Windows) -->
+                                <svg viewBox="0 0 64 64" class="w-11 h-11 mb-2" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M36 6L30 22" stroke="#E88EAF" stroke-width="5" stroke-linecap="round"/>
+                                    <path d="M18 22H46L42 54C41.7 56.3 39.8 58 37.5 58H26.5C24.2 58 22.3 56.3 22 54L18 22Z" fill="#F4D3B8" stroke="#5B3545" stroke-width="3" stroke-linejoin="round"/>
+                                    <path d="M15 22H49" stroke="#5B3545" stroke-width="3.5" stroke-linecap="round"/>
+                                    <path d="M21 22C21 16.5 25.9 13 32 13C38.1 13 43 16.5 43 22" stroke="#5B3545" stroke-width="2.5"/>
+                                    <circle cx="27" cy="49" r="3" fill="#3A2318"/>
+                                    <circle cx="35" cy="51" r="3" fill="#3A2318"/>
+                                    <circle cx="32" cy="43" r="3" fill="#3A2318"/>
+                                    <circle cx="38" cy="45" r="2.8" fill="#3A2318"/>
+                                    <circle cx="26" cy="42" r="2.5" fill="#3A2318"/>
+                                </svg>
                                 <h3 class="font-bold text-[#5B3545] text-base">BOBA</h3>
-                                <span class="text-xs text-gray-500 mt-1">Sabores Completo • $70 - $75</span>
+                                <span class="text-xs text-gray-500 mt-1">Sabores Completos • $70 - $75</span>
                             </div>
                             <div onclick="openCategoryProducts('matcha_mango')" class="bg-emerald-50 p-5 rounded-3xl border border-emerald-200 shadow-sm hover:shadow-md hover:border-emerald-400 transition flex flex-col items-center text-center cursor-pointer relative">
                                 <span class="absolute top-2 right-2 bg-emerald-200 text-emerald-900 text-[10px] font-bold px-2 py-0.5 rounded-full">✨ Especial</span>
@@ -186,7 +202,15 @@
                                 <span class="text-xs text-gray-500 mt-1">Espresso, Latte, Olla...</span>
                             </div>
                             <div onclick="openCategoryProducts('tizana')" class="bg-white p-5 rounded-3xl border border-[#E9D6C7] shadow-sm hover:shadow-md hover:border-pink-300 transition flex flex-col items-center text-center cursor-pointer">
-                                <span class="text-4xl mb-2">🫖</span>
+                                <!-- Ícono SVG Tizana (compatible con Windows) -->
+                                <svg viewBox="0 0 64 64" class="w-11 h-11 mb-2" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M16 26H44V42C44 49.7 37.7 56 30 56C22.3 56 16 49.7 16 42V26Z" fill="#F4B6CE" stroke="#5B3545" stroke-width="3" stroke-linejoin="round"/>
+                                    <path d="M44 30H49C52.3 30 55 32.7 55 36C55 39.3 52.3 42 49 42H44" stroke="#5B3545" stroke-width="3" stroke-linecap="round"/>
+                                    <path d="M24 18C24 14 27 14 27 10" stroke="#E88EAF" stroke-width="2.5" stroke-linecap="round"/>
+                                    <path d="M33 18C33 14 36 14 36 10" stroke="#E88EAF" stroke-width="2.5" stroke-linecap="round"/>
+                                    <path d="M22 36C25 32 30 32 33 36C30 40 25 40 22 36Z" fill="#7FB069" stroke="#5B3545" stroke-width="1.8"/>
+                                    <circle cx="36" cy="43" r="3" fill="#C94C74"/>
+                                </svg>
                                 <h3 class="font-bold text-[#5B3545] text-base">TIZANA</h3>
                                 <span class="text-xs text-gray-500 mt-1">12 oz y 16 oz • $50 - $65</span>
                             </div>
@@ -232,7 +256,15 @@
                                 <option value="domicilio">🛵 Domicilio</option>
                             </select>
                         </div>
-                        <button onclick="clearCart()" class="text-xs text-red-500 font-bold hover:underline">Vaciar</button>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="pauseCurrentOrder()" class="text-[11px] bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-2 py-1 rounded-lg" title="Guardar orden en espera">
+                                ⏸️ Pausar
+                            </button>
+                            <button onclick="openPausedOrdersModal()" class="text-[11px] bg-[#FFF8F2] hover:bg-[#E9D6C7]/40 text-[#5B3545] border border-[#E9D6C7] font-bold px-2 py-1 rounded-lg" title="Ver cuentas en espera">
+                                📋 (<span id="paused-count-badge">0</span>)
+                            </button>
+                            <button onclick="clearCart()" class="text-xs text-red-500 font-bold hover:underline">Vaciar</button>
+                        </div>
                     </div>
 
                     <!-- CLIENTE SELECCIONADO / BUSCADOR DINÁMICO (448 CLIENTES) -->
@@ -240,7 +272,7 @@
                         <div class="flex justify-between items-center">
                             <div class="flex items-center space-x-2">
                                 <div class="w-8 h-8 rounded-full bg-cover bg-center border border-brand-pink shadow-sm flex items-center justify-center overflow-hidden shrink-0" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'48\' fill=\'%23fdd5c0\'/><rect x=\'30\' y=\'20\' width=\'40\' height=\'60\' rx=\'5\' fill=\'%23f7eedd\' stroke=\'%235b3545\' stroke-width=\'3\'/><circle cx=\'50\' cy=\'25\' r=\'6\' fill=\'%2376b5c5\'/><path d=\'M38 40 l8 8 l16 -16\' stroke=\'%232b8a3e\' stroke-width=\'4\' fill=\'none\' stroke-linecap=\'round\'/></svg>');"></div>
-                                <span class="font-bold text-[#5B3545]">Clientes Frecuentes (448)</span>
+                                <span class="font-bold text-[#5B3545]">Clientes Frecuentes (<span id="customers-total-count">448</span>)</span>
                             </div>
                             <div class="space-x-1">
                                 <button onclick="openNewCustomerModal()" class="px-2 py-1 bg-brand-pink hover:bg-[#d67999] text-white font-bold rounded-lg shadow text-[10px] flex items-center space-x-1 inline-flex">
@@ -252,7 +284,7 @@
                             </div>
                         </div>
                         <div class="relative">
-                            <input type="text" id="customer-search-input" onkeyup="filterCustomers()" placeholder="🔍 Buscar entre los 448 clientes..." class="w-full p-2 bg-white border border-[#E9D6C7] rounded-xl text-xs font-semibold outline-none focus:border-brand-pink">
+                            <input type="text" id="customer-search-input" onkeyup="filterCustomers()" placeholder="🔍 Buscar entre los clientes..." class="w-full p-2 bg-white border border-[#E9D6C7] rounded-xl text-xs font-semibold outline-none focus:border-brand-pink">
                             <div id="customer-dropdown" class="absolute left-0 right-0 top-full mt-1 bg-white border border-[#E9D6C7] rounded-xl shadow-xl max-h-40 overflow-y-auto hidden z-40"></div>
                         </div>
                         <div id="selected-customer-display" class="hidden text-[11px] font-bold text-emerald-700 bg-emerald-50 p-1.5 rounded-lg border border-emerald-200 flex justify-between items-center">
@@ -291,11 +323,14 @@
                             <div class="flex justify-between text-[#5B3545] font-bold text-lg border-t pt-1"><span>Total:</span><span id="cart-total" class="text-brand-pink">$0.00</span></div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-2 pt-1">
+                        <div class="grid grid-cols-3 gap-2 pt-1">
                             <button onclick="openCheckoutModal()" class="py-2.5 bg-brand-pink hover:bg-[#d67999] text-white font-bold rounded-xl text-xs shadow transition col-span-2">
                                 💵 Cobrar Pedido
                             </button>
-                            <button onclick="openStaffModal()" class="py-2.5 bg-[#5B3545] hover:bg-[#422632] text-white font-bold rounded-xl text-xs shadow transition col-span-2">
+                            <button onclick="printKitchenOrder()" class="py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs shadow transition" title="Imprimir comanda rápida para barra/cocina">
+                                🖨️ Comanda
+                            </button>
+                            <button onclick="openStaffModal()" class="py-2.5 bg-[#5B3545] hover:bg-[#422632] text-white font-bold rounded-xl text-xs shadow transition col-span-3">
                                 🎁 Cortesía Personal (Izel, Agustín, Nicolás, Chepis, Clementito)
                             </button>
                         </div>
@@ -327,8 +362,8 @@
                         <div class="space-y-2 text-xs divide-y divide-[#E9D6C7]">
                             <div class="flex justify-between pt-1"><span>Fondo de caja anterior:</span><strong id="rep-fund">$0.00</strong></div>
                             <div class="flex justify-between pt-1"><span>Cobros en efectivo:</span><strong id="rep-cash-sales" class="text-emerald-600">$0.00</strong></div>
+                            <div class="flex justify-between pt-1"><span>Cobros con tarjeta:</span><strong id="rep-card-sales" class="text-purple-600">$0.00</strong></div>
                             <div class="flex justify-between pt-1"><span>Reembolsos en efectivo:</span><strong id="rep-refunds">$0.00</strong></div>
-                            <div class="flex justify-between pt-1"><span>Depositado:</span><strong>$0.00</strong></div>
                             <div class="flex justify-between pt-1"><span>Pagos / Salidas (Gastos):</span><strong id="rep-expenses" class="text-red-600">$0.00</strong></div>
                             <div class="flex justify-between pt-2 text-sm font-bold text-[#5B3545] border-t border-[#E9D6C7]"><span>Efectivo teórico en caja:</span><span id="rep-expected-cash">$0.00</span></div>
                         </div>
@@ -355,6 +390,26 @@
                         </div>
                         <div id="expenses-list-container" class="space-y-1 text-xs text-gray-600 pt-1">
                             <p class="text-[11px] italic text-gray-400">No hay gastos registrados en este turno.</p>
+                        </div>
+                    </div>
+
+                    <!-- RESPALDO Y PROTECCIÓN DE DATOS -->
+                    <div class="bg-blue-50/60 p-5 rounded-2xl border border-blue-200 space-y-3">
+                        <div>
+                            <h3 class="font-bold text-sm text-[#5B3545]"><i class="fa-solid fa-shield-halved mr-1 text-blue-600"></i> Respaldo y Protección de Datos</h3>
+                            <p class="text-[11px] text-gray-600">Guarda una copia de tus clientes frecuentes, inventario e historial de turnos para no perder información.</p>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <button onclick="exportFullBackup()" class="py-2.5 px-3 bg-[#5B3545] hover:bg-[#422632] text-white font-bold rounded-xl text-xs shadow transition">
+                                ⬇️ Respaldo Completo (.json)
+                            </button>
+                            <label class="py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow transition text-center cursor-pointer">
+                                ⬆️ Restaurar Respaldo
+                                <input type="file" id="import-backup-file" accept=".json" onchange="importFullBackup(event)" class="hidden">
+                            </label>
+                            <button onclick="exportCustomersCSV()" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition">
+                                📊 Clientes Excel (.csv)
+                            </button>
                         </div>
                     </div>
 
@@ -409,6 +464,20 @@
             </section>
         </div>
     </main>
+
+    <!-- MODAL: ÓRDENES EN ESPERA -->
+    <div id="paused-orders-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-[#E9D6C7]">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-base text-[#5B3545]">📋 Órdenes en Espera (Cuentas Abiertas)</h3>
+                <button onclick="closePausedOrdersModal()" class="text-gray-400 font-bold">✕</button>
+            </div>
+            <div id="paused-orders-list" class="space-y-2 max-h-72 overflow-y-auto text-xs"></div>
+            <button onclick="closePausedOrdersModal()" class="w-full py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl text-xs transition">
+                Cerrar
+            </button>
+        </div>
+    </div>
 
     <!-- MODAL: NUEVO CLIENTE FRECUENTE -->
     <div id="new-customer-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
@@ -638,7 +707,7 @@
         </div>
     </div>
 
-    <!-- CHECKOUT MODAL -->
+    <!-- CHECKOUT MODAL (CON PAGO MIXTO) -->
     <div id="checkout-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-3xl max-w-sm w-full p-5 space-y-4 relative border border-[#E9D6C7]">
             <button onclick="closeCheckoutModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 font-bold text-base">✕</button>
@@ -646,12 +715,15 @@
             <h3 class="font-bold text-lg text-center mt-2 text-[#5B3545]">Cobrar Pedido</h3>
             <span id="checkout-total-display" class="text-2xl font-bold text-brand-pink block text-center">$0.00</span>
             
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-3 gap-2">
                 <button type="button" onclick="setPaymentMethod('efectivo')" id="btn-pay-cash" class="py-2.5 bg-brand-pink text-white font-bold rounded-xl text-xs shadow transition">
                     💵 Efectivo
                 </button>
                 <button type="button" onclick="setPaymentMethod('tarjeta')" id="btn-pay-card" class="py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition">
                     💳 Tarjeta
+                </button>
+                <button type="button" onclick="setPaymentMethod('mixto')" id="btn-pay-mixed" class="py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition">
+                    🔀 Mixto
                 </button>
             </div>
 
@@ -665,6 +737,22 @@
 
             <div id="card-payment-section" class="bg-purple-50 p-3 rounded-xl text-center hidden">
                 <p class="text-xs text-purple-800 font-semibold"><i class="fa-solid fa-credit-card mr-1"></i> Cobro seleccionado mediante Terminal / Tarjeta.</p>
+            </div>
+
+            <div id="mixed-payment-section" class="space-y-2 hidden">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-600 block mb-1">💵 Efectivo:</label>
+                        <input type="number" id="mixed-cash-input" oninput="syncMixedPayment('cash')" placeholder="0.00" class="w-full p-2 border rounded-xl text-sm font-bold text-center outline-none focus:border-brand-pink">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-600 block mb-1">💳 Tarjeta:</label>
+                        <input type="number" id="mixed-card-input" oninput="syncMixedPayment('card')" placeholder="0.00" class="w-full p-2 border rounded-xl text-sm font-bold text-center outline-none focus:border-brand-pink">
+                    </div>
+                </div>
+                <div id="mixed-status-box" class="bg-amber-50 p-2 rounded-xl text-center text-xs font-bold text-amber-800">
+                    Falta por cubrir: $0.00
+                </div>
             </div>
 
             <button onclick="processFinalPayment()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow transition">
@@ -719,13 +807,27 @@
 
             <div class="grid grid-cols-2 gap-2 pt-1">
                 <button onclick="printReceiptTicket()" class="py-2.5 bg-[#5B3545] hover:bg-[#422632] text-white font-bold rounded-xl text-xs shadow transition">
-                    🖨️ Imprimir Ticket
+                    🖨️ Ticket Cliente
                 </button>
-                <button onclick="closeReceiptModal()" class="py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl text-xs transition">
+                <button onclick="printKitchenOrder()" class="py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs shadow transition">
+                    🖨️ Comanda Barra
+                </button>
+                <button onclick="closeReceiptModal()" class="py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl text-xs transition col-span-2">
                     Cerrar
                 </button>
             </div>
         </div>
+    </div>
+
+    <!-- ÁREA OCULTA PARA IMPRIMIR COMANDA DE BARRA / COCINA -->
+    <div id="kitchen-print-area" class="hidden font-mono text-xs text-black p-2">
+        <div class="text-center border-b-2 border-black pb-1 mb-2">
+            <h4 class="font-bold text-base">COMANDA BARRA</h4>
+            <p class="text-sm font-bold">ORDEN #<span id="kit-order-num">0001</span></p>
+            <p id="kit-order-mode" class="text-xs font-bold"></p>
+            <p id="kit-date" class="text-[10px]"></p>
+        </div>
+        <div id="kit-items-list" class="space-y-2 text-left"></div>
     </div>
 
     <script>
@@ -736,10 +838,10 @@
         let initialFund = parseFloat(localStorage.getItem('boba_initialFund')) || 500;
         let shiftOpen = localStorage.getItem('boba_shiftOpen') === 'true';
         let shiftHistory = JSON.parse(localStorage.getItem('boba_shiftHistory')) || [];
+        let pausedOrders = JSON.parse(localStorage.getItem('boba_pausedOrders')) || [];
 
         let shiftData = JSON.parse(localStorage.getItem('boba_shiftData')) || { cashSales: 0, cardSales: 0, totalSales: 0, expenses: [] };
 
-        // Base de datos completa con los 448 clientes frecuentes (cargados masivamente y persistentes)
         let customersDB = JSON.parse(localStorage.getItem('boba_customersDB_full')) || [
             { id: 4585243, name: "Uriel Arce Salazar", phone: "2751002364", address: "", notes: "", visits: 35, spent: 2900.0, points: 90.0 },
             { id: 2110689, name: "Luis", phone: "2751053007", address: "", notes: "", visits: 33, spent: 2763.0, points: 3.15 },
@@ -824,7 +926,6 @@
             { key: 'plato_pastel', name: 'Platos Pastel Cheesecake', stock: 19, unit: 'pzas', min: 5 }
         ];
 
-        // RECETAS ACTUALIZADAS (CON BOBA MOKA Y BOBA VAINILLA)
         const recipeMapping = {
             'Boba Taro': [ {key:'taro', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
             'Boba Fresas c/ crema': [ {key:'fresa_crema', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
@@ -842,13 +943,10 @@
             'Boba Oreo': [ {key:'cookies_cream', qty:58}, {key:'galleta_oreo', qty:2}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
             'Boba Moka': [ {key:'moka', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
             'Boba Vainilla': [ {key:'cap_vainilla', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
-            
             'Matcha Mango': [ {key:'matcha', qty:25}, {key:'mango', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
-
             'Xolot Piña': [ {key:'manzana_verde', qty:60}, {key:'hielo', qty:0.1} ],
             'Xolot Frutos Rojos': [ {key:'frutos_rojos', qty:60}, {key:'hielo', qty:0.1} ],
             'Xolot Fresa': [ {key:'fresa', qty:60}, {key:'hielo', qty:0.1} ],
-
             'Soda Italiana Mora Azul': [ {key:'mora', qty:60}, {key:'hielo', qty:0.25} ],
             'Soda Italiana Mango': [ {key:'mango', qty:60}, {key:'hielo', qty:0.25} ],
             'Soda Italiana Fresa': [ {key:'fresa', qty:60}, {key:'hielo', qty:0.25} ],
@@ -858,7 +956,6 @@
             'Soda Italiana Durazno': [ {key:'mango', qty:60}, {key:'hielo', qty:0.25} ],
             'Soda Italiana Cereza': [ {key:'cereza', qty:60}, {key:'hielo', qty:0.25} ],
             'Soda Italiana Frambuesa': [ {key:'fresa', qty:60}, {key:'hielo', qty:0.25} ],
-
             'Frappé Cap. Vainilla': [ {key:'cap_vainilla', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
             'Frappé Cap. Moka': [ {key:'moka', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
             'Frappé Ferrero': [ {key:'choco_negro', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
@@ -876,7 +973,6 @@
             'Frappé Chai Latte': [ {key:'chai_latte', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
             'Frappé Lychee': [ {key:'lychee', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
             'Frappé Chai Negro': [ {key:'chai_negro', qty:58}, {key:'base_cristal', qty:29}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3} ],
-
             'Smoothie Mora Azul': [ {key:'mora', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
             'Smoothie Mango': [ {key:'mango', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
             'Smoothie Fresa': [ {key:'fresa', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
@@ -886,7 +982,6 @@
             'Smoothie Durazno': [ {key:'mango', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
             'Smoothie Frambuesa': [ {key:'fresa', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
             'Smoothie Piña': [ {key:'manzana_verde', qty:60}, {key:'base_cristal', qty:29}, {key:'hielo', qty:0.3} ],
-
             'Americano 12 oz (Frío)': [ {key:'grano_cafe', qty:18}, {key:'hielo', qty:0.1} ],
             'Americano 16 oz (Frío)': [ {key:'grano_cafe', qty:27}, {key:'hielo', qty:0.15} ],
             'Espresso': [ {key:'grano_cafe', qty:9} ],
@@ -895,7 +990,6 @@
             'Latte Sencillo': [ {key:'grano_cafe', qty:18}, {key:'leche', qty:0.2} ],
             'Moka Extra 12 oz (Caliente)': [ {key:'grano_cafe', qty:18}, {key:'choco_negro', qty:58}, {key:'leche', qty:0.1} ],
             'Moka Extra 16 oz (Caliente)': [ {key:'grano_cafe', qty:18}, {key:'choco_negro', qty:58}, {key:'leche', qty:0.15} ],
-
             'Tizana Fusión de Moras 12 oz': [ {key:'tizana_mora', qty:18} ],
             'Tizana Fusión de Moras 16 oz': [ {key:'tizana_mora', qty:25} ]
         };
@@ -934,10 +1028,12 @@
                 localStorage.setItem('boba_customersDB_full', JSON.stringify(fullList));
             }
             customersDB = JSON.parse(localStorage.getItem('boba_customersDB_full'));
+            document.getElementById('customers-total-count').innerText = customersDB.length;
 
             if(shiftOpen) {
                 document.getElementById("header-turn-status").innerText = "Turno Abierto";
             }
+            updatePausedBadge();
             renderInventoryTable();
             updateTreasuryDisplay();
         });
@@ -1079,7 +1175,211 @@
             if(id === 'inventory') { renderInventoryTable(); }
         }
 
-        // FUNCIONES DE CLIENTES FRECUENTES CON BUSCADOR DINÁMICO (LOS 448 CLIENTES)
+        // --- ÓRDENES EN ESPERA (PAUSAR / RETOMAR) ---
+        function updatePausedBadge() {
+            document.getElementById('paused-count-badge').innerText = pausedOrders.length;
+        }
+
+        function pauseCurrentOrder() {
+            if (currentCart.length === 0) return alert('El carrito está vacío.');
+            const defaultLabel = selectedCustomer ? selectedCustomer.name : `Mesa / Cliente ${pausedOrders.length + 1}`;
+            const label = prompt('Nombre o referencia para esta orden en espera:', defaultLabel);
+            if (label === null) return;
+
+            pausedOrders.push({
+                id: Date.now(),
+                label: label.trim() || defaultLabel,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                cart: JSON.parse(JSON.stringify(currentCart)),
+                discountVal: discountVal,
+                orderMode: document.getElementById('order-mode').value,
+                storeLocation: document.getElementById('store-location').value,
+                customer: selectedCustomer ? JSON.parse(JSON.stringify(selectedCustomer)) : null
+            });
+
+            localStorage.setItem('boba_pausedOrders', JSON.stringify(pausedOrders));
+            updatePausedBadge();
+            clearCart();
+            clearSelectedCustomer();
+            alert('⏸️ Orden guardada en espera.');
+        }
+
+        function openPausedOrdersModal() {
+            const list = document.getElementById('paused-orders-list');
+            if (pausedOrders.length === 0) {
+                list.innerHTML = `<p class="text-center text-gray-400 italic py-6">No hay órdenes en espera.</p>`;
+            } else {
+                list.innerHTML = '';
+                pausedOrders.forEach((ord, idx) => {
+                    const total = ord.cart.reduce((s, i) => s + i.price, 0);
+                    const div = document.createElement('div');
+                    div.className = "p-3 bg-[#FFF8F2] border border-[#E9D6C7] rounded-xl flex justify-between items-center";
+                    div.innerHTML = `
+                        <div>
+                            <p class="font-bold text-[#5B3545]">${ord.label} <span class="text-[10px] text-gray-400">(${ord.time})</span></p>
+                            <p class="text-[11px] text-gray-500">${ord.cart.length} artículo(s) • Total aprox: $${total.toFixed(2)}</p>
+                        </div>
+                        <div class="flex space-x-1">
+                            <button onclick="resumePausedOrder(${idx})" class="px-2.5 py-1.5 bg-brand-pink text-white rounded-lg font-bold text-[11px]">Retomar</button>
+                            <button onclick="deletePausedOrder(${idx})" class="px-2 py-1.5 bg-red-100 text-red-600 rounded-lg font-bold text-[11px]">✕</button>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            }
+            document.getElementById('paused-orders-modal').classList.remove('hidden');
+        }
+
+        function closePausedOrdersModal() {
+            document.getElementById('paused-orders-modal').classList.add('hidden');
+        }
+
+        function resumePausedOrder(idx) {
+            if (currentCart.length > 0 && !confirm('Tienes productos en el carrito actual. ¿Reemplazarlos con la orden en espera?')) {
+                return;
+            }
+            const ord = pausedOrders.splice(idx, 1)[0];
+            localStorage.setItem('boba_pausedOrders', JSON.stringify(pausedOrders));
+            currentCart = ord.cart;
+            discountVal = ord.discountVal || 0;
+            document.getElementById('order-mode').value = ord.orderMode || 'local';
+            document.getElementById('store-location').value = ord.storeLocation || 'boba_haus';
+            if (ord.customer) {
+                selectCustomer(ord.customer);
+            } else {
+                clearSelectedCustomer();
+            }
+            updatePausedBadge();
+            closePausedOrdersModal();
+            renderCart();
+        }
+
+        function deletePausedOrder(idx) {
+            if (!confirm('¿Eliminar esta orden en espera?')) return;
+            pausedOrders.splice(idx, 1);
+            localStorage.setItem('boba_pausedOrders', JSON.stringify(pausedOrders));
+            updatePausedBadge();
+            openPausedOrdersModal();
+        }
+
+        // --- COMANDA RÁPIDA DE BARRA / COCINA ---
+        function printKitchenOrder() {
+            if (currentCart.length === 0) return alert('El carrito está vacío.');
+            document.getElementById('kit-order-num').innerText = document.getElementById('order-id-display').innerText;
+            document.getElementById('kit-order-mode').innerText = document.getElementById('order-mode').options[document.getElementById('order-mode').selectedIndex].text;
+            document.getElementById('kit-date').innerText = new Date().toLocaleTimeString();
+
+            const kitList = document.getElementById('kit-items-list');
+            kitList.innerHTML = '';
+            currentCart.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "border-b border-dashed border-black pb-1";
+                div.innerHTML = `
+                    <p class="font-bold text-sm">1x ${item.name}</p>
+                    ${item.options ? `<p class="text-[11px] pl-2">→ ${item.options}</p>` : ''}
+                `;
+                kitList.appendChild(div);
+            });
+
+            document.body.classList.add('printing-kitchen');
+            window.print();
+            setTimeout(() => document.body.classList.remove('printing-kitchen'), 500);
+        }
+
+        // --- RESPALDO Y PROTECCIÓN DE DATOS ---
+        function exportFullBackup() {
+            const backup = {
+                version: '4.7',
+                exportedAt: new Date().toISOString(),
+                orderCounter,
+                initialFund,
+                shiftOpen,
+                shiftData,
+                shiftHistory,
+                pausedOrders,
+                customersDB,
+                inventoryDB
+            };
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const dateStr = new Date().toISOString().slice(0, 10);
+            a.href = url;
+            a.download = `respaldo_boba_haus_${dateStr}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importFullBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!data.customersDB || !data.inventoryDB) {
+                        return alert('❌ El archivo no parece ser un respaldo válido de Boba Haus.');
+                    }
+                    if (!confirm('¿Restaurar este respaldo? Se reemplazarán los datos actuales de clientes, inventario y turnos.')) return;
+
+                    orderCounter = data.orderCounter || 1;
+                    initialFund = data.initialFund || 500;
+                    shiftOpen = !!data.shiftOpen;
+                    shiftData = data.shiftData || { cashSales: 0, cardSales: 0, totalSales: 0, expenses: [] };
+                    shiftHistory = data.shiftHistory || [];
+                    pausedOrders = data.pausedOrders || [];
+                    customersDB = data.customersDB;
+                    inventoryDB = data.inventoryDB;
+
+                    localStorage.setItem('boba_orderCounter', orderCounter);
+                    localStorage.setItem('boba_initialFund', initialFund);
+                    localStorage.setItem('boba_shiftOpen', String(shiftOpen));
+                    localStorage.setItem('boba_shiftData', JSON.stringify(shiftData));
+                    localStorage.setItem('boba_shiftHistory', JSON.stringify(shiftHistory));
+                    localStorage.setItem('boba_pausedOrders', JSON.stringify(pausedOrders));
+                    localStorage.setItem('boba_customersDB_full', JSON.stringify(customersDB));
+                    localStorage.setItem('boba_inventoryDB', JSON.stringify(inventoryDB));
+
+                    document.getElementById('customers-total-count').innerText = customersDB.length;
+                    document.getElementById('order-id-display').innerText = String(orderCounter).padStart(4, '0');
+                    document.getElementById('header-turn-status').innerText = shiftOpen ? 'Turno Abierto' : 'Turno Cerrado';
+                    updatePausedBadge();
+                    renderInventoryTable();
+                    updateTreasuryDisplay();
+                    renderShiftHistory();
+                    alert('✅ ¡Respaldo restaurado con éxito!');
+                } catch (err) {
+                    alert('❌ Error al leer el archivo de respaldo.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function exportCustomersCSV() {
+            const headers = ['ID', 'Nombre', 'Telefono', 'Direccion', 'Notas', 'Visitas', 'Total Gastado', 'Puntos'];
+            const rows = customersDB.map(c => [
+                c.id,
+                `"${(c.name || '').replace(/"/g, '""')}"`,
+                `"${(c.phone || '').replace(/"/g, '""')}"`,
+                `"${(c.address || '').replace(/"/g, '""')}"`,
+                `"${(c.notes || '').replace(/"/g, '""')}"`,
+                c.visits || 0,
+                (c.spent || 0).toFixed(2),
+                (c.points || 0).toFixed(2)
+            ]);
+            const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const dateStr = new Date().toISOString().slice(0, 10);
+            a.href = url;
+            a.download = `clientes_boba_haus_${dateStr}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // FUNCIONES DE CLIENTES FRECUENTES
         function filterCustomers() {
             const query = document.getElementById('customer-search-input').value.toLowerCase().trim();
             const dropdown = document.getElementById('customer-dropdown');
@@ -1159,6 +1459,7 @@
 
             customersDB.push(newCust);
             localStorage.setItem('boba_customersDB_full', JSON.stringify(customersDB));
+            document.getElementById('customers-total-count').innerText = customersDB.length;
             closeNewCustomerModal();
             selectCustomer(newCust);
             alert(`✅ ¡Cliente "${name}" registrado con éxito y seleccionado!`);
@@ -1199,11 +1500,7 @@
         function updatePinDots() {
             let dotsHTML = "";
             for (let i = 0; i < 4; i++) {
-                if (i < currentPinInput.length) {
-                    dotsHTML += "● ";
-                } else {
-                    dotsHTML += "○ ";
-                }
+                dotsHTML += i < currentPinInput.length ? "● " : "○ ";
             }
             document.getElementById('pin-dots').innerText = dotsHTML.trim();
         }
@@ -1262,7 +1559,6 @@
             alert('¡Turno abierto con éxito!');
         }
 
-        // FUNCIONES DE CIERRE DE TURNO Y ARQUEO
         function openCloseTurnModal() {
             if(!shiftOpen) return alert('No hay ningún turno abierto actualmente.');
             let totalExpenses = shiftData.expenses.reduce((sum, e) => sum + e.amount, 0);
@@ -1345,6 +1641,7 @@
                     <div class="grid grid-cols-2 text-gray-600 text-[11px]">
                         <span>Fondo inicial: $${sh.fund.toFixed(2)}</span>
                         <span>Ventas Cash: $${sh.cashSales.toFixed(2)}</span>
+                        <span>Ventas Tarjeta: $${(sh.cardSales || 0).toFixed(2)}</span>
                         <span>Gastos turno: $${sh.expenses.toFixed(2)}</span>
                         <span class="${sh.diff === 0 ? 'text-emerald-600 font-bold' : sh.diff > 0 ? 'text-blue-600 font-bold' : 'text-red-600 font-bold'}">Dif: $${sh.diff.toFixed(2)}</span>
                     </div>
@@ -1389,6 +1686,7 @@
 
             document.getElementById('rep-fund').innerText = `$${initialFund.toFixed(2)}`;
             document.getElementById('rep-cash-sales').innerText = `$${shiftData.cashSales.toFixed(2)}`;
+            document.getElementById('rep-card-sales').innerText = `$${shiftData.cardSales.toFixed(2)}`;
             document.getElementById('rep-refunds').innerText = `$0.00`;
             document.getElementById('rep-expenses').innerText = `$${totalExpenses.toFixed(2)}`;
             document.getElementById('rep-expected-cash').innerText = `$${expectedCash.toFixed(2)}`;
@@ -1525,7 +1823,6 @@
             btn.classList.add('bg-pink-50', 'text-brand-pink', 'border-brand-pink', 'font-bold');
         }
 
-        // CONTROL DINÁMICO RÁPIDO DE CANTIDAD (- / +)
         function changeQty(amount) {
             const input = document.getElementById('modal-qty-input');
             let val = (parseInt(input.value) || 1) + amount;
@@ -1565,7 +1862,6 @@
                 optionsArr.push(cb.value);
             });
 
-            // Añadir al carrito en lote (hasta 50)
             for(let i = 0; i < qty; i++) {
                 currentCart.push({ name: activeProduct.name, price: finalPrice, category: activeProduct.category, options: optionsArr.join(' • ') });
             }
@@ -1682,8 +1978,52 @@
             selectedPaymentMethod = method;
             document.getElementById('btn-pay-cash').className = method === 'efectivo' ? "py-2.5 bg-brand-pink text-white font-bold rounded-xl text-xs shadow transition" : "py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition";
             document.getElementById('btn-pay-card').className = method === 'tarjeta' ? "py-2.5 bg-[#5B3545] text-white font-bold rounded-xl text-xs shadow transition" : "py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition";
+            document.getElementById('btn-pay-mixed').className = method === 'mixto' ? "py-2.5 bg-amber-500 text-white font-bold rounded-xl text-xs shadow transition" : "py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition";
+
             document.getElementById('cash-payment-section').classList.toggle('hidden', method !== 'efectivo');
             document.getElementById('card-payment-section').classList.toggle('hidden', method !== 'tarjeta');
+            document.getElementById('mixed-payment-section').classList.toggle('hidden', method !== 'mixto');
+
+            if (method === 'mixto') {
+                const total = parseFloat(document.getElementById('checkout-total-display').innerText.replace('$','')) || 0;
+                document.getElementById('mixed-cash-input').value = '';
+                document.getElementById('mixed-card-input').value = total.toFixed(2);
+                updateMixedStatus();
+            }
+        }
+
+        function syncMixedPayment(changedField) {
+            const total = parseFloat(document.getElementById('checkout-total-display').innerText.replace('$','')) || 0;
+            const cashInput = document.getElementById('mixed-cash-input');
+            const cardInput = document.getElementById('mixed-card-input');
+
+            if (changedField === 'cash') {
+                const cashVal = parseFloat(cashInput.value) || 0;
+                cardInput.value = Math.max(0, total - cashVal).toFixed(2);
+            } else {
+                const cardVal = parseFloat(cardInput.value) || 0;
+                cashInput.value = Math.max(0, total - cardVal).toFixed(2);
+            }
+            updateMixedStatus();
+        }
+
+        function updateMixedStatus() {
+            const total = parseFloat(document.getElementById('checkout-total-display').innerText.replace('$','')) || 0;
+            const cashVal = parseFloat(document.getElementById('mixed-cash-input').value) || 0;
+            const cardVal = parseFloat(document.getElementById('mixed-card-input').value) || 0;
+            const sum = cashVal + cardVal;
+            const box = document.getElementById('mixed-status-box');
+
+            if (Math.abs(sum - total) < 0.01) {
+                box.innerText = '✅ Monto cubierto exactamente';
+                box.className = 'bg-emerald-50 p-2 rounded-xl text-center text-xs font-bold text-emerald-700';
+            } else if (sum > total) {
+                box.innerText = `Cambio en efectivo: $${(sum - total).toFixed(2)}`;
+                box.className = 'bg-blue-50 p-2 rounded-xl text-center text-xs font-bold text-blue-700';
+            } else {
+                box.innerText = `Falta por cubrir: $${(total - sum).toFixed(2)}`;
+                box.className = 'bg-amber-50 p-2 rounded-xl text-center text-xs font-bold text-amber-800';
+            }
         }
 
         function openCheckoutModal() {
@@ -1705,20 +2045,32 @@
 
         function processFinalPayment() {
             const total = parseFloat(document.getElementById('checkout-total-display').innerText.replace('$','')) || 0;
+            let changeVal = 0;
+            let paymentLabel = selectedPaymentMethod.toUpperCase();
+
             if (selectedPaymentMethod === 'efectivo') {
                 const rec = parseFloat(document.getElementById('cash-received-input').value || 0);
                 if (rec < total) return alert('Efectivo menor al total.');
+                changeVal = rec - total;
+                shiftData.cashSales += total;
+            } else if (selectedPaymentMethod === 'tarjeta') {
+                shiftData.cardSales += total;
+            } else if (selectedPaymentMethod === 'mixto') {
+                const cashPart = parseFloat(document.getElementById('mixed-cash-input').value) || 0;
+                const cardPart = parseFloat(document.getElementById('mixed-card-input').value) || 0;
+                if ((cashPart + cardPart) < total - 0.01) {
+                    return alert('La suma de efectivo y tarjeta es menor al total.');
+                }
+                changeVal = Math.max(0, (cashPart + cardPart) - total);
+                const netCash = Math.max(0, cashPart - changeVal);
+                shiftData.cashSales += netCash;
+                shiftData.cardSales += cardPart;
+                paymentLabel = `MIXTO (Ef: $${netCash.toFixed(2)} / Tj: $${cardPart.toFixed(2)})`;
             }
 
-            if (selectedPaymentMethod === 'efectivo') {
-                shiftData.cashSales += total;
-            } else {
-                shiftData.cardSales += total;
-            }
             shiftData.totalSales += total;
             localStorage.setItem('boba_shiftData', JSON.stringify(shiftData));
 
-            // Actualizar cliente frecuente (visitas, gasto y puntos)
             if (selectedCustomer) {
                 selectedCustomer.visits += 1;
                 selectedCustomer.spent += total;
@@ -1760,7 +2112,14 @@
             document.getElementById('rec-subtotal').innerText = document.getElementById('cart-subtotal').innerText;
             document.getElementById('rec-discount').innerText = document.getElementById('cart-discount').innerText;
             document.getElementById('rec-total').innerText = document.getElementById('cart-total').innerText;
-            document.getElementById('rec-payment').innerText = selectedPaymentMethod.toUpperCase();
+            document.getElementById('rec-payment').innerText = paymentLabel;
+
+            if (selectedPaymentMethod === 'efectivo' || (selectedPaymentMethod === 'mixto' && changeVal > 0)) {
+                document.getElementById('rec-change-line').style.display = 'block';
+                document.getElementById('rec-change').innerText = `$${changeVal.toFixed(2)}`;
+            } else {
+                document.getElementById('rec-change-line').style.display = 'none';
+            }
 
             const recItemsList = document.getElementById('rec-items-list');
             recItemsList.innerHTML = '';
@@ -1779,7 +2138,10 @@
             document.getElementById('order-id-display').innerText = String(orderCounter).padStart(4, '0');
         }
 
-        function printReceiptTicket() { window.print(); }
+        function printReceiptTicket() {
+            document.body.classList.remove('printing-kitchen');
+            window.print();
+        }
         function closeReceiptModal() { 
             document.getElementById('receipt-modal').classList.add('hidden'); 
             clearCart(); 
