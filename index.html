@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boba Haus - POS & Control de Inventarios</title>
+    <!-- PWA Configuración -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#5B3545">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Boba Haus">
+    <link rel="icon" type="image/png" href="./icon-192.png">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -76,7 +85,7 @@
         </div>
 
         <div class="p-3 border-t border-[#422632] text-[11px] text-[#E9D6C7] text-center">
-            Boba Haus POS v4.7 (Pro)
+            Boba Haus POS v4.8 (App PWA)
         </div>
     </aside>
 
@@ -91,7 +100,11 @@
                 </button>
                 <h1 id="header-section-title" class="text-base font-bold text-[#5B3545]">Punto de Venta</h1>
             </div>
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-2">
+                <button id="btn-install-pwa" onclick="installPWA()" class="hidden px-3 py-1.5 bg-brand-pink hover:bg-[#d67999] text-white text-xs font-bold rounded-xl shadow flex items-center space-x-1 transition">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Instalar App</span>
+                </button>
                 <button onclick="openTurnModal()" class="px-3 py-1 bg-amber-100 text-amber-900 text-xs font-bold rounded-xl border border-amber-300">
                     ⏱️ <span id="header-turn-status">Turno Cerrado</span>
                 </button>
@@ -267,7 +280,7 @@
                         </div>
                     </div>
 
-                    <!-- CLIENTE SELECCIONADO / BUSCADOR DINÁMICO (448 CLIENTES) -->
+                    <!-- CLIENTE SELECCIONADO / BUSCADOR DINÁMICO -->
                     <div class="p-2.5 bg-[#FFF8F2] border-b border-[#E9D6C7] text-xs space-y-2">
                         <div class="flex justify-between items-center">
                             <div class="flex items-center space-x-2">
@@ -625,7 +638,7 @@
         </div>
     </div>
 
-    <!-- CUSTOM PRODUCT MODAL (SELECTOR DINÁMICO RÁPIDO - + / -) -->
+    <!-- CUSTOM PRODUCT MODAL -->
     <div id="custom-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto border border-[#E9D6C7]">
             <div class="flex justify-between items-center border-b pb-2">
@@ -636,7 +649,6 @@
                 <button onclick="closeCustomModal()" class="text-gray-400 font-bold">✕</button>
             </div>
 
-            <!-- SELECTOR DINÁMICO RÁPIDO CON BOTONES - Y + -->
             <div class="bg-pink-50 p-3 rounded-2xl border border-pink-100 flex items-center justify-between">
                 <span class="text-xs font-bold text-[#5B3545]">Cantidad (1 - 50):</span>
                 <div class="flex items-center space-x-2">
@@ -831,6 +843,41 @@
     </div>
 
     <script>
+        // --- REGISTRO DE SERVICE WORKER E INSTALACIÓN PWA ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(() => console.log('Service Worker Boba Haus listo'))
+                    .catch(err => console.error('Error registrando SW:', err));
+            });
+        }
+
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const installBtn = document.getElementById('btn-install-pwa');
+            if (installBtn) installBtn.classList.remove('hidden');
+        });
+
+        async function installPWA() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                const installBtn = document.getElementById('btn-install-pwa');
+                if (installBtn) installBtn.classList.add('hidden');
+            }
+            deferredPrompt = null;
+        }
+
+        window.addEventListener('appinstalled', () => {
+            const installBtn = document.getElementById('btn-install-pwa');
+            if (installBtn) installBtn.classList.add('hidden');
+            deferredPrompt = null;
+        });
+
+        // --- LÓGICA DEL POS ---
         let selectedPaymentMethod = 'efectivo';
         let orderCounter = parseInt(localStorage.getItem('boba_orderCounter')) || 1;
         let isOwnerMode = false;
@@ -1175,7 +1222,7 @@
             if(id === 'inventory') { renderInventoryTable(); }
         }
 
-        // --- ÓRDENES EN ESPERA (PAUSAR / RETOMAR) ---
+        // --- ÓRDENES EN ESPERA ---
         function updatePausedBadge() {
             document.getElementById('paused-count-badge').innerText = pausedOrders.length;
         }
@@ -1289,7 +1336,7 @@
         // --- RESPALDO Y PROTECCIÓN DE DATOS ---
         function exportFullBackup() {
             const backup = {
-                version: '4.7',
+                version: '4.8',
                 exportedAt: new Date().toISOString(),
                 orderCounter,
                 initialFund,
