@@ -176,7 +176,7 @@
         </div>
 
         <div class="p-3 border-t border-[#422632] text-[11px] text-[#E9D6C7] text-center">
-            Boba Haus POS v5.3 (Pro + Turno)
+            Boba Haus POS v5.4 (Pro + Seguridad)
         </div>
     </aside>
 
@@ -814,9 +814,9 @@
         </div>
     </main>
 
-    <!-- MODAL: CREAR IMPRESORA (ESTILO LOYVERSE) -->
+    <!-- MODAL: CREAR IMPRESORA (USB / IP / BLUETOOTH) -->
     <div id="printer-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-[#E9D6C7]">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-[#E9D6C7] max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b pb-2">
                 <h3 class="font-bold text-base text-[#5B3545]">🖨️ Crear Impresora</h3>
                 <button onclick="closePrinterModal()" class="text-gray-400 font-bold">✕</button>
@@ -840,19 +840,69 @@
                         <option value="Epson TM-T88V (Ethernet)">Epson TM-T88V (Ethernet)</option>
                         <option value="Epson TM-m30">Epson TM-m30</option>
                         <option value="Sunmi">Sunmi</option>
-                        <option value="Posiflex 6900">Posiflex 6900</option>
                         <option value="XPrinter XP-Q800">XPrinter XP-Q800</option>
                         <option value="GP-58130IIC">GP-58130IIC</option>
-                        <option value="GP-U80300I">GP-U80300I</option>
-                        <option value="GP-L80250I">GP-L80250I</option>
-                        <option value="Pantalla de cocina">Pantalla de cocina</option>
                         <option value="Otro modelo">Otro modelo</option>
                     </select>
                 </div>
-                <div>
-                    <label class="font-bold text-gray-700 block mb-1">Dirección IP / Interfaz (Opcional):</label>
-                    <input type="text" id="pr-ip" placeholder="Ej. 192.168.1.200 o USB/Bluetooth" class="w-full p-2.5 border rounded-xl bg-gray-50 font-mono outline-none focus:border-brand-pink">
+
+                <!-- TIPO DE CONEXIÓN: USB / IP / BLUETOOTH -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="font-bold text-gray-700 block mb-1">Tipo de conexión:</label>
+                        <select id="pr-conn-type" onchange="togglePrinterConnFields()" class="w-full p-2.5 border rounded-xl bg-[#FFF8F2] font-bold text-[#5B3545] outline-none focus:border-brand-pink">
+                            <option value="usb">🔌 USB (Cable directo)</option>
+                            <option value="ip">🌐 IP / Red (Wi-Fi / LAN)</option>
+                            <option value="bluetooth">📶 Bluetooth</option>
+                            <option value="system">💻 Sistema / Navegador</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-bold text-gray-700 block mb-1">Ancho de papel:</label>
+                        <select id="pr-paper-width" class="w-full p-2.5 border rounded-xl bg-gray-50 font-semibold outline-none">
+                            <option value="58mm">58 mm (Ticket chico)</option>
+                            <option value="80mm">80 mm (Ticket estándar)</option>
+                        </select>
+                    </div>
                 </div>
+
+                <!-- CAMPOS USB -->
+                <div id="pr-fields-usb" class="p-3 bg-blue-50 border border-blue-200 rounded-2xl space-y-2">
+                    <p class="text-[11px] text-blue-900 font-semibold">Conecta tu impresora térmica por cable USB y vincúlala con el navegador (Chrome/Edge).</p>
+                    <div class="flex items-center justify-between gap-2">
+                        <span id="pr-usb-status" class="text-[11px] font-bold text-gray-600 truncate">Sin dispositivo USB vinculado</span>
+                        <button type="button" onclick="connectUSBPrinter()" class="shrink-0 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-[11px] shadow">
+                            🔌 Vincular USB
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CAMPOS IP / RED -->
+                <div id="pr-fields-ip" class="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-2 hidden">
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="col-span-2">
+                            <label class="font-bold text-emerald-900 block mb-1">Dirección IP:</label>
+                            <input type="text" id="pr-ip" placeholder="Ej. 192.168.1.200" class="w-full p-2 border rounded-xl bg-white font-mono outline-none">
+                        </div>
+                        <div>
+                            <label class="font-bold text-emerald-900 block mb-1">Puerto:</label>
+                            <input type="number" id="pr-port" value="9100" class="w-full p-2 border rounded-xl bg-white font-mono outline-none">
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-emerald-800">Asegúrate de que tu PC/tableta y la impresora estén en el mismo Wi-Fi.</p>
+                </div>
+
+                <!-- CAMPOS BLUETOOTH -->
+                <div id="pr-fields-bt" class="p-3 bg-indigo-50 border border-indigo-200 rounded-2xl space-y-2 hidden">
+                    <p class="text-[11px] text-indigo-900 font-semibold">Enciende el Bluetooth de tu dispositivo y la impresora térmica para emparejar.</p>
+                    <div class="flex items-center justify-between gap-2">
+                        <span id="pr-bt-status" class="text-[11px] font-bold text-gray-600 truncate">Sin impresora Bluetooth</span>
+                        <button type="button" onclick="connectBluetoothPrinter()" class="shrink-0 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-[11px] shadow">
+                            📶 Buscar Bluetooth
+                        </button>
+                    </div>
+                </div>
+
                 <div class="flex items-center justify-between pt-1">
                     <span class="font-bold text-[#5B3545]">Imprimir recibos y cuentas</span>
                     <input type="checkbox" id="pr-receipts" checked class="w-5 h-5 accent-[#E88EAF]">
@@ -1292,10 +1342,10 @@
                 </div>
 
                 <div class="border-b pb-2">
-                    <h4 class="font-bold text-sm tracking-wide text-[#5B3545]">BOBA HAUS</h4>
-                    <p class="text-[9px] text-brand-pink italic font-semibold">"Hecho con cariño, servido con pasión"</p>
-                    <p class="text-[9px] text-gray-500 mt-1">Tel: 275 105 73 79</p>
-                    <p class="text-[9px] text-gray-500">Chiautla de Tapia, Puebla</p>
+                    <h4 id="rec-biz-name" class="font-bold text-sm tracking-wide text-[#5B3545]">BOBA HAUS</h4>
+                    <p id="rec-biz-slogan" class="text-[9px] text-brand-pink italic font-semibold">"Hecho con cariño, servido con pasión"</p>
+                    <p id="rec-biz-phone" class="text-[9px] text-gray-500 mt-1">Tel: 275 105 73 79</p>
+                    <p id="rec-biz-address" class="text-[9px] text-gray-500">Chiautla de Tapia, Puebla</p>
                     <p id="receipt-date" class="text-[9px] text-gray-500"></p>
                 </div>
 
@@ -1318,7 +1368,7 @@
                 </div>
 
                 <div class="text-center pt-2 text-[9px] text-gray-500 border-t space-y-1">
-                    <p class="font-semibold text-brand-pink">Comparte tu experiencia y etiqueta a Boba Haus. ¡Nos encanta verte disfrutar tu bebida!</p>
+                    <p id="rec-biz-footer" class="font-semibold text-brand-pink">Comparte tu experiencia y etiqueta a Boba Haus. ¡Nos encanta verte disfrutar tu bebida!</p>
                 </div>
             </div>
 
@@ -1478,6 +1528,16 @@
                     displaysDB = data.displaysDB;
                     localStorage.setItem('boba_displaysDB', JSON.stringify(displaysDB));
                 }
+                if (data.posConfig) {
+                    posConfig = Object.assign({}, defaultPosConfig, data.posConfig);
+                    localStorage.setItem('boba_posConfig', JSON.stringify(posConfig));
+                    if (typeof applyPosConfigToUI === 'function') applyPosConfigToUI();
+                }
+                if (Array.isArray(data.productsDB) && data.productsDB.length > 0) {
+                    productsDB.length = 0;
+                    data.productsDB.forEach(p => productsDB.push(p));
+                    localStorage.setItem('boba_productsDB', JSON.stringify(productsDB));
+                }
                 if (Array.isArray(data.inventoryDB)) {
                     inventoryDB = data.inventoryDB;
                     localStorage.setItem('boba_inventoryDB', JSON.stringify(inventoryDB));
@@ -1515,6 +1575,8 @@
                 allReceipts,
                 printersDB,
                 displaysDB,
+                posConfig,
+                productsDB,
                 inventoryDB,
                 customersDB,
                 updatedAt: Date.now()
@@ -2247,7 +2309,7 @@
                 if (cancelBtn) cancelBtn.classList.remove('hidden');
             } else if (mode === 'backoffice') {
                 if (titleEl) titleEl.innerText = '📊 PIN de Propietario (Back Office)';
-                if (subEl) subEl.innerText = 'Acceso exclusivo para la dueña (2107)';
+                if (subEl) subEl.innerText = 'Acceso exclusivo para la propietaria';
                 if (cancelBtn) cancelBtn.classList.remove('hidden');
             } else {
                 if (titleEl) titleEl.innerText = '🔑 Cambiar Usuario / PIN';
@@ -2306,14 +2368,14 @@
 
         function validatePin(pin) {
             setTimeout(() => {
-                const validPins = {
-                    "2107": { owner: true, name: "Izel (Propietaria)" },
-                    "0805": { owner: false, name: "Turno Mañana (0805)" },
-                    "3240": { owner: false, name: "Turno Tarde (3240)" }
-                };
+                const pins = getActivePins();
+                const validPins = {};
+                validPins[pins.owner] = { owner: true, name: "Propietaria" };
+                validPins[pins.morning] = { owner: false, name: "Turno Mañana" };
+                validPins[pins.afternoon] = { owner: false, name: "Turno Tarde" };
 
                 if (pinModalMode === 'backoffice') {
-                    if (pin === "2107") {
+                    if (pin === pins.owner) {
                         isOwnerMode = true;
                         currentUserName = "Izel (Propietaria)";
                         document.getElementById('sidebar-role-title').innerText = currentUserName;
@@ -2725,7 +2787,7 @@
             if (!ord || ord.canceled) return;
             const pin = prompt(`🔒 Ingresa el PIN de Dueña para cancelar/reembolsar la Orden #${ord.orderNum} ($${ord.total.toFixed(2)}):`);
             if (pin === null) return;
-            if (pin.trim() !== '2107') {
+            if (pin.trim() !== getActivePins().owner) {
                 return alert('❌ PIN incorrecto. Solo la dueña puede cancelar tickets.');
             }
 
@@ -3676,7 +3738,7 @@ Lat: ${lat}, Lng: ${lng}`);
 
             const pin = prompt(`🔒 Ingresa el PIN de Propietario para autorizar el REEMBOLSO del Recibo #${ord.orderNum} (${code}) por $${ord.total.toFixed(2)}:`);
             if (pin === null) return;
-            if (pin.trim() !== '2107') return alert('❌ PIN incorrecto. Solo la propietaria puede autorizar reembolsos.');
+            if (pin.trim() !== getActivePins().owner) return alert('❌ PIN incorrecto. Solo la propietaria puede autorizar reembolsos.');
 
             const reason = prompt('Motivo del reembolso (Ej. Error de cobro, producto cambiado):', 'Error en orden') || 'Autorizado por dueña';
             const nowStr = new Date().toLocaleString();
@@ -3734,12 +3796,150 @@ Lat: ${lat}, Lng: ${lng}`);
             URL.revokeObjectURL(url);
         }
 
-        // --- GENERAL: IMPRESORAS ---
+        // --- CONFIGURACIÓN GENERAL EDITABLE DESDE BACK OFFICE ---
+        const defaultPosConfig = {
+            businessName: 'BOBA HAUS',
+            slogan: '"Hecho con cariño, servido con pasión"',
+            phone: '275 105 73 79',
+            address: 'Chiautla de Tapia, Puebla',
+            footerMsg: 'Comparte tu experiencia y etiqueta a Boba Haus. ¡Nos encanta verte disfrutar tu bebida!',
+            ecoDiscount: 10,
+            promoOverride: '',
+            pins: { owner: '2107', morning: '0805', afternoon: '3240' }
+        };
+        let posConfig = Object.assign({}, defaultPosConfig, JSON.parse(localStorage.getItem('boba_posConfig')) || {});
+
+        function getActivePins() {
+            const p = (posConfig && posConfig.pins) ? posConfig.pins : {};
+            return {
+                owner: String(p.owner || '2107'),
+                morning: String(p.morning || '0805'),
+                afternoon: String(p.afternoon || '3240')
+            };
+        }
+
+        function applyPosConfigToUI() {
+            const setTxt = (id, v) => { const el = document.getElementById(id); if (el && v) el.innerText = v; };
+            setTxt('rec-biz-name', posConfig.businessName);
+            setTxt('rec-biz-slogan', posConfig.slogan);
+            setTxt('rec-biz-phone', posConfig.phone ? ('Tel: ' + posConfig.phone) : '');
+            setTxt('rec-biz-address', posConfig.address);
+            setTxt('rec-biz-footer', posConfig.footerMsg);
+            const ecoBtn = document.getElementById('btn-eco-discount');
+            if (ecoBtn) ecoBtn.innerText = `🌱 Vaso Reutilizable (-$${Number(posConfig.ecoDiscount || 10)})`;
+            if (posConfig.promoOverride && posConfig.promoOverride.trim()) {
+                setTxt('daily-promo-banner', posConfig.promoOverride.trim());
+            }
+        }
+
+        // --- GENERAL: IMPRESORAS (USB / IP / BLUETOOTH + ESC/POS) ---
+        let activeUSBDevice = null;
+        let activeBTDevice = null;
+        let activeBTCharacteristic = null;
+        let tempPrinterMeta = { deviceName: '' };
+
+        function togglePrinterConnFields() {
+            const type = document.getElementById('pr-conn-type')?.value || 'usb';
+            document.getElementById('pr-fields-usb').classList.toggle('hidden', type !== 'usb');
+            document.getElementById('pr-fields-ip').classList.toggle('hidden', type !== 'ip');
+            document.getElementById('pr-fields-bt').classList.toggle('hidden', type !== 'bluetooth');
+        }
+
+        async function connectUSBPrinter() {
+            if (!('usb' in navigator)) {
+                return alert('⚠️ Tu navegador no soporta WebUSB. Usa Google Chrome o Microsoft Edge en PC/Android.');
+            }
+            try {
+                const device = await navigator.usb.requestDevice({ filters: [] });
+                await device.open();
+                if (device.configuration === null) await device.selectConfiguration(1);
+                await device.claimInterface(0);
+                activeUSBDevice = device;
+                const dName = device.productName || 'Impresora USB';
+                tempPrinterMeta.deviceName = dName;
+                document.getElementById('pr-usb-status').innerText = `✅ Conectada: ${dName}`;
+                if (!document.getElementById('pr-name').value.trim()) {
+                    document.getElementById('pr-name').value = dName;
+                }
+                alert(`🔌 Impresora USB "${dName}" vinculada correctamente.`);
+            } catch (err) {
+                if (err.name !== 'NotFoundError') alert('No se pudo vincular por USB: ' + err.message);
+            }
+        }
+
+        async function connectBluetoothPrinter() {
+            if (!('bluetooth' in navigator)) {
+                return alert('⚠️ Tu navegador no soporta Web Bluetooth. Usa Google Chrome en Android o PC.');
+            }
+            try {
+                const device = await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true,
+                    optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2']
+                });
+                const server = await device.gatt.connect();
+                activeBTDevice = device;
+                activeBTCharacteristic = null;
+                const services = await server.getPrimaryServices();
+                for (const svc of services) {
+                    const chars = await svc.getCharacteristics();
+                    for (const ch of chars) {
+                        if (ch.properties.write || ch.properties.writeWithoutResponse) {
+                            activeBTCharacteristic = ch;
+                            break;
+                        }
+                    }
+                    if (activeBTCharacteristic) break;
+                }
+                const dName = device.name || 'Impresora Bluetooth';
+                tempPrinterMeta.deviceName = dName;
+                document.getElementById('pr-bt-status').innerText = `✅ Emparejada: ${dName}`;
+                if (!document.getElementById('pr-name').value.trim()) {
+                    document.getElementById('pr-name').value = dName;
+                }
+                alert(`📶 Impresora Bluetooth "${dName}" conectada correctamente.`);
+            } catch (err) {
+                if (err.name !== 'NotFoundError') alert('No se pudo conectar por Bluetooth: ' + err.message);
+            }
+        }
+
+        async function sendRawESCPOS(text) {
+            const encoder = new TextEncoder();
+            const init = new Uint8Array([0x1B, 0x40]); // ESC @
+            const body = encoder.encode(text + '\n\n\n');
+            const cut = new Uint8Array([0x1D, 0x56, 0x41, 0x03]); // GS V A 3
+            const payload = new Uint8Array(init.length + body.length + cut.length);
+            payload.set(init, 0);
+            payload.set(body, init.length);
+            payload.set(cut, init.length + body.length);
+
+            if (activeUSBDevice) {
+                const epOut = activeUSBDevice.configuration.interfaces[0].alternate.endpoints.find(e => e.direction === 'out');
+                if (epOut) {
+                    await activeUSBDevice.transferOut(epOut.endpointNumber, payload);
+                    return true;
+                }
+            }
+            if (activeBTCharacteristic) {
+                const chunkSize = 100;
+                for (let i = 0; i < payload.length; i += chunkSize) {
+                    const chunk = payload.slice(i, i + chunkSize);
+                    await activeBTCharacteristic.writeValue(chunk);
+                }
+                return true;
+            }
+            return false;
+        }
+
         function openPrinterModal() {
             document.getElementById('pr-name').value = '';
             document.getElementById('pr-ip').value = '';
+            document.getElementById('pr-port').value = '9100';
+            document.getElementById('pr-conn-type').value = 'usb';
+            document.getElementById('pr-paper-width').value = '58mm';
             document.getElementById('pr-receipts').checked = true;
             document.getElementById('pr-orders').checked = false;
+            tempPrinterMeta = { deviceName: '' };
+            togglePrinterConnFields();
             document.getElementById('printer-modal').classList.remove('hidden');
         }
         function closePrinterModal() { document.getElementById('printer-modal').classList.add('hidden'); }
@@ -3747,12 +3947,17 @@ Lat: ${lat}, Lng: ${lng}`);
         function savePrinterConfig() {
             const name = document.getElementById('pr-name').value.trim();
             const model = document.getElementById('pr-model').value;
-            const ip = document.getElementById('pr-ip').value.trim() || 'Predeterminada del sistema';
+            const connType = document.getElementById('pr-conn-type').value;
+            const paperWidth = document.getElementById('pr-paper-width').value;
+            const ipVal = document.getElementById('pr-ip').value.trim();
+            const portVal = document.getElementById('pr-port').value.trim() || '9100';
             const printReceipts = document.getElementById('pr-receipts').checked;
             const printOrders = document.getElementById('pr-orders').checked;
             if (!name) return alert('Ingresa un nombre para la impresora.');
+            if (connType === 'ip' && !ipVal) return alert('Ingresa la dirección IP de la impresora.');
 
-            printersDB.push({ id: Date.now(), name, model, ip, printReceipts, printOrders });
+            const target = connType === 'ip' ? `${ipVal}:${portVal}` : (tempPrinterMeta.deviceName || connType.toUpperCase());
+            printersDB.push({ id: Date.now(), name, model, connType, paperWidth, ip: target, printReceipts, printOrders });
             localStorage.setItem('boba_printersDB', JSON.stringify(printersDB));
             closePrinterModal();
             renderPrintersList();
@@ -3767,11 +3972,14 @@ Lat: ${lat}, Lng: ${lng}`);
                 cont.innerHTML = `<p class="text-gray-400 italic">No hay impresoras configuradas. Haz clic en "+ Crear impresora".</p>`;
                 return;
             }
+            const badges = { usb: '🔌 USB', ip: '🌐 IP/Red', bluetooth: '📶 Bluetooth', system: '💻 Sistema' };
             cont.innerHTML = printersDB.map((p, idx) => `
                 <div class="p-3 bg-[#FFF8F2] border border-[#E9D6C7] rounded-2xl flex items-center justify-between gap-2">
                     <div>
                         <p class="font-bold text-[#5B3545]">🖨️ ${p.name} <span class="text-[10px] font-normal text-gray-500">(${p.model})</span></p>
-                        <p class="text-[10px] text-gray-500">IP/Puerto: ${p.ip} • ${p.printReceipts ? '✅ Recibos' : ''} ${p.printOrders ? '✅ Pedidos' : ''}</p>
+                        <p class="text-[10px] text-gray-500">
+                            <strong>${badges[p.connType] || '💻 Sistema'}</strong> • ${p.ip || 'Auto'} • ${p.paperWidth || '58mm'} • ${p.printReceipts ? '✅ Recibos' : ''} ${p.printOrders ? '✅ Pedidos' : ''}
+                        </p>
                     </div>
                     <div class="flex gap-1.5">
                         <button onclick="printTestPage('${p.name}')" class="px-2.5 py-1 bg-white border border-[#E9D6C7] rounded-lg text-[10px] font-bold text-[#5B3545]">Probar</button>
@@ -3781,8 +3989,12 @@ Lat: ${lat}, Lng: ${lng}`);
             `).join('');
         }
 
-        function printTestPage(printerName) {
+        async function printTestPage(printerName) {
             const name = printerName || document.getElementById('pr-name')?.value || 'Impresora Boba Haus';
+            const sentDirect = await sendRawESCPOS(`*** ${posConfig.businessName} ***\nIMPRESION DE PRUEBA\nEquipo: ${name}\nFecha: ${new Date().toLocaleString()}\nConexion exitosa!`).catch(() => false);
+            if (sentDirect) {
+                return alert(`✅ Impresión de prueba enviada directamente a "${name}".`);
+            }
             document.getElementById('test-print-printer-name').innerText = `Equipo: ${name}`;
             document.getElementById('test-print-date').innerText = new Date().toLocaleString();
             document.body.classList.add('printing-test');
@@ -3961,11 +4173,12 @@ Lat: ${lat}, Lng: ${lng}`);
             generalSettings.layoutMode = document.getElementById('setting-layout-mode')?.value || 'grid';
             localStorage.setItem('boba_generalSettings', JSON.stringify(generalSettings));
             applyGeneralSettings();
+            applyPosConfigToUI();
         }
 
         function openCashDrawerAction() {
             const pin = prompt('🔓 Ingresa tu PIN para registrar apertura de cajón de efectivo:');
-            if (!pin || !['2107', '0805', '3240'].includes(pin.trim())) {
+            if (!pin || !Object.values(getActivePins()).includes(pin.trim())) {
                 return alert('❌ PIN incorrecto.');
             }
             alert('✅ Cajón de efectivo liberado y apertura registrada.');
@@ -3981,6 +4194,7 @@ Lat: ${lat}, Lng: ${lng}`);
 
         window.addEventListener('load', () => {
             applyGeneralSettings();
+            applyPosConfigToUI();
             loadGeneralSettingsUI();
             renderPrintersList();
             renderDisplaysList();

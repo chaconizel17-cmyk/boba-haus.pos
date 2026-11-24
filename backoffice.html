@@ -106,6 +106,7 @@
         <button onclick="boTab('shifts')" id="bo-nav-shifts" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">⏱️ Cierres de Turno</button>
         <button onclick="boTab('inventory')" id="bo-nav-inventory" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">📦 Inventario Remoto</button>
         <button onclick="boTab('customers')" id="bo-nav-customers" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">👥 Clientes Frecuentes</button>
+        <button onclick="boTab('posconfig')" id="bo-nav-posconfig" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">⚙️ Editar POS</button>
         <button onclick="boTab('backups')" id="bo-nav-backups" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">🛡️ Respaldos y Datos</button>
     </nav>
 
@@ -271,6 +272,111 @@
                 </div>
             </div>
         </section>
+
+        <!-- TAB 7: EDITAR POS (SIN TOCAR CÓDIGO) -->
+        <section id="bo-tab-posconfig" class="hidden space-y-5">
+            <!-- 1. Datos del Negocio y Ticket -->
+            <div class="bg-white p-5 rounded-3xl border border-[#E9D6C7] shadow-sm space-y-4">
+                <div class="border-b pb-3">
+                    <h2 class="text-lg font-bold text-[#5B3545]">🧾 Datos del Negocio, Ticket y Promoción</h2>
+                    <p class="text-xs text-gray-500">Cualquier cambio aquí se aplica automáticamente en el Punto de Venta sin editar código.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div>
+                        <label class="font-bold text-gray-600 block mb-1">Nombre del negocio (Ticket):</label>
+                        <input type="text" id="cfg-biz-name" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-semibold outline-none">
+                    </div>
+                    <div>
+                        <label class="font-bold text-gray-600 block mb-1">Teléfono:</label>
+                        <input type="text" id="cfg-biz-phone" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-semibold outline-none">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="font-bold text-gray-600 block mb-1">Slogan (debajo del nombre):</label>
+                        <input type="text" id="cfg-biz-slogan" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-semibold outline-none">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="font-bold text-gray-600 block mb-1">Dirección:</label>
+                        <input type="text" id="cfg-biz-address" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-semibold outline-none">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="font-bold text-gray-600 block mb-1">Mensaje al pie del ticket:</label>
+                        <input type="text" id="cfg-biz-footer" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-semibold outline-none">
+                    </div>
+                    <div>
+                        <label class="font-bold text-gray-600 block mb-1">Descuento Vaso Reutilizable ($):</label>
+                        <input type="number" id="cfg-eco-discount" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-bold outline-none">
+                    </div>
+                    <div>
+                        <label class="font-bold text-gray-600 block mb-1">Texto de Promoción (Opcional):</label>
+                        <input type="text" id="cfg-promo-override" placeholder="Déjalo vacío para promo automática por día" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] outline-none">
+                    </div>
+                </div>
+                <button onclick="savePosGeneralConfig()" class="px-5 py-2.5 bg-brand-pink hover:bg-[#d67999] text-white font-bold rounded-xl text-xs shadow">
+                    💾 Guardar Cambios en el POS
+                </button>
+            </div>
+
+            <!-- 2. Seguridad y Privacidad (Gestión de PINs ocultos) -->
+            <div class="bg-white p-5 rounded-3xl border border-[#E9D6C7] shadow-sm space-y-4">
+                <div class="border-b pb-3">
+                    <h2 class="text-lg font-bold text-[#5B3545]">🔐 Seguridad y PINs de Acceso (4 dígitos)</h2>
+                    <p class="text-xs text-gray-500">Los PINs están ocultos por privacidad. Déjalos en blanco si no deseas cambiarlos.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div>
+                        <label class="font-bold text-gray-600 block mb-1">Nuevo PIN Propietaria:</label>
+                        <input type="password" inputmode="numeric" maxlength="4" id="cfg-pin-owner" placeholder="••••" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-mono text-center text-base tracking-widest outline-none">
+                    </div>
+                    <div>
+                        <label class="font-bold text-gray-600 block mb-1">Nuevo PIN Turno Mañana:</label>
+                        <input type="password" inputmode="numeric" maxlength="4" id="cfg-pin-morning" placeholder="••••" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-mono text-center text-base tracking-widest outline-none">
+                    </div>
+                    <div>
+                        <label class="font-bold text-gray-600 block mb-1">Nuevo PIN Turno Tarde:</label>
+                        <input type="password" inputmode="numeric" maxlength="4" id="cfg-pin-afternoon" placeholder="••••" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-mono text-center text-base tracking-widest outline-none">
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                    <p class="text-[11px] text-gray-500">🛡️ Auto-bloqueo por inactividad activo (5 min sin uso).</p>
+                    <button onclick="savePosPins()" class="px-5 py-2.5 bg-[#5B3545] hover:bg-[#422632] text-white font-bold rounded-xl text-xs shadow">
+                        🔒 Actualizar PINs
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Editor Rápido de Menú y Precios -->
+            <div class="bg-white p-5 rounded-3xl border border-[#E9D6C7] shadow-sm space-y-4">
+                <div class="border-b pb-3">
+                    <h2 class="text-lg font-bold text-[#5B3545]">🧋 Editor de Menú y Precios</h2>
+                    <p class="text-xs text-gray-500">Agrega nuevos productos o actualiza precios directamente en el POS.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs bg-[#FFF8F2] p-3 rounded-2xl border border-[#E9D6C7]">
+                    <input type="text" id="bo-new-prod-name" placeholder="Nombre del producto" class="sm:col-span-2 p-2 border rounded-xl bg-white outline-none">
+                    <input type="number" id="bo-new-prod-price" placeholder="Precio ($)" class="p-2 border rounded-xl bg-white outline-none">
+                    <select id="bo-new-prod-cat" class="p-2 border rounded-xl bg-white font-semibold outline-none">
+                        <option value="boba">BOBA</option>
+                        <option value="frappe">FRAPPÉ</option>
+                        <option value="smoothie">SMOOTHIE</option>
+                        <option value="soda">SODA ITALIANA</option>
+                        <option value="xolot">XOLOT</option>
+                        <option value="fortuna">FORTUNA</option>
+                        <option value="cafe_frio">CAFÉ FRÍO</option>
+                        <option value="cafe_caliente">CAFÉ CALIENTE</option>
+                        <option value="tizana">TIZANA</option>
+                        <option value="temporada">TEMPORADA</option>
+                        <option value="crepas">CREPAS</option>
+                        <option value="banderillas">BANDERILLAS</option>
+                        <option value="pasteles">PASTELES</option>
+                        <option value="comida">COMIDA</option>
+                    </select>
+                    <button onclick="addBoProduct()" class="sm:col-span-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow">
+                        ➕ Añadir Producto al Menú del POS
+                    </button>
+                </div>
+                <input type="text" id="bo-prod-search" oninput="renderBoProducts()" placeholder="🔍 Buscar producto para cambiar precio..." class="w-full p-2.5 border border-[#E9D6C7] rounded-xl text-xs bg-[#FFF8F2] outline-none">
+                <div id="bo-products-list" class="space-y-2 text-xs max-h-80 overflow-y-auto"></div>
+            </div>
+        </section>
     </main>
 
     <script>
@@ -299,8 +405,10 @@
                 updateBoDots();
                 if (boPin.length === 4) {
                     setTimeout(() => {
-                        if (boPin === "2107") {
+                        const expectedOwnerPin = String((cloudData.posConfig && cloudData.posConfig.pins && cloudData.posConfig.pins.owner) || "2107");
+                        if (boPin === expectedOwnerPin) {
                             document.getElementById('owner-lock-screen').classList.add('hidden');
+                            resetInactivityTimer();
                         } else {
                             alert('❌ Acceso denegado. Solo la propietaria puede entrar al Back Office.');
                             boPinClear();
@@ -322,7 +430,7 @@
         }
 
         function boTab(id) {
-            ['dashboard', 'receipts', 'shifts', 'inventory', 'customers', 'backups'].forEach(t => {
+            ['dashboard', 'receipts', 'shifts', 'inventory', 'customers', 'posconfig', 'backups'].forEach(t => {
                 document.getElementById(`bo-tab-${t}`).classList.add('hidden');
                 const btn = document.getElementById(`bo-nav-${t}`);
                 btn.className = "px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0";
@@ -439,6 +547,138 @@
             renderBoShifts();
             renderBoInventory();
             renderBoCustomers();
+            loadPosConfigToBoUI();
+            renderBoProducts();
+        }
+
+        // --- AUTO-BLOQUEO POR INACTIVIDAD (5 MINUTOS) ---
+        let boInactivityTimer = null;
+        function resetInactivityTimer() {
+            clearTimeout(boInactivityTimer);
+            if (!document.getElementById('owner-lock-screen').classList.contains('hidden')) return;
+            boInactivityTimer = setTimeout(() => {
+                lockBackOffice();
+            }, 5 * 60 * 1000);
+        }
+        ['click', 'touchstart', 'keydown'].forEach(ev => window.addEventListener(ev, resetInactivityTimer));
+
+        // --- EDITOR GENERAL DEL POS ---
+        function loadPosConfigToBoUI() {
+            const cfg = Object.assign({
+                businessName: 'BOBA HAUS',
+                slogan: '"Hecho con cariño, servido con pasión"',
+                phone: '275 105 73 79',
+                address: 'Chiautla de Tapia, Puebla',
+                footerMsg: 'Comparte tu experiencia y etiqueta a Boba Haus. ¡Nos encanta verte disfrutar tu bebida!',
+                ecoDiscount: 10,
+                promoOverride: ''
+            }, cloudData.posConfig || {});
+            const setVal = (id, v) => { const el = document.getElementById(id); if (el && document.activeElement !== el) el.value = v; };
+            setVal('cfg-biz-name', cfg.businessName || '');
+            setVal('cfg-biz-phone', cfg.phone || '');
+            setVal('cfg-biz-slogan', cfg.slogan || '');
+            setVal('cfg-biz-address', cfg.address || '');
+            setVal('cfg-biz-footer', cfg.footerMsg || '');
+            setVal('cfg-eco-discount', cfg.ecoDiscount ?? 10);
+            setVal('cfg-promo-override', cfg.promoOverride || '');
+        }
+
+        function savePosGeneralConfig() {
+            const currentPins = (cloudData.posConfig && cloudData.posConfig.pins) || { owner: '2107', morning: '0805', afternoon: '3240' };
+            const updated = {
+                businessName: document.getElementById('cfg-biz-name').value.trim() || 'BOBA HAUS',
+                phone: document.getElementById('cfg-biz-phone').value.trim(),
+                slogan: document.getElementById('cfg-biz-slogan').value.trim(),
+                address: document.getElementById('cfg-biz-address').value.trim(),
+                footerMsg: document.getElementById('cfg-biz-footer').value.trim(),
+                ecoDiscount: parseFloat(document.getElementById('cfg-eco-discount').value) || 10,
+                promoOverride: document.getElementById('cfg-promo-override').value.trim(),
+                pins: currentPins
+            };
+            fbDb.ref('boba_haus_pos/posConfig').set(updated)
+                .then(() => alert('✅ Configuración del POS guardada y sincronizada en vivo.'))
+                .catch(err => alert('Error: ' + err.message));
+        }
+
+        function savePosPins() {
+            const currentPins = Object.assign({ owner: '2107', morning: '0805', afternoon: '3240' }, (cloudData.posConfig && cloudData.posConfig.pins) || {});
+            const pOwner = document.getElementById('cfg-pin-owner').value.trim();
+            const pMorn = document.getElementById('cfg-pin-morning').value.trim();
+            const pAft = document.getElementById('cfg-pin-afternoon').value.trim();
+
+            if (pOwner && !/^\d{4}$/.test(pOwner)) return alert('El PIN de Propietaria debe tener exactamente 4 dígitos.');
+            if (pMorn && !/^\d{4}$/.test(pMorn)) return alert('El PIN de Turno Mañana debe tener exactamente 4 dígitos.');
+            if (pAft && !/^\d{4}$/.test(pAft)) return alert('El PIN de Turno Tarde debe tener exactamente 4 dígitos.');
+
+            if (pOwner) currentPins.owner = pOwner;
+            if (pMorn) currentPins.morning = pMorn;
+            if (pAft) currentPins.afternoon = pAft;
+
+            fbDb.ref('boba_haus_pos/posConfig/pins').set(currentPins)
+                .then(() => {
+                    document.getElementById('cfg-pin-owner').value = '';
+                    document.getElementById('cfg-pin-morning').value = '';
+                    document.getElementById('cfg-pin-afternoon').value = '';
+                    alert('🔒 PINs actualizados de forma segura en la nube.');
+                })
+                .catch(err => alert('Error: ' + err.message));
+        }
+
+        function renderBoProducts() {
+            const el = document.getElementById('bo-products-list');
+            if (!el) return;
+            const prods = Array.isArray(cloudData.productsDB) ? cloudData.productsDB : [];
+            if (prods.length === 0) {
+                el.innerHTML = `<p class="text-gray-400 italic">Abre el POS una vez para sincronizar el catálogo inicial de productos.</p>`;
+                return;
+            }
+            const q = (document.getElementById('bo-prod-search')?.value || '').toLowerCase().trim();
+            const indexed = prods.map((p, idx) => ({ ...p, _idx: idx }))
+                .filter(p => !q || p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
+            el.innerHTML = indexed.slice(0, 60).map(p => `
+                <div class="p-2.5 bg-[#FFF8F2] border border-[#E9D6C7] rounded-xl flex items-center justify-between gap-2">
+                    <div>
+                        <p class="font-bold text-[#5B3545]">${p.name}</p>
+                        <p class="text-[10px] text-gray-400 uppercase">${p.category}</p>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <input type="number" id="bo-pprice-${p._idx}" value="${p.price}" class="w-20 p-1 border rounded-lg text-center font-bold bg-white">
+                        <button onclick="updateBoProductPrice(${p._idx})" class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg font-bold text-[10px]">Guardar</button>
+                        <button onclick="deleteBoProduct(${p._idx})" class="px-2 py-1 bg-red-100 text-red-600 rounded-lg font-bold text-[10px]">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateBoProductPrice(idx) {
+            const val = parseFloat(document.getElementById(`bo-pprice-${idx}`).value);
+            if (isNaN(val) || val < 0) return alert('Precio inválido.');
+            fbDb.ref(`boba_haus_pos/productsDB/${idx}/price`).set(val)
+                .then(() => alert('✅ Precio actualizado en el POS.'))
+                .catch(err => alert('Error: ' + err.message));
+        }
+
+        function addBoProduct() {
+            const name = document.getElementById('bo-new-prod-name').value.trim();
+            const price = parseFloat(document.getElementById('bo-new-prod-price').value);
+            const category = document.getElementById('bo-new-prod-cat').value;
+            if (!name || isNaN(price) || price < 0) return alert('Ingresa nombre y precio válidos.');
+            const prods = Array.isArray(cloudData.productsDB) ? [...cloudData.productsDB] : [];
+            prods.push({ name, price, category });
+            fbDb.ref('boba_haus_pos/productsDB').set(prods)
+                .then(() => {
+                    document.getElementById('bo-new-prod-name').value = '';
+                    document.getElementById('bo-new-prod-price').value = '';
+                    alert(`✅ Producto "${name}" añadido al menú del POS.`);
+                })
+                .catch(err => alert('Error: ' + err.message));
+        }
+
+        function deleteBoProduct(idx) {
+            if (!confirm('¿Eliminar este producto del menú del POS?')) return;
+            const prods = Array.isArray(cloudData.productsDB) ? [...cloudData.productsDB] : [];
+            prods.splice(idx, 1);
+            fbDb.ref('boba_haus_pos/productsDB').set(prods);
         }
 
         function renderBoReceipts() {
