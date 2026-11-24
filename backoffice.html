@@ -4,7 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boba Haus - Back Office Propietario</title>
-    <link rel="icon" type="image/png" href="./icon-192.png">
+    <!-- PWA Independiente Back Office -->
+    <link rel="manifest" href="./manifest-backoffice.json">
+    <meta name="theme-color" content="#5B3545">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Back Office">
+    <link rel="icon" type="image/png" href="./icon-bo-192.png">
+    <link rel="apple-touch-icon" href="./icon-bo-192.png">
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -79,6 +87,9 @@
         </div>
         <div class="flex items-center gap-2">
             <span id="bo-cloud-badge" class="px-2.5 py-1 bg-white/10 text-xs font-bold rounded-xl">☁️ Conectando...</span>
+            <button id="btn-install-bo" onclick="installBoPWA()" class="hidden px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold shadow flex items-center space-x-1">
+                <i class="fa-solid fa-download"></i> <span>Instalar App</span>
+            </button>
             <a href="./index.html" class="px-3 py-1.5 bg-brand-pink hover:bg-[#d67999] text-white rounded-xl text-xs font-bold shadow">
                 🧋 Ir al POS
             </a>
@@ -621,6 +632,35 @@
             a.href = url; a.download = filename; a.click();
             URL.revokeObjectURL(url);
         }
+
+        // --- PWA INDEPENDIENTE BACK OFFICE ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
+            });
+        }
+        let boDeferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            boDeferredPrompt = e;
+            const btn = document.getElementById('btn-install-bo');
+            if (btn) btn.classList.remove('hidden');
+        });
+        async function installBoPWA() {
+            if (!boDeferredPrompt) return;
+            boDeferredPrompt.prompt();
+            const { outcome } = await boDeferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                const btn = document.getElementById('btn-install-bo');
+                if (btn) btn.classList.add('hidden');
+            }
+            boDeferredPrompt = null;
+        }
+        window.addEventListener('appinstalled', () => {
+            const btn = document.getElementById('btn-install-bo');
+            if (btn) btn.classList.add('hidden');
+            boDeferredPrompt = null;
+        });
     </script>
 </body>
 </html>
