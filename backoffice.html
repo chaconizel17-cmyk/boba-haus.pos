@@ -95,6 +95,7 @@
         <button onclick="boTab('shifts')" id="bo-nav-shifts" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">⏱️ Cierres de Turno</button>
         <button onclick="boTab('inventory')" id="bo-nav-inventory" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">📦 Inventario Remoto</button>
         <button onclick="boTab('customers')" id="bo-nav-customers" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">👥 Clientes Frecuentes</button>
+        <button onclick="boTab('backups')" id="bo-nav-backups" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">🛡️ Respaldos y Datos</button>
     </nav>
 
     <!-- CONTENIDO PRINCIPAL -->
@@ -167,8 +168,24 @@
             </div>
         </section>
 
-        <!-- TAB 3: CIERRES DE TURNO -->
+        <!-- TAB 3: CIERRES DE TURNO Y TESORERÍA -->
         <section id="bo-tab-shifts" class="hidden space-y-4">
+            <!-- Movimientos de Tesorería del Turno Actual -->
+            <div class="bg-white p-5 rounded-3xl border border-[#E9D6C7] shadow-sm space-y-3">
+                <div class="flex flex-wrap justify-between items-center gap-2 border-b pb-3">
+                    <div>
+                        <h2 class="text-lg font-bold text-[#5B3545]">💵 Movimientos de Tesorería (Turno Actual)</h2>
+                        <p class="text-xs text-gray-500">Depósitos y Pagos/Salidas registrados desde el Punto de Venta.</p>
+                    </div>
+                    <div class="flex gap-2 text-xs font-bold">
+                        <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200">Depositado: <span id="bo-cur-deposits">$0.00</span></span>
+                        <span class="px-2.5 py-1 bg-red-50 text-red-700 rounded-xl border border-red-200">Salidas: <span id="bo-cur-expenses">$0.00</span></span>
+                    </div>
+                </div>
+                <div id="bo-treasury-moves-list" class="space-y-2 text-xs"></div>
+            </div>
+
+            <!-- Historial de Cierres -->
             <div class="bg-white p-5 rounded-3xl border border-[#E9D6C7] shadow-sm space-y-4">
                 <h2 class="text-lg font-bold text-[#5B3545] border-b pb-3">⏱️ Historial Completo de Cierres de Turno</h2>
                 <div id="bo-shifts-list" class="space-y-3 text-xs"></div>
@@ -212,6 +229,35 @@
                 </div>
                 <input type="text" id="bo-cust-search" oninput="renderBoCustomers()" placeholder="🔍 Buscar cliente por nombre o teléfono..." class="w-full p-2.5 border border-[#E9D6C7] rounded-xl text-xs bg-[#FFF8F2] outline-none">
                 <div id="bo-cust-list" class="space-y-2 text-xs max-h-[60vh] overflow-y-auto"></div>
+            </div>
+        </section>
+
+        <!-- TAB 6: RESPALDOS Y DATOS (EXCLUSIVO PROPIETARIO) -->
+        <section id="bo-tab-backups" class="hidden space-y-4">
+            <div class="bg-white p-6 rounded-3xl border border-[#E9D6C7] shadow-sm space-y-5">
+                <div class="border-b pb-3">
+                    <h2 class="text-lg font-bold text-[#5B3545]">🛡️ Respaldos y Protección de Datos</h2>
+                    <p class="text-xs text-gray-500">Descarga copias de seguridad completas de tu negocio o restaura un respaldo directamente a la nube.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <button onclick="exportBoFullBackup()" class="p-4 bg-[#5B3545] hover:bg-[#422632] text-white font-bold rounded-2xl shadow flex items-center justify-center space-x-2 transition">
+                        <i class="fa-solid fa-download text-base"></i>
+                        <span>Descargar Respaldo Completo (.json)</span>
+                    </button>
+                    <label class="p-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow flex items-center justify-center space-x-2 cursor-pointer transition">
+                        <i class="fa-solid fa-upload text-base"></i>
+                        <span>Restaurar Respaldo a la Nube (.json)</span>
+                        <input type="file" accept=".json" onchange="importBoFullBackup(event)" class="hidden">
+                    </label>
+                    <button onclick="exportBoReceiptsCSV()" class="p-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow flex items-center justify-center space-x-2 transition">
+                        <i class="fa-solid fa-file-excel text-base"></i>
+                        <span>Exportar Recibos a Excel (.csv)</span>
+                    </button>
+                    <button onclick="exportBoCustomersCSV()" class="p-4 bg-brand-pink hover:bg-[#d67999] text-white font-bold rounded-2xl shadow flex items-center justify-center space-x-2 transition">
+                        <i class="fa-solid fa-users text-base"></i>
+                        <span>Exportar Clientes a Excel (.csv)</span>
+                    </button>
+                </div>
             </div>
         </section>
     </main>
@@ -265,7 +311,7 @@
         }
 
         function boTab(id) {
-            ['dashboard', 'receipts', 'shifts', 'inventory', 'customers'].forEach(t => {
+            ['dashboard', 'receipts', 'shifts', 'inventory', 'customers', 'backups'].forEach(t => {
                 document.getElementById(`bo-tab-${t}`).classList.add('hidden');
                 const btn = document.getElementById(`bo-nav-${t}`);
                 btn.className = "px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0";
@@ -417,6 +463,37 @@
         }
 
         function renderBoShifts() {
+            const sd = cloudData.shiftData || {};
+            const deps = Array.isArray(sd.deposits) ? sd.deposits : [];
+            const exps = Array.isArray(sd.expenses) ? sd.expenses : [];
+            const totDep = deps.reduce((s, d) => s + Number(d.amount || 0), 0);
+            const totExp = exps.reduce((s, e) => s + Number(e.amount || 0), 0);
+            const elDep = document.getElementById('bo-cur-deposits');
+            const elExp = document.getElementById('bo-cur-expenses');
+            if (elDep) elDep.innerText = `$${totDep.toFixed(2)}`;
+            if (elExp) elExp.innerText = `$${totExp.toFixed(2)}`;
+
+            const movesEl = document.getElementById('bo-treasury-moves-list');
+            if (movesEl) {
+                const allMoves = [
+                    ...deps.map(d => ({ ...d, kind: 'deposit' })),
+                    ...exps.map(e => ({ ...e, kind: 'expense' }))
+                ];
+                if (allMoves.length === 0) {
+                    movesEl.innerHTML = `<p class="text-gray-400 italic">No hay depósitos ni pagos/salidas registrados en el turno actual.</p>`;
+                } else {
+                    movesEl.innerHTML = allMoves.map(m => `
+                        <div class="p-2.5 rounded-xl border flex justify-between items-center ${m.kind === 'deposit' ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}">
+                            <div>
+                                <p class="font-bold ${m.kind === 'deposit' ? 'text-emerald-800' : 'text-red-800'}">${m.kind === 'deposit' ? '⬆️ Depósito' : '⬇️ Pago/Salida'}: ${m.reason}</p>
+                                <p class="text-[10px] text-gray-500">${m.date || ''} ${m.user ? '• ' + m.user : ''}</p>
+                            </div>
+                            <strong class="${m.kind === 'deposit' ? 'text-emerald-700' : 'text-red-600'}">${m.kind === 'deposit' ? '+' : '-'}$${Number(m.amount || 0).toFixed(2)}</strong>
+                        </div>
+                    `).join('');
+                }
+            }
+
             const hist = Array.isArray(cloudData.shiftHistory) ? cloudData.shiftHistory : [];
             const el = document.getElementById('bo-shifts-list');
             if (hist.length === 0) {
@@ -426,20 +503,53 @@
             el.innerHTML = hist.map((sh, idx) => `
                 <div class="p-4 bg-[#FFF8F2] border border-[#E9D6C7] rounded-2xl space-y-1.5">
                     <div class="flex justify-between font-bold text-[#5B3545]">
-                        <span>Cierre #${hist.length - idx} • ${sh.date}</span>
-                        <span class="text-brand-pink">Total: $${(Number(sh.cashSales||0) + Number(sh.cardSales||0)).toFixed(2)}</span>
+                        <span>Cierre #${sh.shiftNum || (hist.length - idx)} • ${sh.date}</span>
+                        <span class="text-brand-pink">Total: $${(Number(sh.cashSales||0) + Number(sh.cardSales||0) - Number(sh.refunds||0)).toFixed(2)}</span>
                     </div>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-gray-600">
                         <span>Fondo: $${Number(sh.fund||0).toFixed(2)}</span>
                         <span>Efectivo: $${Number(sh.cashSales||0).toFixed(2)}</span>
                         <span>Tarjeta: $${Number(sh.cardSales||0).toFixed(2)}</span>
-                        <span>Gastos: $${Number(sh.expenses||0).toFixed(2)}</span>
+                        <span>Reembolsos: $${Number(sh.refunds||0).toFixed(2)}</span>
+                        <span>Depositado: $${Number(sh.deposits||0).toFixed(2)}</span>
+                        <span>Pagos/Salidas: $${Number(sh.expenses||0).toFixed(2)}</span>
                         <span class="text-brand-pink font-bold">🧋 Boba: $${Number(sh.bobaSales||0).toFixed(2)}</span>
                         <span class="text-amber-700 font-bold">🍻 Fortuna: $${Number(sh.fortunaSales||0).toFixed(2)}</span>
                         <span class="${sh.diff === 0 ? 'text-emerald-600 font-bold' : 'text-red-600 font-bold'}">Diferencia: $${Number(sh.diff||0).toFixed(2)}</span>
                     </div>
                 </div>
             `).join('');
+        }
+
+        function exportBoFullBackup() {
+            const payload = { ...cloudData, exportedAt: new Date().toISOString() };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `respaldo_boba_haus_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importBoFullBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!data.customersDB && !data.inventoryDB) return alert('❌ Archivo de respaldo no válido.');
+                    if (!confirm('¿Restaurar este respaldo en la nube? Se actualizarán todos los dispositivos conectados.')) return;
+                    fbDb.ref('boba_haus_pos').set(data)
+                        .then(() => alert('✅ Respaldo restaurado y sincronizado en la nube.'))
+                        .catch(err => alert('Error: ' + err.message));
+                } catch (err) {
+                    alert('❌ Error al leer el archivo.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
         }
 
         function renderBoInventory() {
