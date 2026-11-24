@@ -55,6 +55,19 @@
             body.printing-kitchen #kitchen-print-area * { visibility: visible; }
             body.printing-kitchen #kitchen-print-area { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
         }
+        /* Adaptación automática para Teléfonos y Tabletas */
+        body.device-phone { font-size: 16px; }
+        body.device-phone #sidebar-menu { position: fixed; top: 0; bottom: 0; left: 0; z-index: 50; }
+        body.device-phone #categories-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+        body.device-phone #categories-grid > div { padding: 1.15rem 0.75rem; }
+        body.device-phone #products-desglose-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+        body.device-phone #products-desglose-grid > div { padding: 1rem; }
+        body.device-phone #products-desglose-grid h4 { font-size: 0.9rem; }
+        body.device-phone #tab-pos.mobile-view-menu #pos-cart-panel { display: none; }
+        body.device-phone #tab-pos.mobile-view-cart #pos-menu-panel { display: none; }
+        body.device-phone #tab-pos.mobile-view-cart #pos-cart-panel { display: flex; width: 100%; }
+        body.device-tablet #categories-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        body.device-tablet #sidebar-menu { position: fixed; top: 0; bottom: 0; left: 0; z-index: 50; }
     </style>
 </head>
 <body class="h-screen overflow-hidden flex text-gray-800 bg-[#FFF8F2]">
@@ -84,11 +97,14 @@
                 <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-[#422632] hover:text-white transition">
                     <i class="fa-solid fa-boxes-stacked text-base w-5"></i> <span>Artículos / Inventario</span>
                 </button>
+                <button onclick="switchTab('monitor')" id="nav-monitor" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-[#422632] hover:text-white transition">
+                    <i class="fa-solid fa-mobile-screen-button text-base w-5"></i> <span>Monitor en Vivo</span>
+                </button>
             </nav>
         </div>
 
         <div class="p-3 border-t border-[#422632] text-[11px] text-[#E9D6C7] text-center">
-            Boba Haus POS v5.0 (Nube)
+            Boba Haus POS v5.1 (Pro Móvil)
         </div>
     </aside>
 
@@ -96,27 +112,40 @@
     <main class="flex-1 overflow-hidden relative flex flex-col h-full bg-[#FFF8F2]">
 
         <!-- HEADER SUPERIOR -->
-        <header class="bg-white border-b border-[#E9D6C7] px-4 py-2.5 flex items-center justify-between shadow-sm z-20 shrink-0">
-            <div class="flex items-center space-x-3">
+        <header class="bg-white border-b border-[#E9D6C7] px-3 py-2 flex flex-wrap items-center justify-between gap-2 shadow-sm z-20 shrink-0">
+            <div class="flex items-center space-x-2">
                 <button onclick="toggleSidebar()" class="p-2 text-[#5B3545] hover:text-brand-pink bg-[#FFF8F2] rounded-xl text-xs font-bold border border-[#E9D6C7]" title="Mostrar/Esconder Menú">
                     <i class="fa-solid fa-bars"></i>
                 </button>
-                <h1 id="header-section-title" class="text-base font-bold text-[#5B3545]">Punto de Venta</h1>
+                <div>
+                    <h1 id="header-section-title" class="text-sm sm:text-base font-bold text-[#5B3545] leading-tight">Punto de Venta</h1>
+                    <p id="live-clock-display" class="text-[10px] text-gray-500 font-semibold leading-tight">--/--/---- --:--</p>
+                </div>
             </div>
-            <div class="flex items-center space-x-2">
-                <span id="cloud-sync-badge" class="px-2.5 py-1 bg-gray-100 text-gray-600 text-[11px] font-bold rounded-xl border border-gray-200 flex items-center space-x-1" title="Estado de sincronización en la nube">
+            <div class="flex items-center flex-wrap gap-1.5">
+                <span id="device-type-badge" class="hidden sm:inline-flex px-2 py-1 bg-pink-50 text-[#5B3545] text-[10px] font-bold rounded-xl border border-[#E9D6C7] items-center space-x-1" title="Dispositivo detectado">
+                    <span>💻 PC</span>
+                </span>
+                <button onclick="requestGeoLocation(true)" id="geo-status-badge" class="px-2 py-1 bg-blue-50 text-blue-800 text-[10px] font-bold rounded-xl border border-blue-200 flex items-center space-x-1" title="Ubicación geográfica">
+                    <i class="fa-solid fa-location-dot"></i> <span id="geo-status-text">GPS</span>
+                </button>
+                <button onclick="requestNotificationPermission()" id="notif-status-btn" class="relative px-2 py-1 bg-amber-50 text-amber-800 text-[10px] font-bold rounded-xl border border-amber-200 flex items-center space-x-1" title="Alertas de inventario bajo">
+                    <i class="fa-solid fa-bell"></i> <span id="notif-status-text" class="hidden sm:inline">Alertas</span>
+                    <span id="low-stock-badge-dot" class="hidden absolute -top-1 -right-1 bg-red-600 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+                </button>
+                <span id="cloud-sync-badge" class="px-2 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold rounded-xl border border-gray-200 flex items-center space-x-1" title="Estado de sincronización en la nube">
                     <i class="fa-solid fa-cloud"></i> <span>Conectando...</span>
                 </span>
-                <button id="btn-install-pwa" onclick="installPWA()" class="hidden px-3 py-1.5 bg-brand-pink hover:bg-[#d67999] text-white text-xs font-bold rounded-xl shadow flex items-center space-x-1 transition">
+                <button id="btn-install-pwa" onclick="installPWA()" class="hidden px-2.5 py-1 bg-brand-pink hover:bg-[#d67999] text-white text-[11px] font-bold rounded-xl shadow flex items-center space-x-1 transition">
                     <i class="fa-solid fa-download"></i>
-                    <span>Instalar App</span>
+                    <span>Instalar</span>
                 </button>
-                <button onclick="openTurnModal()" class="px-3 py-1 bg-amber-100 text-amber-900 text-xs font-bold rounded-xl border border-amber-300">
+                <button onclick="openTurnModal()" class="px-2.5 py-1 bg-amber-100 text-amber-900 text-[11px] font-bold rounded-xl border border-amber-300">
                     ⏱️ <span id="header-turn-status">Turno Cerrado</span>
                 </button>
-                <button onclick="openPinPadModal()" class="px-3 py-1.5 bg-[#FFF8F2] hover:bg-[#E9D6C7]/30 text-[#5B3545] border border-[#E9D6C7] text-xs font-bold rounded-xl flex items-center space-x-1">
+                <button onclick="openPinPadModal()" class="px-2.5 py-1 bg-[#FFF8F2] hover:bg-[#E9D6C7]/30 text-[#5B3545] border border-[#E9D6C7] text-[11px] font-bold rounded-xl flex items-center space-x-1">
                     <i class="fa-solid fa-key text-brand-pink"></i>
-                    <span>Cambiar Usuario / PIN</span>
+                    <span class="hidden sm:inline">PIN</span>
                 </button>
             </div>
         </header>
@@ -125,8 +154,8 @@
         <div class="flex-1 overflow-hidden relative flex flex-col bg-[#FFF8F2]">
 
             <!-- TAB 1: POS -->
-            <section id="tab-pos" class="h-full flex flex-col md:flex-row">
-                <div class="flex-1 flex flex-col h-full bg-[#FFF8F2] border-r border-[#E9D6C7] overflow-hidden">
+            <section id="tab-pos" class="h-full flex flex-col md:flex-row mobile-view-menu relative">
+                <div id="pos-menu-panel" class="flex-1 flex flex-col h-full bg-[#FFF8F2] border-r border-[#E9D6C7] overflow-hidden pb-14 md:pb-0">
                     <div class="p-3 bg-white border-b border-[#E9D6C7] flex items-center justify-between shrink-0 shadow-sm">
                         <div class="flex items-center space-x-2">
                             <button id="btn-back-categories" onclick="showCategoriesView()" class="hidden px-3 py-1.5 bg-pink-100 hover:bg-pink-200 text-brand-pink font-bold text-xs rounded-xl flex items-center space-x-1">
@@ -265,7 +294,7 @@
                 </div>
 
                 <!-- CART -->
-                <div class="w-full md:w-96 lg:w-[420px] bg-white flex flex-col h-full shadow-lg shrink-0 border-l border-[#E9D6C7]">
+                <div id="pos-cart-panel" class="w-full md:w-96 lg:w-[420px] bg-white flex flex-col h-full shadow-lg shrink-0 border-l border-[#E9D6C7] pb-14 md:pb-0">
                     <div class="p-3 bg-white border-b border-[#E9D6C7] flex items-center justify-between shrink-0">
                         <div class="flex items-center space-x-2">
                             <span class="font-bold text-[#5B3545] text-base">Orden #<span id="order-id-display">0001</span></span>
@@ -357,6 +386,19 @@
                             </button>
                         </div>
                     </div>
+                </div>
+
+                <!-- BARRA INFERIOR MÓVIL (SOLO TELÉFONOS) -->
+                <div id="mobile-pos-bar" class="hidden fixed bottom-0 left-0 right-0 bg-[#5B3545] text-white px-3 py-2.5 z-30 flex items-center justify-between shadow-2xl border-t border-[#E88EAF]">
+                    <button onclick="setMobilePosView('menu')" id="mob-btn-menu" class="flex-1 py-2 mx-1 rounded-xl bg-brand-pink text-white font-bold text-xs">
+                        🧋 Menú
+                    </button>
+                    <button onclick="setMobilePosView('cart')" id="mob-btn-cart" class="flex-1 py-2 mx-1 rounded-xl bg-[#422632] text-[#FFF8F2] font-bold text-xs">
+                        🛒 Carrito (<span id="mob-cart-count">0</span>) • <span id="mob-cart-total">$0</span>
+                    </button>
+                    <button onclick="switchTab('monitor')" class="px-3 py-2 mx-1 rounded-xl bg-emerald-600 text-white font-bold text-xs">
+                        📊 Vivo
+                    </button>
                 </div>
             </section>
 
@@ -510,8 +552,90 @@
                     </div>
                 </div>
             </section>
+
+            <!-- TAB 4: MONITOR EN VIVO (OPTIMIZADO PARA CELULAR / PROPIETARIA) -->
+            <section id="tab-monitor" class="h-full bg-[#FFF8F2] p-3 sm:p-5 overflow-y-auto hidden">
+                <div class="max-w-2xl mx-auto space-y-4 pb-10">
+                    <!-- Tarjeta Superior de Estado -->
+                    <div class="bg-[#5B3545] text-[#FFF8F2] p-5 rounded-3xl shadow-lg space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-[11px] uppercase tracking-wider text-[#F4B6CE] font-bold">Monitor en Tiempo Real</p>
+                                <h2 class="text-2xl font-bold text-white mt-0.5">Boba Haus & Fortuna</h2>
+                            </div>
+                            <span id="mon-turn-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-400 text-[#5B3545]">Turno Cerrado</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-[11px] bg-[#422632] p-3 rounded-2xl">
+                            <div>
+                                <span class="text-[#E9D6C7] block">📅 Fecha y Hora:</span>
+                                <strong id="mon-clock" class="text-white">--/--/---- --:--</strong>
+                            </div>
+                            <div>
+                                <span class="text-[#E9D6C7] block">📍 Ubicación GPS:</span>
+                                <strong id="mon-geo" class="text-emerald-300">Sin activar</strong>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 pt-1">
+                            <button onclick="requestNotificationPermission()" class="flex-1 py-2 px-3 bg-brand-pink hover:bg-[#d67999] text-white rounded-xl text-xs font-bold shadow">
+                                🔔 Activar Notificaciones
+                            </button>
+                            <button onclick="requestGeoLocation(true)" class="flex-1 py-2 px-3 bg-[#422632] hover:bg-[#331c26] text-[#FFF8F2] border border-[#E88EAF]/40 rounded-xl text-xs font-bold">
+                                📍 Actualizar GPS
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- KPIs Principales -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-white p-4 rounded-3xl border border-[#E9D6C7] shadow-sm col-span-2 flex justify-between items-center">
+                            <div>
+                                <p class="text-xs text-gray-500 font-bold">Ventas Netas del Turno</p>
+                                <p id="mon-net-sales" class="text-3xl font-bold text-brand-pink mt-1">$0.00</p>
+                            </div>
+                            <div class="text-right text-xs text-gray-600 space-y-1">
+                                <p>💵 Efectivo: <strong id="mon-cash" class="text-emerald-600">$0.00</strong></p>
+                                <p>💳 Tarjeta: <strong id="mon-card" class="text-purple-600">$0.00</strong></p>
+                                <p>🧾 Gastos: <strong id="mon-expenses" class="text-red-500">$0.00</strong></p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-3xl border border-[#E9D6C7] shadow-sm">
+                            <p class="text-xs font-bold text-[#5B3545]">🧋 Boba Haus</p>
+                            <p id="mon-boba" class="text-2xl font-bold text-brand-pink mt-1">$0.00</p>
+                        </div>
+                        <div class="bg-amber-50 p-4 rounded-3xl border border-amber-200 shadow-sm">
+                            <p class="text-xs font-bold text-amber-900">🍻 Fortuna</p>
+                            <p id="mon-fortuna" class="text-2xl font-bold text-amber-700 mt-1">$0.00</p>
+                        </div>
+                    </div>
+
+                    <!-- Alertas de Inventario Bajo -->
+                    <div class="bg-white p-4 rounded-3xl border border-red-200 shadow-sm space-y-2">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold text-sm text-red-700"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Alertas de Inventario Bajo</h3>
+                            <span id="mon-low-count" class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-bold">0</span>
+                        </div>
+                        <div id="mon-low-stock-list" class="space-y-1.5 text-xs max-h-48 overflow-y-auto">
+                            <p class="text-emerald-600 font-semibold">✅ Todo el inventario está en niveles óptimos.</p>
+                        </div>
+                    </div>
+
+                    <!-- Últimas Ventas en Vivo -->
+                    <div class="bg-white p-4 rounded-3xl border border-[#E9D6C7] shadow-sm space-y-2">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold text-sm text-[#5B3545]"><i class="fa-solid fa-bolt text-brand-pink mr-1"></i> Últimos Tickets en Vivo</h3>
+                            <button onclick="switchTab('pos')" class="text-xs text-brand-pink font-bold hover:underline">Ir a Caja →</button>
+                        </div>
+                        <div id="mon-recent-orders" class="space-y-2 text-xs max-h-72 overflow-y-auto">
+                            <p class="text-gray-400 italic">Esperando ventas del turno...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
     </main>
+
+    <!-- CONTENEDOR DE NOTIFICACIONES FLOTANTES (TOASTS DE STOCK BAJO) -->
+    <div id="low-stock-toast-container" class="fixed top-16 right-4 z-50 space-y-2 max-w-xs w-full pointer-events-none"></div>
 
     <!-- MODAL: ÓRDENES EN ESPERA -->
     <div id="paused-orders-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
@@ -960,7 +1084,6 @@
                 if (typeof data.orderCounter !== 'undefined') {
                     orderCounter = data.orderCounter;
                     localStorage.setItem('boba_orderCounter', orderCounter);
-            syncToCloud();
                     const ordEl = document.getElementById('order-id-display');
                     if (ordEl) ordEl.innerText = String(orderCounter).padStart(4, '0');
                 }
@@ -990,7 +1113,6 @@
                 if (Array.isArray(data.shiftHistory)) {
                     shiftHistory = data.shiftHistory;
                     localStorage.setItem('boba_shiftHistory', JSON.stringify(shiftHistory));
-            syncToCloud();
                 }
                 if (Array.isArray(data.inventoryDB)) {
                     inventoryDB = data.inventoryDB;
@@ -1007,6 +1129,8 @@
                 if (typeof updateTreasuryDisplay === 'function') updateTreasuryDisplay();
                 if (typeof renderShiftHistory === 'function') renderShiftHistory();
                 if (typeof renderInventoryTable === 'function') renderInventoryTable();
+                if (typeof updateMonitorDashboard === 'function') updateMonitorDashboard();
+                if (typeof checkLowStockAlerts === 'function') checkLowStockAlerts(true);
 
                 isApplyingCloudUpdate = false;
             });
@@ -1364,20 +1488,29 @@
         }
 
         function switchTab(id) {
-            ['pos', 'shift', 'inventory'].forEach(t => {
-                document.getElementById(`tab-${t}`).classList.add('hidden');
+            ['pos', 'shift', 'inventory', 'monitor'].forEach(t => {
+                const sec = document.getElementById(`tab-${t}`);
+                if(sec) sec.classList.add('hidden');
                 const navBtn = document.getElementById(`nav-${t}`);
                 if(navBtn) navBtn.className = "w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-[#422632] hover:text-white transition";
             });
-            document.getElementById(`tab-${id}`).classList.remove('hidden');
+            const targetSec = document.getElementById(`tab-${id}`);
+            if(targetSec) targetSec.classList.remove('hidden');
             const activeNav = document.getElementById(`nav-${id}`);
             if(activeNav) activeNav.className = "w-full flex items-center space-x-3 px-3 py-3 rounded-xl bg-brand-pink text-white transition";
             
-            const titles = { pos: 'Punto de Venta', shift: 'Turno / Caja', inventory: 'Artículos / Inventario' };
-            document.getElementById('header-section-title').innerText = titles[id];
+            const titles = { pos: 'Punto de Venta', shift: 'Turno / Caja', inventory: 'Artículos / Inventario', monitor: 'Monitor en Vivo' };
+            document.getElementById('header-section-title').innerText = titles[id] || 'Boba Haus';
+
+            // Auto-cerrar menú lateral en teléfonos y tabletas
+            if (document.body.classList.contains('device-phone') || document.body.classList.contains('device-tablet')) {
+                const sidebar = document.getElementById('sidebar-menu');
+                if (sidebar && sidebar.classList.contains('w-64')) toggleSidebar();
+            }
 
             if(id === 'shift') { updateTreasuryDisplay(); renderShiftHistory(); }
             if(id === 'inventory') { renderInventoryTable(); }
+            if(id === 'monitor') { updateMonitorDashboard(); }
         }
 
         // --- ÓRDENES EN ESPERA ---
@@ -1870,6 +2003,7 @@
             localStorage.setItem('boba_shiftOpen', 'false');
             localStorage.setItem('boba_shiftData', JSON.stringify(shiftData));
             localStorage.setItem('boba_shiftHistory', JSON.stringify(shiftHistory));
+            syncToCloud();
 
             document.getElementById('header-turn-status').innerText = "Turno Cerrado";
             closeCloseTurnModal();
@@ -2306,6 +2440,10 @@
                 document.getElementById('cart-subtotal').innerText = '$0.00';
                 document.getElementById('cart-discount').innerText = '-$0.00';
                 document.getElementById('cart-total').innerText = '$0.00';
+                const mobCnt = document.getElementById('mob-cart-count');
+                const mobTot = document.getElementById('mob-cart-total');
+                if (mobCnt) mobCnt.innerText = '0';
+                if (mobTot) mobTot.innerText = '$0';
                 return;
             }
 
@@ -2340,6 +2478,10 @@
             document.getElementById('cart-subtotal').innerText = `$${subtotal.toFixed(2)}`;
             document.getElementById('cart-discount').innerText = `-$${totalDiscount.toFixed(2)}`;
             document.getElementById('cart-total').innerText = `$${finalTotal.toFixed(2)}`;
+            const mobCnt = document.getElementById('mob-cart-count');
+            const mobTot = document.getElementById('mob-cart-total');
+            if (mobCnt) mobCnt.innerText = currentCart.length;
+            if (mobTot) mobTot.innerText = `$${finalTotal.toFixed(0)}`;
         }
 
         function clearCart() { 
@@ -2553,6 +2695,8 @@
             orderCounter++;
             localStorage.setItem('boba_orderCounter', orderCounter);
             document.getElementById('order-id-display').innerText = String(orderCounter).padStart(4, '0');
+            checkLowStockAlerts(true);
+            syncToCloud();
         }
 
         function printReceiptTicket() {
@@ -2567,6 +2711,255 @@
             }
             isReprintingMode = false;
         }
+
+        // --- DETECCIÓN AUTOMÁTICA DE DISPOSITIVO (TELÉFONO / TABLETA / PC) ---
+        let detectedDeviceType = 'desktop';
+        function detectAndAdaptDevice() {
+            const w = window.innerWidth;
+            const ua = navigator.userAgent || '';
+            const isMobileUA = /Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+            const isTabletUA = /iPad|Tablet|PlayBook|Silk/i.test(ua) || (/Android/i.test(ua) && !/Mobile/i.test(ua));
+
+            document.body.classList.remove('device-phone', 'device-tablet', 'device-desktop');
+            const badge = document.getElementById('device-type-badge');
+            const mobBar = document.getElementById('mobile-pos-bar');
+            const sidebar = document.getElementById('sidebar-menu');
+
+            if (w <= 767 || (isMobileUA && !isTabletUA && w < 900)) {
+                detectedDeviceType = 'phone';
+                document.body.classList.add('device-phone');
+                if (badge) badge.innerHTML = '<span>📱 Teléfono</span>';
+                if (mobBar) mobBar.classList.remove('hidden');
+                if (sidebar && sidebar.classList.contains('w-64')) {
+                    sidebar.classList.remove('w-64');
+                    sidebar.classList.add('w-0', 'overflow-hidden');
+                }
+            } else if (w <= 1024 || isTabletUA) {
+                detectedDeviceType = 'tablet';
+                document.body.classList.add('device-tablet');
+                if (badge) badge.innerHTML = '<span>📲 Tableta</span>';
+                if (mobBar) mobBar.classList.add('hidden');
+                if (sidebar && sidebar.classList.contains('w-64')) {
+                    sidebar.classList.remove('w-64');
+                    sidebar.classList.add('w-0', 'overflow-hidden');
+                }
+            } else {
+                detectedDeviceType = 'desktop';
+                document.body.classList.add('device-desktop');
+                if (badge) badge.innerHTML = '<span>💻 PC</span>';
+                if (mobBar) mobBar.classList.add('hidden');
+            }
+        }
+
+        function setMobilePosView(view) {
+            const tabPos = document.getElementById('tab-pos');
+            const btnMenu = document.getElementById('mob-btn-menu');
+            const btnCart = document.getElementById('mob-btn-cart');
+            if (!tabPos) return;
+            if (view === 'cart') {
+                tabPos.classList.remove('mobile-view-menu');
+                tabPos.classList.add('mobile-view-cart');
+                if (btnCart) btnCart.className = "flex-1 py-2 mx-1 rounded-xl bg-brand-pink text-white font-bold text-xs";
+                if (btnMenu) btnMenu.className = "flex-1 py-2 mx-1 rounded-xl bg-[#422632] text-[#FFF8F2] font-bold text-xs";
+            } else {
+                tabPos.classList.remove('mobile-view-cart');
+                tabPos.classList.add('mobile-view-menu');
+                if (btnMenu) btnMenu.className = "flex-1 py-2 mx-1 rounded-xl bg-brand-pink text-white font-bold text-xs";
+                if (btnCart) btnCart.className = "flex-1 py-2 mx-1 rounded-xl bg-[#422632] text-[#FFF8F2] font-bold text-xs";
+            }
+        }
+
+        // --- HORA Y FECHA EN VIVO DEL DISPOSITIVO ---
+        function updateLiveClock() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('es-MX', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const fullStr = `${dateStr} • ${timeStr}`;
+            const headerClock = document.getElementById('live-clock-display');
+            const monClock = document.getElementById('mon-clock');
+            if (headerClock) headerClock.innerText = fullStr;
+            if (monClock) monClock.innerText = fullStr;
+        }
+        setInterval(updateLiveClock, 1000);
+
+        // --- UBICACIÓN GEOGRÁFICA CON PERMISOS ---
+        let lastGeoCoords = null;
+        function requestGeoLocation(showAlert = false) {
+            const statusText = document.getElementById('geo-status-text');
+            const monGeo = document.getElementById('mon-geo');
+            if (!('geolocation' in navigator)) {
+                if (statusText) statusText.innerText = 'Sin GPS';
+                if (showAlert) alert('Tu dispositivo no soporta geolocalización.');
+                return;
+            }
+            if (statusText) statusText.innerText = 'Buscando...';
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude.toFixed(4);
+                    const lng = pos.coords.longitude.toFixed(4);
+                    lastGeoCoords = { lat, lng, updatedAt: new Date().toLocaleTimeString() };
+                    if (statusText) statusText.innerText = `${lat}, ${lng}`;
+                    if (monGeo) monGeo.innerText = `${lat}, ${lng} (${lastGeoCoords.updatedAt})`;
+                    if (showAlert) alert(`📍 Ubicación actualizada correctamente:
+Lat: ${lat}, Lng: ${lng}`);
+                },
+                (err) => {
+                    if (statusText) statusText.innerText = 'Permiso GPS';
+                    if (monGeo) monGeo.innerText = 'Permiso denegado';
+                    if (showAlert) alert('⚠️ No se pudo obtener la ubicación. Activa el permiso de ubicación en tu navegador.');
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+
+        // --- NOTIFICACIONES DE INVENTARIO BAJO (POS + PROPIETARIA) ---
+        let alertedLowStockKeys = new Set();
+
+        function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                return alert('Tu navegador no soporta notificaciones nativas, pero seguirás viendo las alertas visuales en pantalla.');
+            }
+            Notification.requestPermission().then((perm) => {
+                updateNotifButtonUI();
+                if (perm === 'granted') {
+                    new Notification('🧋 Boba Haus POS', {
+                        body: '¡Alertas de inventario bajo activadas! Te avisaremos cuando algún insumo esté por terminarse.',
+                        icon: './icon-192.png'
+                    });
+                    checkLowStockAlerts(true);
+                } else {
+                    alert('⚠️ Permiso de notificaciones bloqueado. Puedes activarlo en la configuración del navegador.');
+                }
+            });
+        }
+
+        function updateNotifButtonUI() {
+            const btnText = document.getElementById('notif-status-text');
+            if (!btnText || !('Notification' in window)) return;
+            if (Notification.permission === 'granted') {
+                btnText.innerText = 'Alertas ON';
+            } else {
+                btnText.innerText = 'Alertas';
+            }
+        }
+
+        function showLowStockToast(item) {
+            const container = document.getElementById('low-stock-toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = "pointer-events-auto bg-red-600 text-white p-3 rounded-2xl shadow-xl border border-red-400 flex items-center justify-between gap-2 text-xs animate-bounce";
+            toast.innerHTML = `
+                <div>
+                    <p class="font-bold">⚠️ Stock Bajo: ${item.name}</p>
+                    <p class="text-[11px] text-red-100">Quedan ${item.stock} ${item.unit} (mín. ${item.min})</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="font-bold text-white/80 hover:text-white">✕</button>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => { if (toast.parentElement) toast.remove(); }, 7000);
+        }
+
+        function checkLowStockAlerts(triggerSystemNotif = false) {
+            const lowItems = inventoryDB.filter(item => item.stock <= (item.min || 0));
+            const dot = document.getElementById('low-stock-badge-dot');
+            if (dot) {
+                if (lowItems.length > 0) {
+                    dot.innerText = lowItems.length;
+                    dot.classList.remove('hidden');
+                } else {
+                    dot.classList.add('hidden');
+                }
+            }
+
+            const currentLowKeys = new Set(lowItems.map(i => i.key));
+            // Limpiar llaves que ya fueron resurtidas
+            alertedLowStockKeys.forEach(k => { if (!currentLowKeys.has(k)) alertedLowStockKeys.delete(k); });
+
+            const newlyLow = lowItems.filter(i => !alertedLowStockKeys.has(i.key));
+            if (newlyLow.length > 0 && triggerSystemNotif) {
+                newlyLow.forEach(item => {
+                    alertedLowStockKeys.add(item.key);
+                    showLowStockToast(item);
+                });
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    const summary = newlyLow.map(i => `${i.name} (${i.stock} ${i.unit})`).join(', ');
+                    new Notification('⚠️ Inventario por terminarse - Boba Haus', {
+                        body: `Insumos bajos: ${summary}`,
+                        icon: './icon-192.png'
+                    });
+                }
+            }
+            updateMonitorDashboard();
+        }
+
+        // --- PANEL MONITOR EN VIVO ---
+        function updateMonitorDashboard() {
+            const totalExpenses = (shiftData.expenses || []).reduce((s, e) => s + e.amount, 0);
+            const netSales = (shiftData.cashSales || 0) + (shiftData.cardSales || 0);
+
+            const elNet = document.getElementById('mon-net-sales');
+            if (!elNet) return;
+            elNet.innerText = `$${netSales.toFixed(2)}`;
+            document.getElementById('mon-cash').innerText = `$${(shiftData.cashSales || 0).toFixed(2)}`;
+            document.getElementById('mon-card').innerText = `$${(shiftData.cardSales || 0).toFixed(2)}`;
+            document.getElementById('mon-expenses').innerText = `$${totalExpenses.toFixed(2)}`;
+            document.getElementById('mon-boba').innerText = `$${(shiftData.bobaSales || 0).toFixed(2)}`;
+            document.getElementById('mon-fortuna').innerText = `$${(shiftData.fortunaSales || 0).toFixed(2)}`;
+
+            const turnBadge = document.getElementById('mon-turn-badge');
+            if (turnBadge) {
+                turnBadge.innerText = shiftOpen ? '🟢 Turno Abierto' : '🔴 Turno Cerrado';
+                turnBadge.className = shiftOpen
+                    ? 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-400 text-[#5B3545]'
+                    : 'px-3 py-1 rounded-full text-xs font-bold bg-amber-300 text-[#5B3545]';
+            }
+
+            // Lista de stock bajo
+            const lowItems = inventoryDB.filter(item => item.stock <= (item.min || 0));
+            document.getElementById('mon-low-count').innerText = lowItems.length;
+            const lowList = document.getElementById('mon-low-stock-list');
+            if (lowItems.length === 0) {
+                lowList.innerHTML = `<p class="text-emerald-600 font-semibold">✅ Todo el inventario está en niveles óptimos.</p>`;
+            } else {
+                lowList.innerHTML = lowItems.map(i => `
+                    <div class="flex justify-between items-center bg-red-50 p-2 rounded-xl border border-red-200">
+                        <span class="font-bold text-red-800">⚠️ ${i.name}</span>
+                        <span class="font-bold text-red-600">${i.stock} ${i.unit}</span>
+                    </div>
+                `).join('');
+            }
+
+            // Últimos tickets
+            const recOrders = document.getElementById('mon-recent-orders');
+            const orders = (shiftData.orders || []).slice(0, 15);
+            if (orders.length === 0) {
+                recOrders.innerHTML = `<p class="text-gray-400 italic">Esperando ventas del turno...</p>`;
+            } else {
+                recOrders.innerHTML = orders.map(ord => `
+                    <div class="p-2.5 rounded-xl border flex justify-between items-center ${ord.canceled ? 'bg-red-50 border-red-200 line-through opacity-70' : 'bg-[#FFF8F2] border-[#E9D6C7]'}">
+                        <div>
+                            <p class="font-bold text-[#5B3545]">#${ord.orderNum} • ${ord.store === 'fortuna' ? '🍻 Fortuna' : '🧋 Boba Haus'}</p>
+                            <p class="text-[10px] text-gray-500">${ord.date} • ${ord.paymentLabel}</p>
+                        </div>
+                        <strong class="text-sm text-brand-pink">$${ord.total.toFixed(2)}</strong>
+                    </div>
+                `).join('');
+            }
+        }
+
+        window.addEventListener('resize', detectAndAdaptDevice);
+        window.addEventListener('load', () => {
+            detectAndAdaptDevice();
+            updateLiveClock();
+            updateNotifButtonUI();
+            requestGeoLocation(false);
+            checkLowStockAlerts(false);
+            updateMonitorDashboard();
+            // Si se abre en teléfono, ofrecer ir directo al Monitor en Vivo o quedarse en Caja
+            if (detectedDeviceType === 'phone') {
+                setMobilePosView('menu');
+            }
+        });
     </script>
 </body>
 </html>
