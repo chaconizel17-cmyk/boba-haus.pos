@@ -121,6 +121,10 @@
             body.printing-test #test-print-area,
             body.printing-test #test-print-area * { visibility: visible; }
             body.printing-test #test-print-area { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+
+            body.printing-shift #shift-print-area,
+            body.printing-shift #shift-print-area * { visibility: visible; }
+            body.printing-shift #shift-print-area { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
         }
     </style>
 </head>
@@ -172,7 +176,7 @@
         </div>
 
         <div class="p-3 border-t border-[#422632] text-[11px] text-[#E9D6C7] text-center">
-            Boba Haus POS v5.2 (Pro + Recibos)
+            Boba Haus POS v5.3 (Pro + Turno)
         </div>
     </aside>
 
@@ -470,112 +474,71 @@
                 </div>
             </section>
 
-            <!-- TAB 2: CORTE Y TURNO -->
-            <section id="tab-shift" class="h-full bg-[#FFF8F2] p-4 overflow-y-auto hidden">
-                <div class="max-w-3xl mx-auto bg-white p-6 rounded-3xl shadow-sm space-y-6 border border-[#E9D6C7]">
-                    <div class="flex justify-between items-center border-b pb-4">
-                        <div>
-                            <h2 class="text-xl font-bold text-[#5B3545]"><i class="fa-solid fa-cash-register text-brand-pink mr-2"></i> Gestión de Tesorería y Turno</h2>
-                            <p class="text-xs text-gray-500">Control de fondo inicial, cajón de efectivo, ventas netas, apertura y cierre.</p>
+            <!-- TAB 2: CORTE Y TURNO (ESTILO LIMPIO) -->
+            <section id="tab-shift" class="h-full bg-[#FFF8F2] p-3 sm:p-5 overflow-y-auto hidden">
+                <div class="max-w-lg mx-auto bg-white p-5 sm:p-6 rounded-3xl shadow-sm space-y-5 border border-[#E9D6C7]">
+                    <!-- Encabezado compacto -->
+                    <div class="flex items-center justify-between border-b border-[#E9D6C7] pb-3">
+                        <h2 class="text-lg font-bold text-[#5B3545]">Turno</h2>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="openBackOfficeProtected()" class="p-2 text-[#5B3545] hover:text-brand-pink bg-[#FFF8F2] rounded-xl border border-[#E9D6C7] text-xs" title="Ver historial en Back Office (Dueña)">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </button>
+                            <button onclick="printShiftSummary()" class="p-2 text-[#5B3545] hover:text-brand-pink bg-[#FFF8F2] rounded-xl border border-[#E9D6C7] text-xs" title="Imprimir resumen del turno">
+                                <i class="fa-solid fa-print"></i>
+                            </button>
                         </div>
-                        <div class="space-x-2">
-                            <button onclick="openTurnModal()" class="px-3 py-2 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow hover:bg-emerald-700 transition">
-                                <i class="fa-solid fa-play mr-1"></i> Abrir Turno
-                            </button>
-                            <button onclick="openCloseTurnModal()" class="px-3 py-2 bg-red-600 text-white font-bold rounded-xl text-xs shadow hover:bg-red-700 transition">
-                                <i class="fa-solid fa-stop mr-1"></i> Cerrar Turno
-                            </button>
+                    </div>
+
+                    <!-- Botones principales de acción (2 botones grandes) -->
+                    <div class="space-y-2.5">
+                        <button onclick="openTreasuryModal()" class="w-full py-3 border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-bold rounded-xl text-xs tracking-wider uppercase transition">
+                            GESTIÓN DE TESORERÍA
+                        </button>
+                        <button id="btn-shift-main-action" onclick="handleMainShiftButton()" class="w-full py-3 border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-bold rounded-xl text-xs tracking-wider uppercase transition">
+                            ABRIR EL TURNO
+                        </button>
+                    </div>
+
+                    <!-- Datos del turno actual -->
+                    <div class="space-y-1 text-xs text-gray-600 border-b border-[#E9D6C7] pb-3">
+                        <p>Número de cierre de caja: <strong id="rep-shift-num" class="text-[#5B3545]">1</strong></p>
+                        <div class="flex justify-between items-center">
+                            <span>Abierto: <strong id="rep-opened-by" class="text-[#5B3545]">—</strong></span>
+                            <span id="rep-opened-at" class="text-gray-500">—</span>
                         </div>
                     </div>
 
                     <!-- CAJÓN DE EFECTIVO -->
-                    <div class="bg-[#FFF8F2] p-5 rounded-2xl border border-[#E9D6C7] space-y-3">
-                        <h3 class="font-bold text-sm text-[#5B3545]"><i class="fa-solid fa-vault mr-1 text-brand-pink"></i> Cajón de efectivo</h3>
-                        <div class="space-y-2 text-xs divide-y divide-[#E9D6C7]">
-                            <div class="flex justify-between pt-1"><span>Fondo de caja anterior:</span><strong id="rep-fund">$0.00</strong></div>
-                            <div class="flex justify-between pt-1"><span>Cobros en efectivo:</span><strong id="rep-cash-sales" class="text-emerald-600">$0.00</strong></div>
-                            <div class="flex justify-between pt-1"><span>Cobros con tarjeta:</span><strong id="rep-card-sales" class="text-purple-600">$0.00</strong></div>
-                            <div class="flex justify-between pt-1"><span>Reembolsos en efectivo:</span><strong id="rep-refunds">$0.00</strong></div>
-                            <div class="flex justify-between pt-1"><span>Pagos / Salidas (Gastos):</span><strong id="rep-expenses" class="text-red-600">$0.00</strong></div>
-                            <div class="flex justify-between pt-2 text-sm font-bold text-[#5B3545] border-t border-[#E9D6C7]"><span>Efectivo teórico en caja:</span><span id="rep-expected-cash">$0.00</span></div>
+                    <div class="space-y-2.5">
+                        <h3 class="font-bold text-xs text-emerald-700 uppercase tracking-wide">Cajón de efectivo</h3>
+                        <div class="space-y-2 text-xs text-gray-700">
+                            <div class="flex justify-between"><span>Fondo de caja anterior</span><span id="rep-fund" class="font-semibold">$0.00</span></div>
+                            <div class="flex justify-between"><span>Cobros en efectivo</span><span id="rep-cash-sales" class="font-semibold">$0.00</span></div>
+                            <div class="flex justify-between"><span>Reembolsos en efectivo</span><span id="rep-cash-refunds" class="font-semibold">$0.00</span></div>
+                            <div class="flex justify-between"><span>Depositado</span><span id="rep-deposits" class="font-semibold">$0.00</span></div>
+                            <div class="flex justify-between"><span>Pagos/Salidas</span><span id="rep-expenses" class="font-semibold">$0.00</span></div>
+                            <div class="flex justify-between pt-2 border-t border-[#E9D6C7] text-sm font-bold text-[#5B3545]">
+                                <span>Efectivo teórico en caja</span>
+                                <span id="rep-expected-cash">$0.00</span>
+                            </div>
                         </div>
                     </div>
 
                     <!-- RESUMEN DE VENTAS -->
-                    <div class="bg-[#FFF8F2] p-5 rounded-2xl border border-[#E9D6C7] space-y-3">
-                        <h3 class="font-bold text-sm text-[#5B3545]"><i class="fa-solid fa-chart-line mr-1 text-brand-pink"></i> Resumen de ventas</h3>
-                        <div class="space-y-2 text-xs divide-y divide-[#E9D6C7]">
-                            <div class="flex justify-between pt-1"><span>Ventas brutas:</span><strong id="rep-gross-sales">$0.00</strong></div>
-                            <div class="flex justify-between pt-1"><span>Cancelaciones / Reembolsos:</span><strong id="rep-sales-refunds" class="text-red-600">$0.00</strong></div>
-                            <div class="flex justify-between pt-1"><span>Descuentos:</span><strong id="rep-discounts" class="text-emerald-600">$0.00</strong></div>
-                            <div class="flex justify-between pt-2 text-sm font-bold text-brand-pink border-t border-[#E9D6C7]"><span>Ventas netas:</span><span id="rep-net-sales">$0.00</span></div>
-                        </div>
-                    </div>
-
-                    <!-- DESGLOSE POR ESTABLECIMIENTO (BOBA HAUS VS FORTUNA) -->
-                    <div class="bg-amber-50/60 p-5 rounded-2xl border border-amber-200 space-y-3">
-                        <h3 class="font-bold text-sm text-[#5B3545]"><i class="fa-solid fa-store mr-1 text-amber-600"></i> Desglose por Establecimiento</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                            <div class="bg-white p-3 rounded-xl border border-[#E9D6C7] flex justify-between items-center">
-                                <span class="font-bold text-[#5B3545]">🧋 Boba Haus:</span>
-                                <strong id="rep-boba-sales" class="text-base text-brand-pink">$0.00</strong>
+                    <div class="space-y-2.5 pt-2 border-t border-[#E9D6C7]">
+                        <h3 class="font-bold text-xs text-emerald-700 uppercase tracking-wide">Resumen de ventas</h3>
+                        <div class="space-y-2 text-xs text-gray-700">
+                            <div class="flex justify-between font-bold text-[#5B3545]"><span>Ventas brutas</span><span id="rep-gross-sales">$0.00</span></div>
+                            <div class="flex justify-between"><span>Reembolsos</span><span id="rep-sales-refunds" class="font-semibold">$0.00</span></div>
+                            <div class="flex justify-between"><span>Descuentos</span><span id="rep-discounts" class="font-semibold">-$0.00</span></div>
+                            <div class="flex justify-between pt-2 border-t border-[#E9D6C7] text-sm font-bold text-[#5B3545]">
+                                <span>Ventas netas</span>
+                                <span id="rep-net-sales">$0.00</span>
                             </div>
-                            <div class="bg-white p-3 rounded-xl border border-amber-200 flex justify-between items-center">
-                                <span class="font-bold text-amber-900">🍻 Fortuna:</span>
-                                <strong id="rep-fortuna-sales" class="text-base text-amber-700">$0.00</strong>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- HISTORIAL DE TICKETS DEL TURNO ACTUAL -->
-                    <div class="bg-[#FFF8F2] p-5 rounded-2xl border border-[#E9D6C7] space-y-3">
-                        <div class="flex justify-between items-center">
-                            <h3 class="font-bold text-sm text-[#5B3545]"><i class="fa-solid fa-receipt mr-1 text-brand-pink"></i> Tickets del Turno Actual</h3>
-                            <span class="text-[10px] text-gray-500">Reimprime o cancela (con PIN Dueña)</span>
-                        </div>
-                        <div id="shift-orders-container" class="space-y-2 text-xs max-h-64 overflow-y-auto">
-                            <p class="text-gray-400 italic">No hay tickets cobrados en este turno todavía.</p>
-                        </div>
-                    </div>
-
-                    <!-- REGISTRAR GASTO EN TURNO -->
-                    <div class="bg-red-50/50 p-4 rounded-2xl border border-red-200 space-y-3">
-                        <h3 class="font-bold text-xs text-red-700 uppercase tracking-wide"><i class="fa-solid fa-receipt mr-1"></i> Registrar Gasto / Salida de Efectivo en Turno</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <input type="text" id="expense-reason" placeholder="Concepto (Ej. Compra hielo)" class="p-2 border rounded-xl text-xs bg-white">
-                            <input type="number" id="expense-amount" placeholder="Monto (Ej. 60)" class="p-2 border rounded-xl text-xs bg-white">
-                            <button onclick="registerExpense()" class="py-2 bg-red-600 text-white font-bold rounded-xl text-xs shadow hover:bg-red-700 transition">Registrar Gasto</button>
-                        </div>
-                        <div id="expenses-list-container" class="space-y-1 text-xs text-gray-600 pt-1">
-                            <p class="text-[11px] italic text-gray-400">No hay gastos registrados en este turno.</p>
-                        </div>
-                    </div>
-
-                    <!-- RESPALDO Y PROTECCIÓN DE DATOS -->
-                    <div class="bg-blue-50/60 p-5 rounded-2xl border border-blue-200 space-y-3">
-                        <div>
-                            <h3 class="font-bold text-sm text-[#5B3545]"><i class="fa-solid fa-shield-halved mr-1 text-blue-600"></i> Respaldo y Protección de Datos</h3>
-                            <p class="text-[11px] text-gray-600">Guarda una copia de tus clientes frecuentes, inventario e historial de turnos para no perder información.</p>
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <button onclick="exportFullBackup()" class="py-2.5 px-3 bg-[#5B3545] hover:bg-[#422632] text-white font-bold rounded-xl text-xs shadow transition">
-                                ⬇️ Respaldo Completo (.json)
-                            </button>
-                            <label class="py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow transition text-center cursor-pointer">
-                                ⬆️ Restaurar Respaldo
-                                <input type="file" id="import-backup-file" accept=".json" onchange="importFullBackup(event)" class="hidden">
-                            </label>
-                            <button onclick="exportCustomersCSV()" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition">
-                                📊 Clientes Excel (.csv)
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- HISTORIAL DE TURNOS ANTERIORES -->
-                    <div class="bg-[#FFF8F2] p-5 rounded-2xl border border-[#E9D6C7] space-y-3">
-                        <h3 class="font-bold text-sm text-[#5B3545]"><i class="fa-solid fa-history mr-1 text-brand-pink"></i> Historial de Cierres de Turno</h3>
-                        <div id="shift-history-container" class="space-y-2 text-xs">
-                            <p class="text-gray-400 italic">No hay turnos cerrados registrados todavía en este historial.</p>
+                            <div class="flex justify-between pt-1"><span>Efectivo</span><span id="rep-summary-cash" class="font-semibold">$0.00</span></div>
+                            <div class="flex justify-between"><span>Redondeo de efectivo</span><span class="font-semibold">$0.00</span></div>
+                            <div class="flex justify-between"><span>Por tarjeta</span><span id="rep-card-sales" class="font-semibold">$0.00</span></div>
                         </div>
                     </div>
                 </div>
@@ -959,6 +922,49 @@
             </div>
             <div id="live-disp-content" class="space-y-3"></div>
         </div>
+    </div>
+
+    <!-- MODAL: GESTIÓN DE TESORERÍA (DEPOSITAR / PAGOS-SALIDAS) -->
+    <div id="treasury-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-5 shadow-2xl border border-[#E9D6C7]">
+            <div class="flex items-center space-x-3 border-b border-[#E9D6C7] pb-3">
+                <button onclick="closeTreasuryModal()" class="text-[#5B3545] hover:text-brand-pink text-base font-bold">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <h3 class="font-bold text-base text-[#5B3545]">Gestión de tesorería</h3>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-semibold text-gray-500 block mb-1">Cantidad</label>
+                    <input type="number" step="0.01" id="treasury-amount" placeholder="$0.00" class="w-full text-lg font-bold p-2.5 border-b-2 border-[#E9D6C7] focus:border-brand-pink bg-transparent outline-none text-[#5B3545]">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-gray-500 block mb-1">Comentario</label>
+                    <input type="text" id="treasury-comment" placeholder="Ej. Cambio, compra de hielo..." class="w-full text-sm p-2.5 border-b-2 border-[#E9D6C7] focus:border-brand-pink bg-transparent outline-none text-[#5B3545]">
+                </div>
+            </div>
+
+            <div class="space-y-2.5 pt-2">
+                <button onclick="registerTreasuryMove('deposit')" class="w-full py-3 border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-bold rounded-xl text-xs uppercase tracking-wider transition">
+                    DEPOSITAR
+                </button>
+                <button onclick="registerTreasuryMove('expense')" class="w-full py-3 border-2 border-red-500 text-red-600 hover:bg-red-50 font-bold rounded-xl text-xs uppercase tracking-wider transition">
+                    PAGOS/SALIDAS
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ÁREA OCULTA PARA IMPRIMIR RESUMEN DE TURNO -->
+    <div id="shift-print-area" class="hidden font-mono text-[11px] text-black p-3 space-y-1">
+        <div class="text-center border-b border-black pb-2">
+            <h4 class="font-bold text-sm">BOBA HAUS - CORTE DE TURNO</h4>
+            <p id="sp-shift-num"></p>
+            <p id="sp-opened"></p>
+            <p id="sp-date"></p>
+        </div>
+        <div id="sp-body" class="space-y-1 pt-1"></div>
     </div>
 
     <!-- ÁREA OCULTA PARA IMPRESIÓN DE PRUEBA -->
@@ -1445,8 +1451,14 @@
                         bobaSales: data.shiftData.bobaSales || 0,
                         fortunaSales: data.shiftData.fortunaSales || 0,
                         refunds: data.shiftData.refunds || 0,
+                        cashRefunds: data.shiftData.cashRefunds || 0,
+                        cardRefunds: data.shiftData.cardRefunds || 0,
+                        totalDiscounts: data.shiftData.totalDiscounts || 0,
+                        deposits: Array.isArray(data.shiftData.deposits) ? data.shiftData.deposits : [],
                         expenses: Array.isArray(data.shiftData.expenses) ? data.shiftData.expenses : [],
-                        orders: Array.isArray(data.shiftData.orders) ? data.shiftData.orders : []
+                        orders: Array.isArray(data.shiftData.orders) ? data.shiftData.orders : [],
+                        openedBy: data.shiftData.openedBy || '',
+                        openedAt: data.shiftData.openedAt || ''
                     };
                     localStorage.setItem('boba_shiftData', JSON.stringify(shiftData));
                 }
@@ -1520,10 +1532,15 @@
         let shiftHistory = JSON.parse(localStorage.getItem('boba_shiftHistory')) || [];
         let pausedOrders = JSON.parse(localStorage.getItem('boba_pausedOrders')) || [];
 
-        let shiftData = JSON.parse(localStorage.getItem('boba_shiftData')) || { cashSales: 0, cardSales: 0, totalSales: 0, bobaSales: 0, fortunaSales: 0, refunds: 0, expenses: [], orders: [] };
+        let shiftData = JSON.parse(localStorage.getItem('boba_shiftData')) || { cashSales: 0, cardSales: 0, totalSales: 0, bobaSales: 0, fortunaSales: 0, refunds: 0, cashRefunds: 0, cardRefunds: 0, totalDiscounts: 0, deposits: [], expenses: [], orders: [], openedBy: '', openedAt: '' };
         if (typeof shiftData.bobaSales === 'undefined') shiftData.bobaSales = 0;
         if (typeof shiftData.fortunaSales === 'undefined') shiftData.fortunaSales = 0;
         if (typeof shiftData.refunds === 'undefined') shiftData.refunds = 0;
+        if (typeof shiftData.cashRefunds === 'undefined') shiftData.cashRefunds = 0;
+        if (typeof shiftData.cardRefunds === 'undefined') shiftData.cardRefunds = 0;
+        if (typeof shiftData.totalDiscounts === 'undefined') shiftData.totalDiscounts = 0;
+        if (!Array.isArray(shiftData.deposits)) shiftData.deposits = [];
+        if (!Array.isArray(shiftData.expenses)) shiftData.expenses = [];
         if (!Array.isArray(shiftData.orders)) shiftData.orders = [];
         let redeemedPoints = 0;
         let isReprintingMode = false;
@@ -2350,13 +2367,101 @@
             document.getElementById('turn-modal').classList.add('hidden');
         }
 
+        function getShiftMetrics() {
+            const totalDeposits = (shiftData.deposits || []).reduce((sum, d) => sum + Number(d.amount || 0), 0);
+            const totalExpenses = (shiftData.expenses || []).reduce((sum, e) => sum + Number(e.amount || 0), 0);
+            const cashRefunds = Number(shiftData.cashRefunds || 0);
+            const cardRefunds = Number(shiftData.cardRefunds || 0);
+            const totalRefunds = Number(shiftData.refunds || 0);
+            const totalDiscounts = Number(shiftData.totalDiscounts || 0);
+            const expectedCash = initialFund + (shiftData.cashSales || 0) - cashRefunds + totalDeposits - totalExpenses;
+            const grossSales = (shiftData.cashSales || 0) + (shiftData.cardSales || 0) + totalDiscounts;
+            const netSales = grossSales - totalRefunds - totalDiscounts;
+            const netCashSummary = (shiftData.cashSales || 0) - cashRefunds;
+            const netCardSummary = (shiftData.cardSales || 0) - cardRefunds;
+            return { totalDeposits, totalExpenses, cashRefunds, cardRefunds, totalRefunds, totalDiscounts, expectedCash, grossSales, netSales, netCashSummary, netCardSummary };
+        }
+
+        function handleMainShiftButton() {
+            if (shiftOpen) openCloseTurnModal();
+            else openTurnModal();
+        }
+
+        function openTreasuryModal() {
+            if (!shiftOpen) return alert('⚠️ Primero debes abrir el turno para registrar movimientos de tesorería.');
+            document.getElementById('treasury-amount').value = '';
+            document.getElementById('treasury-comment').value = '';
+            document.getElementById('treasury-modal').classList.remove('hidden');
+        }
+
+        function closeTreasuryModal() {
+            document.getElementById('treasury-modal').classList.add('hidden');
+        }
+
+        function registerTreasuryMove(type) {
+            const amount = parseFloat(document.getElementById('treasury-amount').value);
+            const comment = document.getElementById('treasury-comment').value.trim() || (type === 'deposit' ? 'Depósito en caja' : 'Pago / Salida de caja');
+            if (isNaN(amount) || amount <= 0) return alert('Ingresa una cantidad mayor a $0.00.');
+
+            const entry = {
+                reason: comment,
+                amount: amount,
+                date: new Date().toLocaleString('es-MX'),
+                user: currentUserName || 'Caja'
+            };
+
+            if (type === 'deposit') {
+                if (!Array.isArray(shiftData.deposits)) shiftData.deposits = [];
+                shiftData.deposits.push(entry);
+            } else {
+                if (!Array.isArray(shiftData.expenses)) shiftData.expenses = [];
+                shiftData.expenses.push(entry);
+            }
+
+            localStorage.setItem('boba_shiftData', JSON.stringify(shiftData));
+            closeTreasuryModal();
+            updateTreasuryDisplay();
+            syncToCloud();
+            alert(type === 'deposit' ? `✅ Depósito de $${amount.toFixed(2)} registrado.` : `✅ Pago/Salida de $${amount.toFixed(2)} registrado.`);
+        }
+
+        function printShiftSummary() {
+            const m = getShiftMetrics();
+            const shiftNum = (shiftHistory.length || 0) + 1;
+            document.getElementById('sp-shift-num').innerText = `Número de cierre de caja: ${shiftNum}`;
+            document.getElementById('sp-opened').innerText = `Abierto: ${shiftData.openedBy || currentUserName || 'Propietario'} (${shiftData.openedAt || '—'})`;
+            document.getElementById('sp-date').innerText = `Impreso: ${new Date().toLocaleString('es-MX')}`;
+            document.getElementById('sp-body').innerHTML = `
+                <p class="font-bold border-b border-dashed border-black pb-1">CAJÓN DE EFECTIVO</p>
+                <div class="flex justify-between"><span>Fondo anterior:</span><span>$${initialFund.toFixed(2)}</span></div>
+                <div class="flex justify-between"><span>Cobros efectivo:</span><span>$${(shiftData.cashSales||0).toFixed(2)}</span></div>
+                <div class="flex justify-between"><span>Reembolsos ef.:</span><span>$${m.cashRefunds.toFixed(2)}</span></div>
+                <div class="flex justify-between"><span>Depositado:</span><span>$${m.totalDeposits.toFixed(2)}</span></div>
+                <div class="flex justify-between"><span>Pagos/Salidas:</span><span>$${m.totalExpenses.toFixed(2)}</span></div>
+                <div class="flex justify-between font-bold border-t border-black pt-1"><span>Teórico en caja:</span><span>$${m.expectedCash.toFixed(2)}</span></div>
+                <p class="font-bold border-b border-dashed border-black pt-2 pb-1">RESUMEN DE VENTAS</p>
+                <div class="flex justify-between"><span>Ventas brutas:</span><span>$${m.grossSales.toFixed(2)}</span></div>
+                <div class="flex justify-between"><span>Reembolsos:</span><span>$${m.totalRefunds.toFixed(2)}</span></div>
+                <div class="flex justify-between"><span>Descuentos:</span><span>-$${m.totalDiscounts.toFixed(2)}</span></div>
+                <div class="flex justify-between font-bold border-t border-black pt-1"><span>Ventas netas:</span><span>$${m.netSales.toFixed(2)}</span></div>
+                <div class="flex justify-between"><span>Efectivo:</span><span>$${m.netCashSummary.toFixed(2)}</span></div>
+                <div class="flex justify-between"><span>Por tarjeta:</span><span>$${m.netCardSummary.toFixed(2)}</span></div>
+            `;
+            document.body.classList.add('printing-shift');
+            window.print();
+            setTimeout(() => document.body.classList.remove('printing-shift'), 500);
+        }
+
         function confirmOpenTurn() {
             const fund = parseFloat(document.getElementById('input-turn-fund').value);
             if(isNaN(fund) || fund < 0) return alert('Ingrese una cantidad válida.');
             initialFund = fund;
             shiftOpen = true;
+            shiftData.openedBy = currentUserName || 'Propietario';
+            shiftData.openedAt = new Date().toLocaleString('es-MX', { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
             localStorage.setItem('boba_initialFund', initialFund);
             localStorage.setItem('boba_shiftOpen', 'true');
+            localStorage.setItem('boba_shiftData', JSON.stringify(shiftData));
             syncToCloud();
             document.getElementById('header-turn-status').innerText = "Turno Abierto";
             closeTurnModal();
@@ -2366,9 +2471,8 @@
 
         function openCloseTurnModal() {
             if(!shiftOpen) return alert('No hay ningún turno abierto actualmente.');
-            let totalExpenses = shiftData.expenses.reduce((sum, e) => sum + e.amount, 0);
-            let expectedCash = initialFund + shiftData.cashSales - totalExpenses;
-            document.getElementById('close-expected-cash').innerText = `$${expectedCash.toFixed(2)}`;
+            const m = getShiftMetrics();
+            document.getElementById('close-expected-cash').innerText = `$${m.expectedCash.toFixed(2)}`;
             document.getElementById('close-counted-cash').value = '';
             document.getElementById('close-diff-display').innerText = '$0.00';
             document.getElementById('close-turn-modal').classList.remove('hidden');
@@ -2379,8 +2483,8 @@
         }
 
         function calculateCloseDifference() {
-            let totalExpenses = shiftData.expenses.reduce((sum, e) => sum + e.amount, 0);
-            let expectedCash = initialFund + shiftData.cashSales - totalExpenses;
+            const m = getShiftMetrics();
+            let expectedCash = m.expectedCash;
             let counted = parseFloat(document.getElementById('close-counted-cash').value) || 0;
             let diff = counted - expectedCash;
             let diffDisplay = document.getElementById('close-diff-display');
@@ -2398,27 +2502,35 @@
         }
 
         function confirmCloseTurn() {
-            let totalExpenses = shiftData.expenses.reduce((sum, e) => sum + e.amount, 0);
-            let expectedCash = initialFund + shiftData.cashSales - totalExpenses;
+            const m = getShiftMetrics();
+            let expectedCash = m.expectedCash;
             let counted = parseFloat(document.getElementById('close-counted-cash').value) || 0;
             let diff = counted - expectedCash;
 
             shiftHistory.unshift({
+                shiftNum: (shiftHistory.length || 0) + 1,
+                openedBy: shiftData.openedBy || 'Propietario',
+                openedAt: shiftData.openedAt || '',
                 date: new Date().toLocaleString(),
                 fund: initialFund,
-                cashSales: shiftData.cashSales,
-                cardSales: shiftData.cardSales,
+                cashSales: shiftData.cashSales || 0,
+                cardSales: shiftData.cardSales || 0,
                 bobaSales: shiftData.bobaSales || 0,
                 fortunaSales: shiftData.fortunaSales || 0,
-                refunds: shiftData.refunds || 0,
-                expenses: totalExpenses,
+                refunds: m.totalRefunds,
+                cashRefunds: m.cashRefunds,
+                discounts: m.totalDiscounts,
+                deposits: m.totalDeposits,
+                expenses: m.totalExpenses,
+                depositsLog: JSON.parse(JSON.stringify(shiftData.deposits || [])),
+                expensesLog: JSON.parse(JSON.stringify(shiftData.expenses || [])),
                 expected: expectedCash,
                 counted: counted,
                 diff: diff
             });
 
             shiftOpen = false;
-            shiftData = { cashSales: 0, cardSales: 0, totalSales: 0, bobaSales: 0, fortunaSales: 0, refunds: 0, expenses: [], orders: [] };
+            shiftData = { cashSales: 0, cardSales: 0, totalSales: 0, bobaSales: 0, fortunaSales: 0, refunds: 0, cashRefunds: 0, cardRefunds: 0, totalDiscounts: 0, deposits: [], expenses: [], orders: [], openedBy: '', openedAt: '' };
             
             localStorage.setItem('boba_shiftOpen', 'false');
             localStorage.setItem('boba_shiftData', JSON.stringify(shiftData));
@@ -2434,6 +2546,7 @@
 
         function renderShiftHistory() {
             const container = document.getElementById('shift-history-container');
+            if (!container) return;
             if (shiftHistory.length === 0) {
                 container.innerHTML = `<p class="text-gray-400 italic">No hay turnos cerrados registrados todavía en este historial.</p>`;
                 return;
@@ -2478,6 +2591,7 @@
 
         function renderExpensesList() {
             const container = document.getElementById('expenses-list-container');
+            if (!container) return;
             if (shiftData.expenses.length === 0) {
                 container.innerHTML = `<p class="text-[11px] italic text-gray-400">No hay gastos registrados en este turno.</p>`;
                 return;
@@ -2492,28 +2606,38 @@
         }
 
         function updateTreasuryDisplay() {
-            let totalExpenses = shiftData.expenses.reduce((sum, e) => sum + e.amount, 0);
-            let grossSales = shiftData.cashSales + shiftData.cardSales;
-            let refunds = shiftData.refunds || 0;
-            let expectedCash = initialFund + shiftData.cashSales - totalExpenses;
+            const m = getShiftMetrics();
+            const fmt = (v) => v < 0 ? `-$${Math.abs(v).toFixed(2)}` : `$${v.toFixed(2)}`;
 
-            document.getElementById('rep-fund').innerText = `$${initialFund.toFixed(2)}`;
-            document.getElementById('rep-cash-sales').innerText = `$${shiftData.cashSales.toFixed(2)}`;
-            document.getElementById('rep-card-sales').innerText = `$${shiftData.cardSales.toFixed(2)}`;
-            document.getElementById('rep-refunds').innerText = `$${refunds.toFixed(2)}`;
-            document.getElementById('rep-expenses').innerText = `$${totalExpenses.toFixed(2)}`;
-            document.getElementById('rep-expected-cash').innerText = `$${expectedCash.toFixed(2)}`;
+            const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.innerText = txt; };
+            setTxt('rep-shift-num', String((shiftHistory.length || 0) + 1));
+            setTxt('rep-opened-by', shiftOpen ? (shiftData.openedBy || 'Propietario') : 'Turno Cerrado');
+            setTxt('rep-opened-at', shiftOpen ? (shiftData.openedAt || '—') : '—');
 
-            document.getElementById('rep-gross-sales').innerText = `$${grossSales.toFixed(2)}`;
-            document.getElementById('rep-sales-refunds').innerText = `$${refunds.toFixed(2)}`;
-            document.getElementById('rep-discounts').innerText = `$${(discountVal + (window.lastHappyDiscount || 0)).toFixed(2)}`;
-            document.getElementById('rep-net-sales').innerText = `$${Math.max(0, grossSales).toFixed(2)}`;
+            const mainBtn = document.getElementById('btn-shift-main-action');
+            if (mainBtn) {
+                if (shiftOpen) {
+                    mainBtn.innerText = 'CERRAR EL TURNO';
+                    mainBtn.className = 'w-full py-3 border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-bold rounded-xl text-xs tracking-wider uppercase transition';
+                } else {
+                    mainBtn.innerText = 'ABRIR EL TURNO';
+                    mainBtn.className = 'w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs tracking-wider uppercase shadow transition';
+                }
+            }
 
-            document.getElementById('rep-boba-sales').innerText = `$${(shiftData.bobaSales || 0).toFixed(2)}`;
-            document.getElementById('rep-fortuna-sales').innerText = `$${(shiftData.fortunaSales || 0).toFixed(2)}`;
+            setTxt('rep-fund', fmt(initialFund));
+            setTxt('rep-cash-sales', fmt(shiftData.cashSales || 0));
+            setTxt('rep-cash-refunds', fmt(m.cashRefunds));
+            setTxt('rep-deposits', fmt(m.totalDeposits));
+            setTxt('rep-expenses', fmt(m.totalExpenses));
+            setTxt('rep-expected-cash', fmt(m.expectedCash));
 
-            renderExpensesList();
-            renderShiftOrders();
+            setTxt('rep-gross-sales', fmt(m.grossSales));
+            setTxt('rep-sales-refunds', fmt(m.totalRefunds));
+            setTxt('rep-discounts', m.totalDiscounts > 0 ? `-$${m.totalDiscounts.toFixed(2)}` : '$0.00');
+            setTxt('rep-net-sales', fmt(m.netSales));
+            setTxt('rep-summary-cash', fmt(m.netCashSummary));
+            setTxt('rep-card-sales', fmt(m.netCardSummary));
         }
 
         function renderShiftOrders() {
@@ -3023,6 +3147,8 @@
                 shiftData.bobaSales = (shiftData.bobaSales || 0) + total;
             }
 
+            const orderDiscNum = parseFloat((document.getElementById('cart-discount')?.innerText || '0').replace(/[^0-9.]/g, '')) || 0;
+            shiftData.totalDiscounts = (shiftData.totalDiscounts || 0) + orderDiscNum;
             shiftData.totalSales += total;
 
             if (selectedCustomer) {
@@ -3561,8 +3687,8 @@ Lat: ${lat}, Lng: ${lng}`);
                 ordShift.refundedAt = nowStr;
                 ordShift.refundedBy = 'Izel (Propietaria)';
                 shiftData.refunds = (shiftData.refunds || 0) + ordShift.total;
-                shiftData.cashSales = Math.max(0, shiftData.cashSales - (ordShift.cashPart || 0));
-                shiftData.cardSales = Math.max(0, shiftData.cardSales - (ordShift.cardPart || 0));
+                shiftData.cashRefunds = (shiftData.cashRefunds || 0) + (ordShift.cashPart || 0);
+                shiftData.cardRefunds = (shiftData.cardRefunds || 0) + (ordShift.cardPart || 0);
                 shiftData.totalSales = Math.max(0, shiftData.totalSales - ordShift.total);
                 if (ordShift.store === 'fortuna') {
                     shiftData.fortunaSales = Math.max(0, (shiftData.fortunaSales || 0) - ordShift.total);
@@ -3598,8 +3724,7 @@ Lat: ${lat}, Lng: ${lng}`);
                 `"${(o.refundReason || '').replace(/"/g, '""')}"`
             ]);
             const headers = ['Folio', 'Codigo Seguridad', 'Fecha', 'Establecimiento', 'Cajero', 'Pago', 'Total', 'Estado', 'Motivo Reembolso'];
-            const csv = "﻿" + [headers.join(','), ...rows.map(r => r.join(','))].join('
-');
+            const csv = "\uFEFF" + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
