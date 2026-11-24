@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boba Haus - Back Office Pro (Gerencia)</title>
+    <title>Boba Haus - Back Office Propietario</title>
+    <link rel="icon" type="image/png" href="./icon-192.png">
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
@@ -12,12 +16,12 @@
             theme: {
                 extend: {
                     colors: {
-                        fig: {
-                            dark: '#412e53',    /* Morado oscuro tipo higo */
-                            purple: '#6e336d',  /* Púrpura principal */
-                            amber: '#d4832c',   /* Naranja ámbar cálido */
-                            cream: '#e6cb9d',   /* Crema / Beige dorado */
-                            bg: '#fbf8f3'       /* Fondo general cálido */
+                        brand: {
+                            pink: '#E88EAF',
+                            lightpink: '#F4B6CE',
+                            softpink: '#E9D6C7',
+                            cream: '#FFF8F2',
+                            dark: '#5B3545'
                         }
                     },
                     fontFamily: {
@@ -29,403 +33,483 @@
         }
     </script>
     <style>
-        body { font-family: 'Quicksand', sans-serif; background-color: #fbf8f3; }
+        body { font-family: 'Quicksand', sans-serif; background-color: #FFF8F2; color: #5B3545; }
         h1, h2, h3, h4 { font-family: 'Fredoka', sans-serif; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-thumb { background: #6e336d; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #F4B6CE; border-radius: 10px; }
     </style>
 </head>
-<body class="h-screen overflow-hidden flex text-gray-800">
+<body class="min-h-screen flex flex-col bg-[#FFF8F2]">
 
-    <!-- MENÚ LATERAL ESTILO LOYVERSE (PALETA DE HIGOS) -->
-    <aside class="w-64 bg-fig-dark text-gray-200 flex flex-col justify-between shrink-0 shadow-xl z-30">
-        <div>
-            <div class="p-4 bg-[#32233f] border-b border-purple-900/40 flex items-center justify-between">
-                <div>
-                    <h2 class="font-bold text-white text-sm">Boba Haus Back Office</h2>
-                    <p class="text-[11px] text-fig-cream">Panel Gerencial • Izel</p>
+    <!-- PANTALLA DE BLOQUEO EXCLUSIVA PROPIETARIO (PIN 2107) -->
+    <div id="owner-lock-screen" class="fixed inset-0 bg-[#5B3545] z-50 flex items-center justify-center p-4">
+        <div class="bg-[#422632] rounded-3xl max-w-sm w-full p-6 text-[#FFF8F2] space-y-5 shadow-2xl border border-[#E88EAF]/30">
+            <div class="text-center space-y-1">
+                <p class="text-[11px] uppercase tracking-widest text-[#F4B6CE] font-bold">Boba Haus • Back Office</p>
+                <h2 class="text-xl font-bold text-white">Acceso Exclusivo Propietario</h2>
+                <p class="text-xs text-[#E9D6C7]">Ingresa tu PIN de dueña para ver finanzas, recibos e inventario.</p>
+                <div id="bo-pin-dots" class="flex justify-center space-x-3 text-2xl tracking-widest text-brand-pink pt-3">○ ○ ○ ○</div>
+            </div>
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="boPinPress(1)" class="p-4 bg-[#5B3545] hover:bg-[#6d4053] rounded-2xl text-xl font-bold active:scale-95 transition">1</button>
+                <button onclick="boPinPress(2)" class="p-4 bg-[#5B3545] hover:bg-[#6d4053] rounded-2xl text-xl font-bold active:scale-95 transition">2</button>
+                <button onclick="boPinPress(3)" class="p-4 bg-[#5B3545] hover:bg-[#6d4053] rounded-2xl text-xl font-bold active:scale-95 transition">3</button>
+                <button onclick="boPinPress(4)" class="p-4 bg-[#5B3545] hover:bg-[#6d4053] rounded-2xl text-xl font-bold active:scale-95 transition">4</button>
+                <button onclick="boPinPress(5)" class="p-4 bg-[#5B3545] hover:bg-[#6d4053] rounded-2xl text-xl font-bold active:scale-95 transition">5</button>
+                <button onclick="boPinPress(6)" class="p-4 bg-[#5B3545] hover:bg-[#6d4053] rounded-2xl text-xl font-bold active:scale-95 transition">6</button>
+                <button onclick="boPinPress(7)" class="p-4 bg-[#5B3545] hover:bg-[#6d4053] rounded-2xl text-xl font-bold active:scale-95 transition">7</button>
+                <button onclick="boPinPress(8)" class="p-4 bg-[#5B3545] hover:bg-[#6d4053] rounded-2xl text-xl font-bold active:scale-95 transition">8</button>
+                <button onclick="boPinPress(9)" class="p-4 bg-[#5B3545] hover:bg-[#6d4053] rounded-2xl text-xl font-bold active:scale-95 transition">9</button>
+                <button onclick="boPinClear()" class="p-4 bg-red-900/50 text-red-200 rounded-2xl text-xs font-bold">Limpiar</button>
+                <button onclick="boPinPress(0)" class="p-4 bg-[#5B3545] hover:bg-[#6d4053] rounded-2xl text-xl font-bold active:scale-95 transition">0</button>
+                <button onclick="boPinBack()" class="p-4 bg-[#5B3545] rounded-2xl text-xs font-bold">Borrar</button>
+            </div>
+            <a href="./index.html" class="block text-center text-xs text-[#E9D6C7] hover:text-white underline pt-1">← Volver al Punto de Venta</a>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="bg-[#5B3545] text-white px-4 py-3 flex flex-wrap items-center justify-between gap-2 shadow-lg sticky top-0 z-30">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-brand-pink rounded-2xl flex items-center justify-center text-xl shadow">📊</div>
+            <div>
+                <h1 class="text-base sm:text-lg font-bold leading-tight text-white">Boba Haus • Back Office Propietario</h1>
+                <p id="bo-clock" class="text-[11px] text-[#E9D6C7]">Panel Gerencial en Tiempo Real</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <span id="bo-cloud-badge" class="px-2.5 py-1 bg-white/10 text-xs font-bold rounded-xl">☁️ Conectando...</span>
+            <a href="./index.html" class="px-3 py-1.5 bg-brand-pink hover:bg-[#d67999] text-white rounded-xl text-xs font-bold shadow">
+                🧋 Ir al POS
+            </a>
+            <button onclick="lockBackOffice()" class="px-3 py-1.5 bg-red-600/80 hover:bg-red-600 text-white rounded-xl text-xs font-bold">
+                🔒 Salir
+            </button>
+        </div>
+    </header>
+
+    <!-- NAVEGACIÓN DE SECCIONES -->
+    <nav class="bg-white border-b border-[#E9D6C7] px-4 py-2 flex items-center gap-2 overflow-x-auto text-xs font-bold sticky top-[64px] z-20">
+        <button onclick="boTab('dashboard')" id="bo-nav-dashboard" class="px-4 py-2 rounded-xl bg-brand-pink text-white shrink-0">📈 Resumen General</button>
+        <button onclick="boTab('receipts')" id="bo-nav-receipts" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">🧾 Recibos & Auditoría</button>
+        <button onclick="boTab('shifts')" id="bo-nav-shifts" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">⏱️ Cierres de Turno</button>
+        <button onclick="boTab('inventory')" id="bo-nav-inventory" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">📦 Inventario Remoto</button>
+        <button onclick="boTab('customers')" id="bo-nav-customers" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">👥 Clientes Frecuentes</button>
+    </nav>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 max-w-6xl w-full mx-auto p-4 space-y-6">
+
+        <!-- TAB 1: DASHBOARD -->
+        <section id="bo-tab-dashboard" class="space-y-6">
+            <!-- KPIs -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="bg-white p-4 rounded-3xl border border-[#E9D6C7] shadow-sm">
+                    <p class="text-xs text-gray-500 font-bold">Ventas Netas (Turno Actual)</p>
+                    <p id="kpi-net" class="text-2xl sm:text-3xl font-bold text-brand-pink mt-1">$0.00</p>
+                    <p id="kpi-turn-state" class="text-[11px] font-bold text-amber-700 mt-1">Turno Cerrado</p>
                 </div>
-                <span class="p-2 bg-fig-amber text-white rounded-xl text-xs font-bold shadow">Pro</span>
+                <div class="bg-white p-4 rounded-3xl border border-[#E9D6C7] shadow-sm">
+                    <p class="text-xs text-gray-500 font-bold">🧋 Boba Haus vs 🍻 Fortuna</p>
+                    <p class="text-sm font-bold text-brand-pink mt-1">Boba: <span id="kpi-boba">$0.00</span></p>
+                    <p class="text-sm font-bold text-amber-700">Fortuna: <span id="kpi-fortuna">$0.00</span></p>
+                </div>
+                <div class="bg-white p-4 rounded-3xl border border-[#E9D6C7] shadow-sm">
+                    <p class="text-xs text-gray-500 font-bold">Gastos y Reembolsos</p>
+                    <p class="text-sm font-bold text-red-600 mt-1">Gastos: <span id="kpi-expenses">$0.00</span></p>
+                    <p class="text-sm font-bold text-orange-600">Reembolsos: <span id="kpi-refunds">$0.00</span></p>
+                </div>
+                <div class="bg-white p-4 rounded-3xl border border-[#E9D6C7] shadow-sm">
+                    <p class="text-xs text-gray-500 font-bold">Ventas Acumuladas (Historial)</p>
+                    <p id="kpi-alltime" class="text-2xl font-bold text-[#5B3545] mt-1">$0.00</p>
+                    <p class="text-[11px] text-gray-500 mt-1"><span id="kpi-receipts-count">0</span> recibos registrados</p>
+                </div>
             </div>
 
-            <nav class="p-2 space-y-1 text-xs font-semibold overflow-y-auto max-h-[calc(100vh-100px)]">
-                <button onclick="switchBoTab('sales')" id="nav-sales" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-fig-purple text-white transition shadow-sm">
-                    <i class="fa-solid fa-chart-line text-base w-5"></i> <span>Resumen de ventas</span>
-                </button>
-                <button onclick="switchBoTab('items')" id="nav-items" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
-                    <i class="fa-solid fa-list text-base w-5"></i> <span>Lista de artículos</span>
-                </button>
-                <button onclick="switchBoTab('inventory')" id="nav-inventory" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
-                    <i class="fa-solid fa-boxes-stacked text-base w-5"></i> <span>Inventario avanzado</span>
-                </button>
-                <button onclick="switchBoTab('purchases')" id="nav-purchases" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
-                    <i class="fa-solid fa-truck-ramp-box text-base w-5"></i> <span>Órdenes de Compra</span>
-                </button>
-                <button onclick="switchBoTab('shifts')" id="nav-shifts" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
-                    <i class="fa-solid fa-cash-register text-base w-5"></i> <span>Cierres de Turno / Arqueos</span>
-                </button>
-                <button onclick="switchBoTab('employees')" id="nav-employees" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
-                    <i class="fa-solid fa-users text-base w-5"></i> <span>Empleados y Accesos</span>
-                </button>
-                <button onclick="switchBoTab('settings')" id="nav-settings" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition">
-                    <i class="fa-solid fa-gear text-base w-5"></i> <span>Configuración</span>
-                </button>
-            </nav>
-        </div>
-
-        <div class="p-3 border-t border-purple-900/40 text-[11px] text-fig-cream/70 text-center">
-            Ecosistema Boba Haus 2026
-        </div>
-    </aside>
-
-    <!-- CUERPO PRINCIPAL BACK OFFICE -->
-    <main class="flex-1 overflow-y-auto relative flex flex-col h-full bg-fig-bg">
-
-        <!-- HEADER -->
-        <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-20">
-            <h1 id="bo-header-title" class="text-lg font-bold text-fig-dark">Resumen de ventas</h1>
-            <div class="flex items-center space-x-3">
-                <span class="text-xs font-semibold bg-fig-cream/40 text-fig-dark px-3 py-1.5 rounded-xl border border-fig-cream">📅 Sincronizado en Vivo</span>
-                <button onclick="location.reload()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">
-                    <i class="fa-solid fa-rotate-right mr-1"></i> Actualizar
-                </button>
+            <!-- Gráficas -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="bg-white p-5 rounded-3xl border border-[#E9D6C7] shadow-sm">
+                    <h3 class="font-bold text-sm text-[#5B3545] mb-3">🧋 Boba Haus vs 🍻 Fortuna (Turno + Historial)</h3>
+                    <div class="h-56 flex items-center justify-center">
+                        <canvas id="chart-stores"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-3xl border border-[#E9D6C7] shadow-sm">
+                    <h3 class="font-bold text-sm text-[#5B3545] mb-3">🏆 Top 8 Productos Más Vendidos</h3>
+                    <div id="top-products-list" class="space-y-2 text-xs">
+                        <p class="text-gray-400 italic">Sin ventas registradas todavía.</p>
+                    </div>
+                </div>
             </div>
-        </header>
 
-        <!-- CONTENIDO DE PESTAÑAS -->
-        <div class="p-6 space-y-6 flex-1">
+            <!-- Alertas de Stock Bajo -->
+            <div class="bg-white p-5 rounded-3xl border border-red-200 shadow-sm space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-sm text-red-700"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Insumos en Stock Bajo (Requieren Resurtido)</h3>
+                    <span id="bo-low-count" class="bg-red-100 text-red-700 px-2.5 py-0.5 rounded-full text-xs font-bold">0</span>
+                </div>
+                <div id="bo-low-stock-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs"></div>
+            </div>
+        </section>
 
-            <!-- TAB 1: RESUMEN DE VENTAS -->
-            <section id="bo-tab-sales" class="space-y-6">
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-                        <span class="text-[11px] text-gray-500 font-semibold block">Ventas brutas</span>
-                        <h3 id="bo-gross-sales" class="text-lg font-bold text-gray-900 mt-1">$0.00</h3>
+        <!-- TAB 2: RECIBOS & AUDITORÍA -->
+        <section id="bo-tab-receipts" class="hidden space-y-4">
+            <div class="bg-white p-5 rounded-3xl border border-[#E9D6C7] shadow-sm space-y-4">
+                <div class="flex flex-wrap justify-between items-center gap-2 border-b pb-3">
+                    <div>
+                        <h2 class="text-lg font-bold text-[#5B3545]">🧾 Auditoría de Recibos y Reembolsos</h2>
+                        <p class="text-xs text-gray-500">Todos los tickets con código único de seguridad, cajero y motivo de cancelación.</p>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-                        <span class="text-[11px] text-gray-500 font-semibold block">Efectivo en Caja</span>
-                        <h3 id="bo-cash-sales-card" class="text-lg font-bold text-emerald-600 mt-1">$0.00</h3>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-                        <span class="text-[11px] text-gray-500 font-semibold block">Cobros con Tarjeta</span>
-                        <h3 id="bo-card-sales-card" class="text-lg font-bold text-purple-600 mt-1">$0.00</h3>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-                        <span class="text-[11px] text-gray-500 font-semibold block">Ventas netas</span>
-                        <h3 id="bo-net-sales" class="text-lg font-bold text-fig-purple mt-1">$0.00</h3>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 col-span-2 md:col-span-1">
-                        <span class="text-[11px] text-gray-500 font-semibold block">Beneficio bruto (Utilidad)</span>
-                        <h3 id="bo-gross-profit" class="text-lg font-bold text-fig-dark mt-1">$0.00</h3>
+                    <button onclick="exportBoReceiptsCSV()" class="px-3 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow">📊 Descargar Excel (.csv)</button>
+                </div>
+                <input type="text" id="bo-receipts-search" oninput="renderBoReceipts()" placeholder="🔍 Buscar por folio, código BH-..., cajero o producto..." class="w-full p-2.5 border border-[#E9D6C7] rounded-xl text-xs bg-[#FFF8F2] outline-none">
+                <div id="bo-receipts-list" class="space-y-2 text-xs max-h-[60vh] overflow-y-auto"></div>
+            </div>
+        </section>
+
+        <!-- TAB 3: CIERRES DE TURNO -->
+        <section id="bo-tab-shifts" class="hidden space-y-4">
+            <div class="bg-white p-5 rounded-3xl border border-[#E9D6C7] shadow-sm space-y-4">
+                <h2 class="text-lg font-bold text-[#5B3545] border-b pb-3">⏱️ Historial Completo de Cierres de Turno</h2>
+                <div id="bo-shifts-list" class="space-y-3 text-xs"></div>
+            </div>
+        </section>
+
+        <!-- TAB 4: INVENTARIO REMOTO -->
+        <section id="bo-tab-inventory" class="hidden space-y-4">
+            <div class="bg-white p-5 rounded-3xl border border-[#E9D6C7] shadow-sm space-y-4">
+                <div class="flex flex-wrap justify-between items-center gap-2 border-b pb-3">
+                    <div>
+                        <h2 class="text-lg font-bold text-[#5B3545]">📦 Control de Inventario Remoto</h2>
+                        <p class="text-xs text-gray-500">Actualiza existencias desde tu celular o computadora; se sincroniza al instante con la caja.</p>
                     </div>
                 </div>
-
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4">
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-fig-dark text-sm">Desglose por Tipo de Pago</h3>
-                        <button onclick="window.print()" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-xl font-bold text-gray-700">🖨️ Imprimir Reporte</button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="bg-fig-cream/20 text-fig-dark border-b">
-                                    <th class="p-3 rounded-l-xl">Método de Pago</th>
-                                    <th class="p-3">Transacciones / Canal</th>
-                                    <th class="p-3 text-right rounded-r-xl">Total Recaudado</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                <tr>
-                                    <td class="p-3 font-semibold">💵 Efectivo (Gaveta TPV)</td>
-                                    <td class="p-3 text-gray-500">Caja Principal / Turno Activo</td>
-                                    <td id="bo-payment-cash" class="p-3 text-right font-bold text-emerald-600">$0.00</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-3 font-semibold">💳 Tarjeta / Terminal</td>
-                                    <td class="p-3 text-gray-500">Cobros Electrónicos</td>
-                                    <td id="bo-payment-card" class="p-3 text-right font-bold text-purple-600">$0.00</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-[#FFF8F2] text-[#5B3545]">
+                                <th class="p-3 rounded-l-xl">Insumo</th>
+                                <th class="p-3">Stock</th>
+                                <th class="p-3">Mínimo</th>
+                                <th class="p-3 rounded-r-xl text-center">Guardar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bo-inv-tbody" class="divide-y divide-gray-100"></tbody>
+                    </table>
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <!-- TAB 2: LISTA DE ARTÍCULOS -->
-            <section id="bo-tab-items" class="space-y-4 hidden">
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4">
-                    <h3 class="font-bold text-fig-dark text-sm">Catálogo de Artículos y Precios de Venta</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="bg-fig-cream/20 text-fig-dark border-b">
-                                    <th class="p-3 rounded-l-xl">Artículo</th>
-                                    <th class="p-3">Categoría</th>
-                                    <th class="p-3 text-right rounded-r-xl">Precio de Venta</th>
-                                </tr>
-                            </thead>
-                            <tbody id="bo-items-table-body" class="divide-y divide-gray-100"></tbody>
-                        </table>
+        <!-- TAB 5: CLIENTES FRECUENTES -->
+        <section id="bo-tab-customers" class="hidden space-y-4">
+            <div class="bg-white p-5 rounded-3xl border border-[#E9D6C7] shadow-sm space-y-4">
+                <div class="flex flex-wrap justify-between items-center gap-2 border-b pb-3">
+                    <div>
+                        <h2 class="text-lg font-bold text-[#5B3545]">👥 Directorio de Clientes Frecuentes (<span id="bo-cust-count">0</span>)</h2>
+                        <p class="text-xs text-gray-500">Ordenados por mayor consumo acumulado.</p>
                     </div>
+                    <button onclick="exportBoCustomersCSV()" class="px-3 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow">📊 Exportar Clientes (.csv)</button>
                 </div>
-            </section>
-
-            <!-- TAB 3: INVENTARIO AVANZADO -->
-            <section id="bo-tab-inventory" class="space-y-4 hidden">
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4">
-                    <h3 class="font-bold text-fig-dark text-sm">Control de Almacén e Insumos en Vivo</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="bg-fig-cream/20 text-fig-dark border-b">
-                                    <th class="p-3 rounded-l-xl">Insumo</th>
-                                    <th class="p-3">Stock en Almacén</th>
-                                    <th class="p-3">Unidad</th>
-                                    <th class="p-3 text-center rounded-r-xl">Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody id="bo-inventory-table-body" class="divide-y divide-gray-100"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 4: ÓRDENES DE COMPRA (PROVEEDORES) -->
-            <section id="bo-tab-purchases" class="space-y-4 hidden">
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4 max-w-xl">
-                    <h3 class="font-bold text-fig-dark text-sm"><i class="fa-solid fa-truck-ramp-box mr-1"></i> Recepción de Mercancía / Proveedores</h3>
-                    <p class="text-xs text-gray-500">Añade stock directamente al almacén al recibir pedidos bulk (tapioca, polvos, leches, hielo).</p>
-                    <div class="space-y-3 text-xs">
-                        <div>
-                            <label class="font-bold block text-gray-700 mb-1">Seleccionar Insumo:</label>
-                            <select id="po-item-select" class="w-full p-2.5 border rounded-xl bg-gray-50 font-semibold outline-none"></select>
-                        </div>
-                        <div>
-                            <label class="font-bold block text-gray-700 mb-1">Cantidad a Sumar al Stock:</label>
-                            <input type="number" id="po-qty-input" placeholder="Ej. 2000 (g) o 5 (Litros)" class="w-full p-2.5 border rounded-xl outline-none">
-                        </div>
-                        <button onclick="receivePurchaseOrder()" class="w-full py-3 bg-fig-purple hover:bg-fig-dark text-white font-bold rounded-xl shadow transition">
-                            📥 Registrar Entrada al Almacén
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 5: CIERRES DE TURNO -->
-            <section id="bo-tab-shifts" class="space-y-4 hidden">
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4">
-                    <h3 class="font-bold text-fig-dark text-sm">Historial de Cierres de Turno y Auditoría de Caja</h3>
-                    <div id="bo-shift-history-container" class="space-y-3">
-                        <p class="text-gray-400 text-xs italic">No hay cierres registrados aún.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 6: EMPLEADOS Y ACCESOS -->
-            <section id="bo-tab-employees" class="space-y-4 hidden">
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4 max-w-2xl">
-                    <h3 class="font-bold text-fig-dark text-sm">Lista de Empleados y Permisos de TPV</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="bg-fig-cream/20 text-fig-dark border-b">
-                                    <th class="p-3 rounded-l-xl">Colaborador</th>
-                                    <th class="p-3">PIN de Acceso</th>
-                                    <th class="p-3 text-right rounded-r-xl">Rol / Nivel</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100 text-xs">
-                                <tr><td class="p-3 font-bold">Izel Chacon</td><td class="p-3 font-mono">2107</td><td class="p-3 text-right font-bold text-fig-purple">Propietario (Acceso Total)</td></tr>
-                                <tr><td class="p-3 font-bold">Turno Mañana</td><td class="p-3 font-mono">0805</td><td class="p-3 text-right text-gray-600">Cajero Operativo</td></tr>
-                                <tr><td class="p-3 font-bold">Turno Tarde</td><td class="p-3 font-mono">3240</td><td class="p-3 text-right text-gray-600">Cajero Operativo</td></tr>
-                                <tr><td class="p-3 font-bold">Agustín / Nicolás / Chepis</td><td class="p-3 text-mono">Personal</td><td class="p-3 text-right text-emerald-600">Cortesías Autorizadas</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 7: CONFIGURACIÓN -->
-            <section id="bo-tab-settings" class="space-y-4 hidden">
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4 max-w-xl">
-                    <h3 class="font-bold text-fig-dark text-sm">Configuración General del Sistema</h3>
-                    <div class="space-y-3 text-xs">
-                        <div class="flex justify-between items-center border-b pb-2">
-                            <span>Notificaciones de stock bajo:</span>
-                            <span class="font-bold text-fig-amber">Activado (≤ Mínimo)</span>
-                        </div>
-                        <div class="flex justify-between items-center border-b pb-2">
-                            <span>Cierres de caja por turnos:</span>
-                            <span class="font-bold text-fig-purple">Habilitado (PIN Activo)</span>
-                        </div>
-                        <div class="flex justify-between items-center border-b pb-2">
-                            <span>Sincronización LocalStorage:</span>
-                            <span class="font-bold text-emerald-600">Activa (Conectado con TPV)</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-        </div>
+                <input type="text" id="bo-cust-search" oninput="renderBoCustomers()" placeholder="🔍 Buscar cliente por nombre o teléfono..." class="w-full p-2.5 border border-[#E9D6C7] rounded-xl text-xs bg-[#FFF8F2] outline-none">
+                <div id="bo-cust-list" class="space-y-2 text-xs max-h-[60vh] overflow-y-auto"></div>
+            </div>
+        </section>
     </main>
 
     <script>
-        function switchBoTab(tabId) {
-            ['sales', 'items', 'inventory', 'purchases', 'shifts', 'employees', 'settings'].forEach(t => {
-                const sec = document.getElementById(`bo-tab-${t}`);
-                if(sec) sec.classList.add('hidden');
-                const btn = document.getElementById(`nav-${t}`);
-                if(btn) btn.className = "w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-fig-purple/40 hover:text-white transition";
+        const firebaseConfig = {
+            apiKey: "AIzaSyAZh8BnPHLRIPtT3vAfPJ4d6jiXOAPSgkc",
+            authDomain: "boba-haus-pos.firebaseapp.com",
+            databaseURL: "https://boba-haus-pos-default-rtdb.firebaseio.com",
+            projectId: "boba-haus-pos",
+            storageBucket: "boba-haus-pos.firebasestorage.app",
+            messagingSenderId: "124050691405",
+            appId: "1:124050691405:web:bd157c67a11de03d629304",
+            measurementId: "G-JCSWE1FHT0"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const fbDb = firebase.database();
+
+        let cloudData = {};
+        let storeChart = null;
+        let boPin = "";
+
+        // PIN exclusivamente 2107
+        function boPinPress(n) {
+            if (boPin.length < 4) {
+                boPin += n;
+                updateBoDots();
+                if (boPin.length === 4) {
+                    setTimeout(() => {
+                        if (boPin === "2107") {
+                            document.getElementById('owner-lock-screen').classList.add('hidden');
+                        } else {
+                            alert('❌ Acceso denegado. Solo la propietaria puede entrar al Back Office.');
+                            boPinClear();
+                        }
+                    }, 150);
+                }
+            }
+        }
+        function boPinBack() { boPin = boPin.slice(0, -1); updateBoDots(); }
+        function boPinClear() { boPin = ""; updateBoDots(); }
+        function updateBoDots() {
+            let s = "";
+            for (let i = 0; i < 4; i++) s += i < boPin.length ? "● " : "○ ";
+            document.getElementById('bo-pin-dots').innerText = s.trim();
+        }
+        function lockBackOffice() {
+            boPinClear();
+            document.getElementById('owner-lock-screen').classList.remove('hidden');
+        }
+
+        function boTab(id) {
+            ['dashboard', 'receipts', 'shifts', 'inventory', 'customers'].forEach(t => {
+                document.getElementById(`bo-tab-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`bo-nav-${t}`);
+                btn.className = "px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0";
             });
-            const activeSec = document.getElementById(`bo-tab-${tabId}`);
-            if(activeSec) activeSec.classList.remove('hidden');
-            const activeBtn = document.getElementById(`nav-${tabId}`);
-            if(activeBtn) activeBtn.className = "w-full flex items-center space-x-3 px-3 py-3 rounded-xl bg-fig-purple text-white transition shadow-sm";
-
-            const titles = {
-                sales: 'Resumen de ventas',
-                items: 'Lista de artículos',
-                inventory: 'Inventario avanzado',
-                purchases: 'Órdenes de Compra',
-                shifts: 'Cierres de Turno / Arqueos',
-                employees: 'Empleados y Accesos',
-                settings: 'Configuración'
-            };
-            document.getElementById('bo-header-title').innerText = titles[tabId];
-
-            if(tabId === 'sales') loadSalesData();
-            if(tabId === 'items') loadItemsData();
-            if(tabId === 'inventory') loadInventoryData();
-            if(tabId === 'purchases') initPurchasesSelect();
-            if(tabId === 'shifts') loadShiftsData();
+            document.getElementById(`bo-tab-${id}`).classList.remove('hidden');
+            document.getElementById(`bo-nav-${id}`).className = "px-4 py-2 rounded-xl bg-brand-pink text-white shrink-0";
         }
 
-        document.addEventListener("DOMContentLoaded", () => { loadSalesData(); });
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('bo-clock').innerText = now.toLocaleDateString('es-MX', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) + ' • ' + now.toLocaleTimeString('es-MX');
+        }, 1000);
 
-        function loadSalesData() {
-            const shiftHistory = JSON.parse(localStorage.getItem('boba_shift_history')) || [];
-            let totalCash = 0, totalCard = 0;
-            shiftHistory.forEach(sh => { totalCash += sh.cashSales; totalCard += sh.cardSales; });
+        fbDb.ref('.info/connected').on('value', (snap) => {
+            const badge = document.getElementById('bo-cloud-badge');
+            if (snap.val() === true) {
+                badge.className = "px-2.5 py-1 bg-emerald-500/20 text-emerald-200 border border-emerald-400/40 text-xs font-bold rounded-xl";
+                badge.innerText = "☁️ En vivo";
+            } else {
+                badge.className = "px-2.5 py-1 bg-white/10 text-gray-300 text-xs font-bold rounded-xl";
+                badge.innerText = "☁️ Sin conexión";
+            }
+        });
 
-            let gross = totalCash + totalCard;
-            let discounts = 0;
-            let net = Math.max(0, gross - discounts);
-            let estimatedProfit = net * 0.75;
+        fbDb.ref('boba_haus_pos').on('value', (snap) => {
+            cloudData = snap.val() || {};
+            renderAllBackOffice();
+        });
 
-            document.getElementById('bo-gross-sales').innerText = `$${gross.toFixed(2)}`;
-            document.getElementById('bo-cash-sales-card').innerText = `$${totalCash.toFixed(2)}`;
-            document.getElementById('bo-card-sales-card').innerText = `$${totalCard.toFixed(2)}`;
-            document.getElementById('bo-net-sales').innerText = `$${net.toFixed(2)}`;
-            document.getElementById('bo-gross-profit').innerText = `$${estimatedProfit.toFixed(2)}`;
-
-            document.getElementById('bo-payment-cash').innerText = `$${totalCash.toFixed(2)}`;
-            document.getElementById('bo-payment-card').innerText = `$${totalCard.toFixed(2)}`;
-        }
-
-        function loadItemsData() {
-            const productsDB = [
-                { name: 'Otoño Caramelo (Especial)', price: 75, category: 'Temporada' },
-                { name: 'Boba Taro', price: 70, category: 'Boba' },
-                { name: 'Boba Matcha', price: 70, category: 'Boba' },
-                { name: 'Xolot Piña', price: 70, category: 'Xolot' },
-                { name: 'Cerveza Victoria', price: 45, category: 'Fortuna' },
-                { name: 'Soda Italiana Fresa', price: 45, category: 'Soda Italiana' },
-                { name: 'Frappé Cap. Moka', price: 75, category: 'Frappé' },
-                { name: 'Smoothie Mango', price: 70, category: 'Smoothie' },
-                { name: 'Bowl Chico', price: 65, category: 'Bowl' },
-                { name: 'Crepa Nutella', price: 55, category: 'Crepas' },
-                { name: 'Banderilla Ramen Crunch', price: 65, category: 'Banderillas' }
-            ];
-            const tbody = document.getElementById('bo-items-table-body');
-            tbody.innerHTML = '';
-            productsDB.forEach(p => {
-                const tr = document.createElement('tr');
-                tr.className = "border-b hover:bg-gray-50";
-                tr.innerHTML = `
-                    <td class="p-3 font-bold text-gray-800">${p.name}</td>
-                    <td class="p-3 text-gray-500">${p.category}</td>
-                    <td class="p-3 text-right font-bold text-fig-purple">$${p.price.toFixed(2)}</td>
-                `;
-                tbody.appendChild(tr);
+        function getReceiptsMerged() {
+            const map = new Map();
+            const sd = cloudData.shiftData || {};
+            (sd.orders || []).forEach(o => map.set(o.securityCode || (o.orderNum + o.date), o));
+            (cloudData.allReceipts || []).forEach(o => {
+                const k = o.securityCode || (o.orderNum + o.date);
+                if (!map.has(k)) map.set(k, o);
             });
+            return Array.from(map.values());
         }
 
-        function loadInventoryData() {
-            const inventoryDB = JSON.parse(localStorage.getItem('boba_inventory_db')) || [];
-            const tbody = document.getElementById('bo-inventory-table-body');
-            tbody.innerHTML = '';
-            if(inventoryDB.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 italic">No hay datos de inventario sincronizados aún.</td></tr>`;
+        function renderAllBackOffice() {
+            const sd = cloudData.shiftData || { cashSales: 0, cardSales: 0, bobaSales: 0, fortunaSales: 0, refunds: 0, expenses: [], orders: [] };
+            const hist = Array.isArray(cloudData.shiftHistory) ? cloudData.shiftHistory : [];
+            const receipts = getReceiptsMerged();
+
+            const netShift = (sd.cashSales || 0) + (sd.cardSales || 0);
+            const expShift = (sd.expenses || []).reduce((s, e) => s + Number(e.amount || 0), 0);
+            const bobaTotal = (sd.bobaSales || 0) + hist.reduce((s, h) => s + Number(h.bobaSales || 0), 0);
+            const fortunaTotal = (sd.fortunaSales || 0) + hist.reduce((s, h) => s + Number(h.fortunaSales || 0), 0);
+            const allTimeTotal = netShift + hist.reduce((s, h) => s + Number(h.cashSales || 0) + Number(h.cardSales || 0), 0);
+
+            document.getElementById('kpi-net').innerText = `$${netShift.toFixed(2)}`;
+            document.getElementById('kpi-turn-state').innerText = cloudData.shiftOpen ? '🟢 Turno Abierto' : '🔴 Turno Cerrado';
+            document.getElementById('kpi-boba').innerText = `$${(sd.bobaSales || 0).toFixed(2)}`;
+            document.getElementById('kpi-fortuna').innerText = `$${(sd.fortunaSales || 0).toFixed(2)}`;
+            document.getElementById('kpi-expenses').innerText = `$${expShift.toFixed(2)}`;
+            document.getElementById('kpi-refunds').innerText = `$${(sd.refunds || 0).toFixed(2)}`;
+            document.getElementById('kpi-alltime').innerText = `$${allTimeTotal.toFixed(2)}`;
+            document.getElementById('kpi-receipts-count').innerText = receipts.length;
+
+            // Chart Boba vs Fortuna
+            const ctx = document.getElementById('chart-stores').getContext('2d');
+            if (storeChart) storeChart.destroy();
+            storeChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Boba Haus', 'Fortuna'],
+                    datasets: [{
+                        data: [bobaTotal || 0.01, fortunaTotal],
+                        backgroundColor: ['#E88EAF', '#D97706'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // Top Products
+            const counts = {};
+            receipts.filter(r => !r.canceled).forEach(r => {
+                (r.items || []).forEach(it => {
+                    counts[it.name] = (counts[it.name] || 0) + 1;
+                });
+            });
+            const topArr = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+            const topEl = document.getElementById('top-products-list');
+            if (topArr.length === 0) {
+                topEl.innerHTML = `<p class="text-gray-400 italic">Sin ventas registradas todavía.</p>`;
+            } else {
+                topEl.innerHTML = topArr.map(([name, qty], i) => `
+                    <div class="flex justify-between items-center bg-[#FFF8F2] p-2 rounded-xl border border-[#E9D6C7]">
+                        <span class="font-bold text-[#5B3545]">#${i+1} ${name}</span>
+                        <span class="bg-pink-100 text-brand-pink px-2 py-0.5 rounded-full font-bold">${qty} pzas</span>
+                    </div>
+                `).join('');
+            }
+
+            // Low Stock
+            const inv = Array.isArray(cloudData.inventoryDB) ? cloudData.inventoryDB : [];
+            const low = inv.filter(i => i.stock <= (i.min || 0));
+            document.getElementById('bo-low-count').innerText = low.length;
+            const lowGrid = document.getElementById('bo-low-stock-grid');
+            if (low.length === 0) {
+                lowGrid.innerHTML = `<p class="text-emerald-600 font-bold col-span-3">✅ Todos los insumos están por encima del mínimo.</p>`;
+            } else {
+                lowGrid.innerHTML = low.map(i => `
+                    <div class="p-2.5 bg-red-50 border border-red-200 rounded-xl flex justify-between items-center">
+                        <span class="font-bold text-red-900">⚠️ ${i.name}</span>
+                        <strong class="text-red-600">${i.stock} ${i.unit}</strong>
+                    </div>
+                `).join('');
+            }
+
+            renderBoReceipts();
+            renderBoShifts();
+            renderBoInventory();
+            renderBoCustomers();
+        }
+
+        function renderBoReceipts() {
+            const q = (document.getElementById('bo-receipts-search')?.value || '').toLowerCase().trim();
+            let list = getReceiptsMerged();
+            if (q) {
+                list = list.filter(o =>
+                    String(o.orderNum || '').toLowerCase().includes(q) ||
+                    String(o.securityCode || '').toLowerCase().includes(q) ||
+                    String(o.cashier || '').toLowerCase().includes(q) ||
+                    (o.items || []).some(i => i.name.toLowerCase().includes(q))
+                );
+            }
+            const el = document.getElementById('bo-receipts-list');
+            if (list.length === 0) {
+                el.innerHTML = `<p class="text-center text-gray-400 italic py-6">Sin recibos encontrados.</p>`;
                 return;
             }
-            inventoryDB.forEach(item => {
-                const isLow = item.stock <= (item.min || 0);
-                const tr = document.createElement('tr');
-                tr.className = isLow ? "bg-red-50 border-b" : "border-b hover:bg-gray-50";
-                tr.innerHTML = `
-                    <td class="p-3 font-bold text-gray-800">${item.name}</td>
-                    <td class="p-3 font-bold ${isLow ? 'text-red-600' : 'text-gray-700'}">${item.stock}</td>
-                    <td class="p-3 text-gray-500">${item.unit}</td>
-                    <td class="p-3 text-center">
-                        ${isLow ? '<span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">⚠️ Stock Bajo</span>' : '<span class="text-emerald-600 font-bold text-[10px]">Normal ✅</span>'}
+            el.innerHTML = list.map(o => `
+                <div class="p-3 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${o.canceled ? 'bg-red-50 border-red-200' : 'bg-[#FFF8F2] border-[#E9D6C7]'}">
+                    <div>
+                        <p class="font-bold text-[#5B3545]">
+                            #${o.orderNum} <span class="font-mono text-[10px] bg-white px-1.5 py-0.5 rounded border">${o.securityCode || ('BH-' + o.orderNum)}</span>
+                            ${o.store === 'fortuna' ? '<span class="text-amber-700">🍻 Fortuna</span>' : '<span class="text-brand-pink">🧋 Boba Haus</span>'}
+                            ${o.canceled ? '<span class="bg-red-600 text-white px-1.5 py-0.5 rounded text-[10px]">REEMBOLSADO</span>' : ''}
+                        </p>
+                        <p class="text-[11px] text-gray-500">${o.date} • Cajero: ${o.cashier || 'Caja'} • ${o.paymentLabel}</p>
+                        ${o.refundReason ? `<p class="text-[10px] text-red-600 font-bold">Motivo: ${o.refundReason}</p>` : ''}
+                    </div>
+                    <strong class="text-base text-brand-pink">$${Number(o.total || 0).toFixed(2)}</strong>
+                </div>
+            `).join('');
+        }
+
+        function renderBoShifts() {
+            const hist = Array.isArray(cloudData.shiftHistory) ? cloudData.shiftHistory : [];
+            const el = document.getElementById('bo-shifts-list');
+            if (hist.length === 0) {
+                el.innerHTML = `<p class="text-gray-400 italic">No hay cierres de turno registrados todavía.</p>`;
+                return;
+            }
+            el.innerHTML = hist.map((sh, idx) => `
+                <div class="p-4 bg-[#FFF8F2] border border-[#E9D6C7] rounded-2xl space-y-1.5">
+                    <div class="flex justify-between font-bold text-[#5B3545]">
+                        <span>Cierre #${hist.length - idx} • ${sh.date}</span>
+                        <span class="text-brand-pink">Total: $${(Number(sh.cashSales||0) + Number(sh.cardSales||0)).toFixed(2)}</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-gray-600">
+                        <span>Fondo: $${Number(sh.fund||0).toFixed(2)}</span>
+                        <span>Efectivo: $${Number(sh.cashSales||0).toFixed(2)}</span>
+                        <span>Tarjeta: $${Number(sh.cardSales||0).toFixed(2)}</span>
+                        <span>Gastos: $${Number(sh.expenses||0).toFixed(2)}</span>
+                        <span class="text-brand-pink font-bold">🧋 Boba: $${Number(sh.bobaSales||0).toFixed(2)}</span>
+                        <span class="text-amber-700 font-bold">🍻 Fortuna: $${Number(sh.fortunaSales||0).toFixed(2)}</span>
+                        <span class="${sh.diff === 0 ? 'text-emerald-600 font-bold' : 'text-red-600 font-bold'}">Diferencia: $${Number(sh.diff||0).toFixed(2)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderBoInventory() {
+            const inv = Array.isArray(cloudData.inventoryDB) ? cloudData.inventoryDB : [];
+            const tbody = document.getElementById('bo-inv-tbody');
+            tbody.innerHTML = inv.map((it, idx) => `
+                <tr class="${it.stock <= (it.min || 0) ? 'bg-red-50' : ''}">
+                    <td class="p-2.5 font-bold text-[#5B3545]">${it.name} <span class="text-[10px] text-gray-400">(${it.unit})</span></td>
+                    <td class="p-2.5"><input type="number" id="bo-stock-${idx}" value="${it.stock}" class="w-24 p-1 border rounded-lg font-bold bg-white"></td>
+                    <td class="p-2.5 text-gray-500">${it.min || 0}</td>
+                    <td class="p-2.5 text-center">
+                        <button onclick="saveRemoteStock(${idx})" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px]">Actualizar</button>
                     </td>
-                `;
-                tbody.appendChild(tr);
-            });
+                </tr>
+            `).join('');
         }
 
-        function initPurchasesSelect() {
-            const inventoryDB = JSON.parse(localStorage.getItem('boba_inventory_db')) || [];
-            const select = document.getElementById('po-item-select');
-            select.innerHTML = '';
-            inventoryDB.forEach((item, idx) => {
-                const opt = document.createElement('option');
-                opt.value = idx;
-                opt.textContent = `${item.name} (Actual: ${item.stock} ${item.unit})`;
-                select.appendChild(opt);
-            });
+        function saveRemoteStock(idx) {
+            const val = parseFloat(document.getElementById(`bo-stock-${idx}`).value);
+            if (isNaN(val)) return alert('Valor inválido');
+            fbDb.ref(`boba_haus_pos/inventoryDB/${idx}/stock`).set(val)
+                .then(() => alert('✅ Stock actualizado en la nube y enviado a la caja.'))
+                .catch(err => alert('Error: ' + err.message));
         }
 
-        function receivePurchaseOrder() {
-            const idx = document.getElementById('po-item-select').value;
-            const qty = parseFloat(document.getElementById('po-qty-input').value);
-            if(isNaN(qty) || qty <= 0) return alert('Ingrese una cantidad válida.');
-            
-            let inventoryDB = JSON.parse(localStorage.getItem('boba_inventory_db')) || [];
-            if(inventoryDB[idx]) {
-                inventoryDB[idx].stock += qty;
-                localStorage.setItem('boba_inventory_db', JSON.stringify(inventoryDB));
-                document.getElementById('po-qty-input').value = '';
-                alert(`✅ ¡Entrada registrada con éxito! Stock actualizado para ${inventoryDB[idx].name}.`);
-                initPurchasesSelect();
-            }
-        }
-
-        function loadShiftsData() {
-            const shiftHistory = JSON.parse(localStorage.getItem('boba_shift_history')) || [];
-            const container = document.getElementById('bo-shift-history-container');
-            if (shiftHistory.length === 0) {
-                container.innerHTML = `<p class="text-gray-400 text-xs italic">No hay cierres de turno registrados todavía.</p>`;
-                return;
-            }
-            container.innerHTML = '';
-            shiftHistory.forEach((sh, idx) => {
-                const div = document.createElement('div');
-                div.className = "p-4 bg-gray-50 border rounded-2xl space-y-2";
-                div.innerHTML = `
-                    <div class="flex justify-between font-bold text-gray-800 text-xs">
-                        <span>Cierre de Turno #${shiftHistory.length - idx} — ${sh.date}</span>
-                        <span class="text-fig-purple">Netas: $${(sh.cashSales + sh.cardSales - sh.expenses).toFixed(2)}</span>
+        function renderBoCustomers() {
+            const q = (document.getElementById('bo-cust-search')?.value || '').toLowerCase().trim();
+            let custs = Array.isArray(cloudData.customersDB) ? [...cloudData.customersDB] : [];
+            document.getElementById('bo-cust-count').innerText = custs.length;
+            custs.sort((a, b) => (b.spent || 0) - (a.spent || 0));
+            if (q) custs = custs.filter(c => (c.name||'').toLowerCase().includes(q) || (c.phone||'').includes(q));
+            const el = document.getElementById('bo-cust-list');
+            el.innerHTML = custs.slice(0, 100).map(c => `
+                <div class="p-2.5 bg-[#FFF8F2] border border-[#E9D6C7] rounded-xl flex justify-between items-center">
+                    <div>
+                        <strong class="text-[#5B3545]">${c.name}</strong>
+                        <p class="text-[10px] text-gray-500">Tel: ${c.phone || 'N/A'} • Visitas: ${c.visits || 0}</p>
                     </div>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 text-gray-600 text-[11px] gap-2">
-                        <div>Fondo Inicial: <strong>$${sh.fund.toFixed(2)}</strong></div>
-                        <div>Ventas Efectivo: <strong class="text-emerald-600">$${sh.cashSales.toFixed(2)}</strong></div>
-                        <div>Gastos de Turno: <strong class="text-red-600">$${sh.expenses.toFixed(2)}</strong></div>
-                        <div>Diferencia Arqueo: <strong class="${sh.diff === 0 ? 'text-emerald-600' : 'text-fig-amber'}">$${sh.diff.toFixed(2)}</strong></div>
+                    <div class="text-right">
+                        <p class="font-bold text-brand-pink">$${Number(c.spent || 0).toFixed(2)}</p>
+                        <p class="text-[10px] text-emerald-700 font-bold">${Number(c.points || 0).toFixed(2)} pts</p>
                     </div>
-                `;
-                container.appendChild(div);
-            });
+                </div>
+            `).join('');
+        }
+
+        function exportBoReceiptsCSV() {
+            const rows = getReceiptsMerged().map(o => [
+                o.orderNum, o.securityCode || ('BH-' + o.orderNum), `"${o.date}"`,
+                o.store === 'fortuna' ? 'Fortuna' : 'Boba Haus', `"${o.cashier || 'Caja'}"`,
+                `"${o.paymentLabel}"`, Number(o.total || 0).toFixed(2), o.canceled ? 'REEMBOLSADO' : 'PAGADO',
+                `"${(o.refundReason || '').replace(/"/g, '""')}"`
+            ]);
+            const csv = "\uFEFF" + ['Folio,Codigo,Fecha,Establecimiento,Cajero,Pago,Total,Estado,Motivo', ...rows.map(r => r.join(','))].join('\n');
+            downloadCSV(csv, `auditoria_recibos_${new Date().toISOString().slice(0,10)}.csv`);
+        }
+
+        function exportBoCustomersCSV() {
+            const custs = Array.isArray(cloudData.customersDB) ? cloudData.customersDB : [];
+            const rows = custs.map(c => [c.id, `"${(c.name||'').replace(/"/g,'""')}"`, `"${c.phone||''}"`, c.visits||0, Number(c.spent||0).toFixed(2), Number(c.points||0).toFixed(2)]);
+            const csv = "\uFEFF" + ['ID,Nombre,Telefono,Visitas,Gastado,Puntos', ...rows.map(r => r.join(','))].join('\n');
+            downloadCSV(csv, `clientes_boba_haus_${new Date().toISOString().slice(0,10)}.csv`);
+        }
+
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = filename; a.click();
+            URL.revokeObjectURL(url);
         }
     </script>
 </body>
