@@ -13,6 +13,9 @@
     <link rel="icon" type="image/png" href="./icon-192.png">
     <link rel="apple-touch-icon" href="./icon-192.png">
 
+        <!-- Firebase Realtime Database SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -85,7 +88,7 @@
         </div>
 
         <div class="p-3 border-t border-[#422632] text-[11px] text-[#E9D6C7] text-center">
-            Boba Haus POS v4.8 (App PWA)
+            Boba Haus POS v5.0 (Nube)
         </div>
     </aside>
 
@@ -101,6 +104,9 @@
                 <h1 id="header-section-title" class="text-base font-bold text-[#5B3545]">Punto de Venta</h1>
             </div>
             <div class="flex items-center space-x-2">
+                <span id="cloud-sync-badge" class="px-2.5 py-1 bg-gray-100 text-gray-600 text-[11px] font-bold rounded-xl border border-gray-200 flex items-center space-x-1" title="Estado de sincronización en la nube">
+                    <i class="fa-solid fa-cloud"></i> <span>Conectando...</span>
+                </span>
                 <button id="btn-install-pwa" onclick="installPWA()" class="hidden px-3 py-1.5 bg-brand-pink hover:bg-[#d67999] text-white text-xs font-bold rounded-xl shadow flex items-center space-x-1 transition">
                     <i class="fa-solid fa-download"></i>
                     <span>Instalar App</span>
@@ -300,8 +306,11 @@
                             <input type="text" id="customer-search-input" onkeyup="filterCustomers()" placeholder="🔍 Buscar entre los clientes..." class="w-full p-2 bg-white border border-[#E9D6C7] rounded-xl text-xs font-semibold outline-none focus:border-brand-pink">
                             <div id="customer-dropdown" class="absolute left-0 right-0 top-full mt-1 bg-white border border-[#E9D6C7] rounded-xl shadow-xl max-h-40 overflow-y-auto hidden z-40"></div>
                         </div>
-                        <div id="selected-customer-display" class="hidden text-[11px] font-bold text-emerald-700 bg-emerald-50 p-1.5 rounded-lg border border-emerald-200 flex justify-between items-center">
-                            <span>👤 <span id="sel-cust-name"></span> (<span id="sel-cust-phone"></span>) - Puntos: <span id="sel-cust-pts">0</span></span>
+                        <div id="selected-customer-display" class="hidden text-[11px] font-bold text-emerald-700 bg-emerald-50 p-1.5 rounded-lg border border-emerald-200 flex justify-between items-center gap-1">
+                            <span class="truncate">👤 <span id="sel-cust-name"></span> (<span id="sel-cust-phone"></span>) • <span id="sel-cust-pts">0</span> pts</span>
+                            <button type="button" onclick="redeemCustomerPoints()" id="btn-redeem-points" class="shrink-0 px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[10px] font-bold shadow-sm transition">
+                                🎁 Canjear
+                            </button>
                         </div>
                     </div>
 
@@ -387,9 +396,35 @@
                         <h3 class="font-bold text-sm text-[#5B3545]"><i class="fa-solid fa-chart-line mr-1 text-brand-pink"></i> Resumen de ventas</h3>
                         <div class="space-y-2 text-xs divide-y divide-[#E9D6C7]">
                             <div class="flex justify-between pt-1"><span>Ventas brutas:</span><strong id="rep-gross-sales">$0.00</strong></div>
-                            <div class="flex justify-between pt-1"><span>Reembolsos:</span><strong>$0.00</strong></div>
+                            <div class="flex justify-between pt-1"><span>Cancelaciones / Reembolsos:</span><strong id="rep-sales-refunds" class="text-red-600">$0.00</strong></div>
                             <div class="flex justify-between pt-1"><span>Descuentos:</span><strong id="rep-discounts" class="text-emerald-600">$0.00</strong></div>
                             <div class="flex justify-between pt-2 text-sm font-bold text-brand-pink border-t border-[#E9D6C7]"><span>Ventas netas:</span><span id="rep-net-sales">$0.00</span></div>
+                        </div>
+                    </div>
+
+                    <!-- DESGLOSE POR ESTABLECIMIENTO (BOBA HAUS VS FORTUNA) -->
+                    <div class="bg-amber-50/60 p-5 rounded-2xl border border-amber-200 space-y-3">
+                        <h3 class="font-bold text-sm text-[#5B3545]"><i class="fa-solid fa-store mr-1 text-amber-600"></i> Desglose por Establecimiento</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                            <div class="bg-white p-3 rounded-xl border border-[#E9D6C7] flex justify-between items-center">
+                                <span class="font-bold text-[#5B3545]">🧋 Boba Haus:</span>
+                                <strong id="rep-boba-sales" class="text-base text-brand-pink">$0.00</strong>
+                            </div>
+                            <div class="bg-white p-3 rounded-xl border border-amber-200 flex justify-between items-center">
+                                <span class="font-bold text-amber-900">🍻 Fortuna:</span>
+                                <strong id="rep-fortuna-sales" class="text-base text-amber-700">$0.00</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HISTORIAL DE TICKETS DEL TURNO ACTUAL -->
+                    <div class="bg-[#FFF8F2] p-5 rounded-2xl border border-[#E9D6C7] space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold text-sm text-[#5B3545]"><i class="fa-solid fa-receipt mr-1 text-brand-pink"></i> Tickets del Turno Actual</h3>
+                            <span class="text-[10px] text-gray-500">Reimprime o cancela (con PIN Dueña)</span>
+                        </div>
+                        <div id="shift-orders-container" class="space-y-2 text-xs max-h-64 overflow-y-auto">
+                            <p class="text-gray-400 italic">No hay tickets cobrados en este turno todavía.</p>
                         </div>
                     </div>
 
@@ -877,6 +912,123 @@
             deferredPrompt = null;
         });
 
+        // --- SINCRONIZACIÓN EN LA NUBE (FIREBASE REALTIME DATABASE) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAZh8BnPHLRIPtT3vAfPJ4d6jiXOAPSgkc",
+            authDomain: "boba-haus-pos.firebaseapp.com",
+            databaseURL: "https://boba-haus-pos-default-rtdb.firebaseio.com",
+            projectId: "boba-haus-pos",
+            storageBucket: "boba-haus-pos.firebasestorage.app",
+            messagingSenderId: "124050691405",
+            appId: "1:124050691405:web:bd157c67a11de03d629304",
+            measurementId: "G-JCSWE1FHT0"
+        };
+
+        let fbDb = null;
+        let isApplyingCloudUpdate = false;
+        let cloudInitialized = false;
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+            fbDb = firebase.database();
+
+            // Monitor connection status
+            fbDb.ref('.info/connected').on('value', (snap) => {
+                const badge = document.getElementById('cloud-sync-badge');
+                if (!badge) return;
+                if (snap.val() === true) {
+                    badge.className = "px-2.5 py-1 bg-emerald-100 text-emerald-800 text-[11px] font-bold rounded-xl border border-emerald-300 flex items-center space-x-1";
+                    badge.innerHTML = '<i class="fa-solid fa-cloud"></i> <span>En vivo</span>';
+                } else {
+                    badge.className = "px-2.5 py-1 bg-gray-100 text-gray-500 text-[11px] font-bold rounded-xl border border-gray-300 flex items-center space-x-1";
+                    badge.innerHTML = '<i class="fa-solid fa-cloud-slash"></i> <span>Local</span>';
+                }
+            });
+
+            // Listen for real-time updates from any device
+            fbDb.ref('boba_haus_pos').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (!data) {
+                    // First time: upload local state to initialize cloud
+                    cloudInitialized = true;
+                    syncToCloud();
+                    return;
+                }
+                cloudInitialized = true;
+                isApplyingCloudUpdate = true;
+
+                if (typeof data.orderCounter !== 'undefined') {
+                    orderCounter = data.orderCounter;
+                    localStorage.setItem('boba_orderCounter', orderCounter);
+            syncToCloud();
+                    const ordEl = document.getElementById('order-id-display');
+                    if (ordEl) ordEl.innerText = String(orderCounter).padStart(4, '0');
+                }
+                if (typeof data.initialFund !== 'undefined') {
+                    initialFund = data.initialFund;
+                    localStorage.setItem('boba_initialFund', initialFund);
+                }
+                if (typeof data.shiftOpen !== 'undefined') {
+                    shiftOpen = !!data.shiftOpen;
+                    localStorage.setItem('boba_shiftOpen', String(shiftOpen));
+                    const turnEl = document.getElementById('header-turn-status');
+                    if (turnEl) turnEl.innerText = shiftOpen ? 'Turno Abierto' : 'Turno Cerrado';
+                }
+                if (data.shiftData) {
+                    shiftData = {
+                        cashSales: data.shiftData.cashSales || 0,
+                        cardSales: data.shiftData.cardSales || 0,
+                        totalSales: data.shiftData.totalSales || 0,
+                        bobaSales: data.shiftData.bobaSales || 0,
+                        fortunaSales: data.shiftData.fortunaSales || 0,
+                        refunds: data.shiftData.refunds || 0,
+                        expenses: Array.isArray(data.shiftData.expenses) ? data.shiftData.expenses : [],
+                        orders: Array.isArray(data.shiftData.orders) ? data.shiftData.orders : []
+                    };
+                    localStorage.setItem('boba_shiftData', JSON.stringify(shiftData));
+                }
+                if (Array.isArray(data.shiftHistory)) {
+                    shiftHistory = data.shiftHistory;
+                    localStorage.setItem('boba_shiftHistory', JSON.stringify(shiftHistory));
+            syncToCloud();
+                }
+                if (Array.isArray(data.inventoryDB)) {
+                    inventoryDB = data.inventoryDB;
+                    localStorage.setItem('boba_inventoryDB', JSON.stringify(inventoryDB));
+                }
+                if (Array.isArray(data.customersDB)) {
+                    customersDB = data.customersDB;
+                    localStorage.setItem('boba_customersDB_full', JSON.stringify(customersDB));
+                    const cntEl = document.getElementById('customers-total-count');
+                    if (cntEl) cntEl.innerText = customersDB.length;
+                }
+
+                // Refresh active UI panels
+                if (typeof updateTreasuryDisplay === 'function') updateTreasuryDisplay();
+                if (typeof renderShiftHistory === 'function') renderShiftHistory();
+                if (typeof renderInventoryTable === 'function') renderInventoryTable();
+
+                isApplyingCloudUpdate = false;
+            });
+        } catch (err) {
+            console.error('Error iniciando Firebase:', err);
+        }
+
+        function syncToCloud() {
+            if (!fbDb || isApplyingCloudUpdate) return;
+            const payload = {
+                orderCounter,
+                initialFund,
+                shiftOpen,
+                shiftData,
+                shiftHistory,
+                inventoryDB,
+                customersDB,
+                updatedAt: Date.now()
+            };
+            fbDb.ref('boba_haus_pos').set(payload).catch(err => console.error('Error subiendo a Firebase:', err));
+        }
+
         // --- LÓGICA DEL POS ---
         let selectedPaymentMethod = 'efectivo';
         let orderCounter = parseInt(localStorage.getItem('boba_orderCounter')) || 1;
@@ -887,7 +1039,13 @@
         let shiftHistory = JSON.parse(localStorage.getItem('boba_shiftHistory')) || [];
         let pausedOrders = JSON.parse(localStorage.getItem('boba_pausedOrders')) || [];
 
-        let shiftData = JSON.parse(localStorage.getItem('boba_shiftData')) || { cashSales: 0, cardSales: 0, totalSales: 0, expenses: [] };
+        let shiftData = JSON.parse(localStorage.getItem('boba_shiftData')) || { cashSales: 0, cardSales: 0, totalSales: 0, bobaSales: 0, fortunaSales: 0, refunds: 0, expenses: [], orders: [] };
+        if (typeof shiftData.bobaSales === 'undefined') shiftData.bobaSales = 0;
+        if (typeof shiftData.fortunaSales === 'undefined') shiftData.fortunaSales = 0;
+        if (typeof shiftData.refunds === 'undefined') shiftData.refunds = 0;
+        if (!Array.isArray(shiftData.orders)) shiftData.orders = [];
+        let redeemedPoints = 0;
+        let isReprintingMode = false;
 
         let customersDB = JSON.parse(localStorage.getItem('boba_customersDB_full')) || [
             { id: 4585243, name: "Uriel Arce Salazar", phone: "2751002364", address: "", notes: "", visits: 35, spent: 2900.0, points: 90.0 },
@@ -1394,6 +1552,7 @@
                     renderInventoryTable();
                     updateTreasuryDisplay();
                     renderShiftHistory();
+                    syncToCloud();
                     alert('✅ ¡Respaldo restaurado con éxito!');
                 } catch (err) {
                     alert('❌ Error al leer el archivo de respaldo.');
@@ -1455,6 +1614,8 @@
 
         function selectCustomer(cust) {
             selectedCustomer = cust;
+            redeemedPoints = 0;
+            updateRedeemButtonUI();
             document.getElementById('customer-search-input').value = "";
             document.getElementById('customer-dropdown').classList.add('hidden');
             document.getElementById('customer-search-input').classList.add('hidden');
@@ -1462,15 +1623,57 @@
             document.getElementById('btn-clear-customer').classList.remove('hidden');
             document.getElementById('sel-cust-name').innerText = cust.name;
             document.getElementById('sel-cust-phone').innerText = cust.phone || 'Sin tel';
-            document.getElementById('sel-cust-pts').innerText = cust.points;
+            document.getElementById('sel-cust-pts').innerText = Number(cust.points || 0).toFixed(2);
+            renderCart();
         }
 
         function clearSelectedCustomer() {
             selectedCustomer = null;
+            redeemedPoints = 0;
+            updateRedeemButtonUI();
             document.getElementById('selected-customer-display').classList.add('hidden');
             document.getElementById('btn-clear-customer').classList.add('hidden');
             document.getElementById('customer-search-input').classList.remove('hidden');
             document.getElementById('customer-search-input').value = "";
+            renderCart();
+        }
+
+        function updateRedeemButtonUI() {
+            const btn = document.getElementById('btn-redeem-points');
+            if (!btn) return;
+            if (redeemedPoints > 0) {
+                btn.innerText = `✅ -$${redeemedPoints.toFixed(0)} pts`;
+                btn.className = "shrink-0 px-2 py-0.5 bg-amber-500 hover:bg-amber-600 text-white rounded-md text-[10px] font-bold shadow-sm transition";
+            } else {
+                btn.innerText = "🎁 Canjear";
+                btn.className = "shrink-0 px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[10px] font-bold shadow-sm transition";
+            }
+        }
+
+        function redeemCustomerPoints() {
+            if (!selectedCustomer) return;
+            if (currentCart.length === 0) return alert('Agrega productos al carrito primero para canjear puntos.');
+            const available = Number(selectedCustomer.points || 0);
+            if (available <= 0) return alert('Este cliente no tiene puntos disponibles para canjear.');
+
+            const currentSubtotal = currentCart.reduce((s, i) => s + i.price, 0);
+            const maxUsable = Math.max(0, currentSubtotal - discountVal - (window.lastHappyDiscount || 0));
+            const suggested = Math.min(Math.floor(available), Math.floor(maxUsable));
+
+            const input = prompt(
+                `Saldo de ${selectedCustomer.name}: ${available.toFixed(2)} pts (1 punto = $1.00).
+¿Cuántos puntos deseas canjear en esta orden? (Escribe 0 para quitar el canje)`,
+                redeemedPoints > 0 ? String(redeemedPoints) : String(suggested)
+            );
+            if (input === null) return;
+            const val = parseFloat(input);
+            if (isNaN(val) || val < 0) return alert('Ingresa una cantidad válida.');
+            if (val > available) return alert(`No puedes canjear más de ${available.toFixed(2)} puntos.`);
+            if (val > maxUsable) return alert(`El canje no puede superar el total por pagar ($${maxUsable.toFixed(2)}).`);
+
+            redeemedPoints = val;
+            updateRedeemButtonUI();
+            renderCart();
         }
 
         function openNewCustomerModal() {
@@ -1509,6 +1712,7 @@
             document.getElementById('customers-total-count').innerText = customersDB.length;
             closeNewCustomerModal();
             selectCustomer(newCust);
+            syncToCloud();
             alert(`✅ ¡Cliente "${name}" registrado con éxito y seleccionado!`);
         }
 
@@ -1600,6 +1804,7 @@
             shiftOpen = true;
             localStorage.setItem('boba_initialFund', initialFund);
             localStorage.setItem('boba_shiftOpen', 'true');
+            syncToCloud();
             document.getElementById('header-turn-status').innerText = "Turno Abierto";
             closeTurnModal();
             updateTreasuryDisplay();
@@ -1650,6 +1855,9 @@
                 fund: initialFund,
                 cashSales: shiftData.cashSales,
                 cardSales: shiftData.cardSales,
+                bobaSales: shiftData.bobaSales || 0,
+                fortunaSales: shiftData.fortunaSales || 0,
+                refunds: shiftData.refunds || 0,
                 expenses: totalExpenses,
                 expected: expectedCash,
                 counted: counted,
@@ -1657,7 +1865,7 @@
             });
 
             shiftOpen = false;
-            shiftData = { cashSales: 0, cardSales: 0, totalSales: 0, expenses: [] };
+            shiftData = { cashSales: 0, cardSales: 0, totalSales: 0, bobaSales: 0, fortunaSales: 0, refunds: 0, expenses: [], orders: [] };
             
             localStorage.setItem('boba_shiftOpen', 'false');
             localStorage.setItem('boba_shiftData', JSON.stringify(shiftData));
@@ -1690,6 +1898,8 @@
                         <span>Ventas Cash: $${sh.cashSales.toFixed(2)}</span>
                         <span>Ventas Tarjeta: $${(sh.cardSales || 0).toFixed(2)}</span>
                         <span>Gastos turno: $${sh.expenses.toFixed(2)}</span>
+                        <span class="text-brand-pink font-semibold">🧋 Boba Haus: $${(sh.bobaSales || 0).toFixed(2)}</span>
+                        <span class="text-amber-700 font-semibold">🍻 Fortuna: $${(sh.fortunaSales || 0).toFixed(2)}</span>
                         <span class="${sh.diff === 0 ? 'text-emerald-600 font-bold' : sh.diff > 0 ? 'text-blue-600 font-bold' : 'text-red-600 font-bold'}">Dif: $${sh.diff.toFixed(2)}</span>
                     </div>
                 `;
@@ -1708,6 +1918,7 @@
             document.getElementById('expense-amount').value = '';
             updateTreasuryDisplay();
             renderExpensesList();
+            syncToCloud();
             alert('¡Gasto registrado en el turno!');
         }
 
@@ -1729,19 +1940,131 @@
         function updateTreasuryDisplay() {
             let totalExpenses = shiftData.expenses.reduce((sum, e) => sum + e.amount, 0);
             let grossSales = shiftData.cashSales + shiftData.cardSales;
+            let refunds = shiftData.refunds || 0;
             let expectedCash = initialFund + shiftData.cashSales - totalExpenses;
 
             document.getElementById('rep-fund').innerText = `$${initialFund.toFixed(2)}`;
             document.getElementById('rep-cash-sales').innerText = `$${shiftData.cashSales.toFixed(2)}`;
             document.getElementById('rep-card-sales').innerText = `$${shiftData.cardSales.toFixed(2)}`;
-            document.getElementById('rep-refunds').innerText = `$0.00`;
+            document.getElementById('rep-refunds').innerText = `$${refunds.toFixed(2)}`;
             document.getElementById('rep-expenses').innerText = `$${totalExpenses.toFixed(2)}`;
             document.getElementById('rep-expected-cash').innerText = `$${expectedCash.toFixed(2)}`;
 
             document.getElementById('rep-gross-sales').innerText = `$${grossSales.toFixed(2)}`;
+            document.getElementById('rep-sales-refunds').innerText = `$${refunds.toFixed(2)}`;
             document.getElementById('rep-discounts').innerText = `$${(discountVal + (window.lastHappyDiscount || 0)).toFixed(2)}`;
-            document.getElementById('rep-net-sales').innerText = `$${Math.max(0, grossSales - (discountVal + (window.lastHappyDiscount || 0))).toFixed(2)}`;
+            document.getElementById('rep-net-sales').innerText = `$${Math.max(0, grossSales).toFixed(2)}`;
+
+            document.getElementById('rep-boba-sales').innerText = `$${(shiftData.bobaSales || 0).toFixed(2)}`;
+            document.getElementById('rep-fortuna-sales').innerText = `$${(shiftData.fortunaSales || 0).toFixed(2)}`;
+
             renderExpensesList();
+            renderShiftOrders();
+        }
+
+        function renderShiftOrders() {
+            const container = document.getElementById('shift-orders-container');
+            if (!container) return;
+            const orders = shiftData.orders || [];
+            if (orders.length === 0) {
+                container.innerHTML = `<p class="text-gray-400 italic">No hay tickets cobrados en este turno todavía.</p>`;
+                return;
+            }
+            container.innerHTML = '';
+            orders.forEach((ord, idx) => {
+                const storeBadge = ord.store === 'fortuna'
+                    ? `<span class="bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded text-[10px] font-bold">🍻 Fortuna</span>`
+                    : `<span class="bg-pink-100 text-brand-pink px-1.5 py-0.5 rounded text-[10px] font-bold">🧋 Boba Haus</span>`;
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${ord.canceled ? 'bg-red-50/70 border-red-200 opacity-75' : 'bg-white border-[#E9D6C7]'}`;
+                div.innerHTML = `
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <strong class="text-[#5B3545]">Orden #${ord.orderNum}</strong>
+                            ${storeBadge}
+                            ${ord.canceled ? '<span class="bg-red-600 text-white px-1.5 py-0.5 rounded text-[10px] font-bold">CANCELADA</span>' : ''}
+                            <span class="text-[10px] text-gray-400">${ord.date}</span>
+                        </div>
+                        <p class="text-[11px] text-gray-600 mt-0.5">${ord.items.length} art. • <strong>$${ord.total.toFixed(2)}</strong> • ${ord.paymentLabel}</p>
+                    </div>
+                    <div class="flex items-center space-x-1.5 shrink-0">
+                        <button onclick="reprintOrder(${idx})" class="px-2.5 py-1.5 bg-[#5B3545] hover:bg-[#422632] text-white rounded-lg text-[10px] font-bold">
+                            🖨️ Reimprimir
+                        </button>
+                        ${!ord.canceled ? `
+                            <button onclick="cancelOrderWithPin(${idx})" class="px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-[10px] font-bold">
+                                ❌ Cancelar
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function reprintOrder(idx) {
+            const ord = (shiftData.orders || [])[idx];
+            if (!ord) return;
+            isReprintingMode = true;
+
+            document.getElementById('rec-order-num').innerText = ord.orderNum;
+            document.getElementById('rec-order-mode').innerText = ord.mode;
+            if (ord.customerName) {
+                document.getElementById('rec-customer-line').classList.remove('hidden');
+                document.getElementById('rec-customer-name').innerText = ord.customerName;
+            } else {
+                document.getElementById('rec-customer-line').classList.add('hidden');
+            }
+            document.getElementById('receipt-date').innerText = ord.date + (ord.canceled ? ' [CANCELADA]' : ' [REIMPRESIÓN]');
+            document.getElementById('rec-subtotal').innerText = ord.subtotal;
+            document.getElementById('rec-discount').innerText = ord.discount;
+            document.getElementById('rec-total').innerText = ord.totalText;
+            document.getElementById('rec-payment').innerText = ord.paymentLabel;
+
+            if (ord.paymentMethod === 'efectivo' || (ord.paymentMethod === 'mixto' && ord.changeVal > 0)) {
+                document.getElementById('rec-change-line').style.display = 'block';
+                document.getElementById('rec-change').innerText = `$${(ord.changeVal || 0).toFixed(2)}`;
+            } else {
+                document.getElementById('rec-change-line').style.display = 'none';
+            }
+
+            const recItemsList = document.getElementById('rec-items-list');
+            recItemsList.innerHTML = '';
+            ord.items.forEach(item => {
+                const p = document.createElement('div');
+                p.className = "flex justify-between text-[10px]";
+                p.innerHTML = `<span>1x ${item.name}</span><span>$${item.price.toFixed(2)}</span>`;
+                recItemsList.appendChild(p);
+            });
+
+            document.getElementById('receipt-modal').classList.remove('hidden');
+        }
+
+        function cancelOrderWithPin(idx) {
+            const ord = (shiftData.orders || [])[idx];
+            if (!ord || ord.canceled) return;
+            const pin = prompt(`🔒 Ingresa el PIN de Dueña para cancelar/reembolsar la Orden #${ord.orderNum} ($${ord.total.toFixed(2)}):`);
+            if (pin === null) return;
+            if (pin.trim() !== '2107') {
+                return alert('❌ PIN incorrecto. Solo la dueña puede cancelar tickets.');
+            }
+
+            ord.canceled = true;
+            shiftData.refunds = (shiftData.refunds || 0) + ord.total;
+            shiftData.cashSales = Math.max(0, shiftData.cashSales - (ord.cashPart || 0));
+            shiftData.cardSales = Math.max(0, shiftData.cardSales - (ord.cardPart || 0));
+            shiftData.totalSales = Math.max(0, shiftData.totalSales - ord.total);
+
+            if (ord.store === 'fortuna') {
+                shiftData.fortunaSales = Math.max(0, (shiftData.fortunaSales || 0) - ord.total);
+            } else {
+                shiftData.bobaSales = Math.max(0, (shiftData.bobaSales || 0) - ord.total);
+            }
+
+            localStorage.setItem('boba_shiftData', JSON.stringify(shiftData));
+            updateTreasuryDisplay();
+            syncToCloud();
+            alert(`✅ Orden #${ord.orderNum} cancelada y descontada del corte.`);
         }
 
         function renderInventoryTable() {
@@ -1786,6 +2109,7 @@
             document.getElementById('new-item-stock').value = '';
             document.getElementById('new-item-unit').value = '';
             renderInventoryTable();
+            syncToCloud();
             alert('¡Insumo añadido!');
         }
 
@@ -1794,6 +2118,7 @@
             if(isNaN(val)) return alert('Valor inválido');
             inventoryDB[idx].stock = val;
             localStorage.setItem('boba_inventoryDB', JSON.stringify(inventoryDB));
+            syncToCloud();
             alert('¡Actualizado!');
             renderInventoryTable();
         }
@@ -1812,6 +2137,7 @@
             if(isNaN(val)) return alert('Valor inválido');
             inventoryDB[idx].stock = val;
             localStorage.setItem('boba_inventoryDB', JSON.stringify(inventoryDB));
+            syncToCloud();
             alert('¡Rectificado!');
             renderInventoryTable();
         }
@@ -1949,6 +2275,7 @@
             }
 
             localStorage.setItem('boba_inventoryDB', JSON.stringify(inventoryDB));
+            syncToCloud();
             alert(`✅ Consumo registrado para ${staffName} como Cortesía. Se han descontado los insumos del inventario sin cobro en caja.`);
             closeStaffModal();
             clearCart();
@@ -2007,7 +2334,7 @@
             });
 
             window.lastHappyDiscount = happyHourDiscount;
-            let totalDiscount = discountVal + happyHourDiscount;
+            let totalDiscount = discountVal + happyHourDiscount + redeemedPoints;
             let finalTotal = Math.max(0, subtotal - totalDiscount);
 
             document.getElementById('cart-subtotal').innerText = `$${subtotal.toFixed(2)}`;
@@ -2018,6 +2345,8 @@
         function clearCart() { 
             currentCart = []; 
             discountVal = 0; 
+            redeemedPoints = 0;
+            updateRedeemButtonUI();
             renderCart(); 
         }
 
@@ -2093,14 +2422,18 @@
         function processFinalPayment() {
             const total = parseFloat(document.getElementById('checkout-total-display').innerText.replace('$','')) || 0;
             let changeVal = 0;
+            let netCashPart = 0;
+            let netCardPart = 0;
             let paymentLabel = selectedPaymentMethod.toUpperCase();
 
             if (selectedPaymentMethod === 'efectivo') {
                 const rec = parseFloat(document.getElementById('cash-received-input').value || 0);
                 if (rec < total) return alert('Efectivo menor al total.');
                 changeVal = rec - total;
+                netCashPart = total;
                 shiftData.cashSales += total;
             } else if (selectedPaymentMethod === 'tarjeta') {
+                netCardPart = total;
                 shiftData.cardSales += total;
             } else if (selectedPaymentMethod === 'mixto') {
                 const cashPart = parseFloat(document.getElementById('mixed-cash-input').value) || 0;
@@ -2110,20 +2443,57 @@
                 }
                 changeVal = Math.max(0, (cashPart + cardPart) - total);
                 const netCash = Math.max(0, cashPart - changeVal);
+                netCashPart = netCash;
+                netCardPart = cardPart;
                 shiftData.cashSales += netCash;
                 shiftData.cardSales += cardPart;
                 paymentLabel = `MIXTO (Ef: $${netCash.toFixed(2)} / Tj: $${cardPart.toFixed(2)})`;
             }
 
+            const storeLoc = document.getElementById('store-location').value;
+            if (storeLoc === 'fortuna') {
+                shiftData.fortunaSales = (shiftData.fortunaSales || 0) + total;
+            } else {
+                shiftData.bobaSales = (shiftData.bobaSales || 0) + total;
+            }
+
             shiftData.totalSales += total;
-            localStorage.setItem('boba_shiftData', JSON.stringify(shiftData));
 
             if (selectedCustomer) {
                 selectedCustomer.visits += 1;
                 selectedCustomer.spent += total;
+                selectedCustomer.points = Math.max(0, (selectedCustomer.points || 0) - redeemedPoints);
                 selectedCustomer.points += (total * 0.05);
                 localStorage.setItem('boba_customersDB_full', JSON.stringify(customersDB));
             }
+
+            const currentOrderNum = document.getElementById('order-id-display').innerText;
+            const currentOrderMode = document.getElementById('order-mode').options[document.getElementById('order-mode').selectedIndex].text;
+            const currentDateStr = new Date().toLocaleString();
+            const custReceiptLabel = selectedCustomer ? `${selectedCustomer.name} (Puntos: ${selectedCustomer.points.toFixed(2)})` : null;
+
+            if (!Array.isArray(shiftData.orders)) shiftData.orders = [];
+            shiftData.orders.unshift({
+                orderNum: currentOrderNum,
+                date: currentDateStr,
+                mode: currentOrderMode,
+                store: storeLoc,
+                items: JSON.parse(JSON.stringify(currentCart)),
+                subtotal: document.getElementById('cart-subtotal').innerText,
+                discount: document.getElementById('cart-discount').innerText,
+                total: total,
+                totalText: document.getElementById('cart-total').innerText,
+                paymentMethod: selectedPaymentMethod,
+                paymentLabel: paymentLabel,
+                cashPart: netCashPart,
+                cardPart: netCardPart,
+                changeVal: changeVal,
+                customerName: custReceiptLabel,
+                canceled: false
+            });
+
+            localStorage.setItem('boba_shiftData', JSON.stringify(shiftData));
+            isReprintingMode = false;
 
             currentCart.forEach(item => {
                 const recipe = recipeMapping[item.name];
@@ -2191,8 +2561,11 @@
         }
         function closeReceiptModal() { 
             document.getElementById('receipt-modal').classList.add('hidden'); 
-            clearCart(); 
-            clearSelectedCustomer();
+            if (!isReprintingMode) {
+                clearCart(); 
+                clearSelectedCustomer();
+            }
+            isReprintingMode = false;
         }
     </script>
 </body>
