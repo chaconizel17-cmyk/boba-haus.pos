@@ -176,7 +176,7 @@
         </div>
 
         <div class="p-3 border-t border-[#422632] text-[11px] text-[#E9D6C7] text-center">
-            Boba Haus POS v5.4 (Pro + Seguridad)
+            Boba Haus POS v5.5 (Pro + Artículos)
         </div>
     </aside>
 
@@ -1537,6 +1537,14 @@
                     productsDB.length = 0;
                     data.productsDB.forEach(p => productsDB.push(p));
                     localStorage.setItem('boba_productsDB', JSON.stringify(productsDB));
+                } else if (fbDb) {
+                    fbDb.ref('boba_haus_pos/productsDB').set(productsDB).catch(() => {});
+                }
+                if (data.recipeMapping && typeof data.recipeMapping === 'object') {
+                    recipeMapping = data.recipeMapping;
+                    localStorage.setItem('boba_recipeMapping', JSON.stringify(recipeMapping));
+                } else if (fbDb) {
+                    fbDb.ref('boba_haus_pos/recipeMapping').set(recipeMapping).catch(() => {});
                 }
                 if (Array.isArray(data.inventoryDB)) {
                     inventoryDB = data.inventoryDB;
@@ -1577,6 +1585,7 @@
                 displaysDB,
                 posConfig,
                 productsDB,
+                recipeMapping,
                 inventoryDB,
                 customersDB,
                 updatedAt: Date.now()
@@ -1691,7 +1700,7 @@
             { key: 'plato_pastel', name: 'Platos Pastel Cheesecake', stock: 19, unit: 'pzas', min: 5 }
         ];
 
-        const recipeMapping = {
+        let recipeMapping = {
             'Boba Taro': [ {key:'taro', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
             'Boba Fresas c/ crema': [ {key:'fresa_crema', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
             'Boba Caramelo': [ {key:'caramelo', qty:58}, {key:'leche', qty:0.1}, {key:'hielo', qty:0.3}, {key:'tapioca', qty:35} ],
@@ -2999,14 +3008,17 @@
             
             currentCart.forEach(item => {
                 const recipe = recipeMapping[item.name];
-                if (recipe) {
+                if (recipe && Array.isArray(recipe)) {
                     recipe.forEach(ingredient => {
                         const insumo = inventoryDB.find(i => i.key === ingredient.key);
                         if (insumo) {
-                            insumo.stock -= ingredient.qty;
-                            if (insumo.stock < 0) insumo.stock = 0;
+                            insumo.stock = Math.max(0, Number(insumo.stock || 0) - Number(ingredient.qty || 0));
                         }
                     });
+                }
+                const prodObj = productsDB.find(p => p.name === item.name);
+                if (prodObj && prodObj.trackStock && typeof prodObj.stock === 'number') {
+                    prodObj.stock = Math.max(0, prodObj.stock - 1);
                 }
             });
 
@@ -3261,14 +3273,17 @@
 
             currentCart.forEach(item => {
                 const recipe = recipeMapping[item.name];
-                if (recipe) {
+                if (recipe && Array.isArray(recipe)) {
                     recipe.forEach(ingredient => {
                         const insumo = inventoryDB.find(i => i.key === ingredient.key);
                         if (insumo) {
-                            insumo.stock -= ingredient.qty;
-                            if (insumo.stock < 0) insumo.stock = 0;
+                            insumo.stock = Math.max(0, Number(insumo.stock || 0) - Number(ingredient.qty || 0));
                         }
                     });
+                }
+                const prodObj = productsDB.find(p => p.name === item.name);
+                if (prodObj && prodObj.trackStock && typeof prodObj.stock === 'number') {
+                    prodObj.stock = Math.max(0, prodObj.stock - 1);
                 }
             });
 

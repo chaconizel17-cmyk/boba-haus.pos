@@ -104,7 +104,8 @@
         <button onclick="boTab('dashboard')" id="bo-nav-dashboard" class="px-4 py-2 rounded-xl bg-brand-pink text-white shrink-0">📈 Resumen General</button>
         <button onclick="boTab('receipts')" id="bo-nav-receipts" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">🧾 Recibos & Auditoría</button>
         <button onclick="boTab('shifts')" id="bo-nav-shifts" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">⏱️ Cierres de Turno</button>
-        <button onclick="boTab('inventory')" id="bo-nav-inventory" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">📦 Inventario Remoto</button>
+        <button onclick="boTab('goods')" id="bo-nav-goods" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">🏷️ Lista de Artículos</button>
+        <button onclick="boTab('inventory')" id="bo-nav-inventory" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">📦 Inventario Insumos</button>
         <button onclick="boTab('customers')" id="bo-nav-customers" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">👥 Clientes Frecuentes</button>
         <button onclick="boTab('posconfig')" id="bo-nav-posconfig" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">⚙️ Editar POS</button>
         <button onclick="boTab('backups')" id="bo-nav-backups" class="px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0">🛡️ Respaldos y Datos</button>
@@ -377,7 +378,215 @@
                 <div id="bo-products-list" class="space-y-2 text-xs max-h-80 overflow-y-auto"></div>
             </div>
         </section>
+
+        <!-- TAB 8: LISTA DE ARTÍCULOS (ESTILO LOYVERSE /goods/price) -->
+        <section id="bo-tab-goods" class="hidden space-y-4">
+            <div class="bg-white p-4 sm:p-6 rounded-3xl border border-[#E9D6C7] shadow-sm space-y-4">
+                <!-- Barra Superior de Acciones (Estilo Loyverse) -->
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#E9D6C7] pb-4">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="openGoodsEditorModal(-1)" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-plus"></i> <span>AÑADIR ARTÍCULO</span>
+                        </button>
+                        <label class="px-3.5 py-2.5 bg-[#FFF8F2] hover:bg-[#E9D6C7]/40 text-[#5B3545] border border-[#E9D6C7] font-bold rounded-xl text-xs cursor-pointer flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-file-import text-brand-pink"></i> <span>IMPORTAR CSV</span>
+                            <input type="file" accept=".csv" onchange="importGoodsCSV(event)" class="hidden">
+                        </label>
+                        <button onclick="exportGoodsCSV()" class="px-3.5 py-2.5 bg-[#FFF8F2] hover:bg-[#E9D6C7]/40 text-[#5B3545] border border-[#E9D6C7] font-bold rounded-xl text-xs flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-file-export text-emerald-600"></i> <span>EXPORTAR CSV</span>
+                        </button>
+                        <button id="btn-goods-bulk-delete" onclick="deleteSelectedGoods()" class="hidden px-3.5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs shadow flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-trash"></i> <span>ELIMINAR (<span id="goods-selected-count">0</span>)</span>
+                        </button>
+                    </div>
+                    <div class="text-[11px] font-bold text-gray-500">
+                        Total en catálogo: <span id="goods-total-badge" class="text-brand-pink">0</span> artículos
+                    </div>
+                </div>
+
+                <!-- Filtros: Categoría, Alerta de Inventario y Buscador -->
+                <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 text-xs">
+                    <div class="sm:col-span-4">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Categoría</label>
+                        <select id="goods-filter-cat" onchange="goodsPage=0; renderGoodsTable()" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-bold text-[#5B3545] outline-none">
+                            <option value="all">Todas las categorías</option>
+                            <option value="temporada">🍂 Temporada</option>
+                            <option value="boba">🧋 Boba</option>
+                            <option value="matcha_mango">🍵 Matcha Mango</option>
+                            <option value="xolot">🥤 Xolot</option>
+                            <option value="fortuna">🍻 Fortuna</option>
+                            <option value="soda">🍹 Soda Italiana</option>
+                            <option value="frappe">🥤 Frappé</option>
+                            <option value="smoothie">🥭 Smoothie</option>
+                            <option value="cafe_frio">🧊 Café Frío</option>
+                            <option value="cafe_caliente">☕ Café Caliente</option>
+                            <option value="tizana">🫖 Tizana</option>
+                            <option value="bowl">🥗 Bowl</option>
+                            <option value="crepas">🥞 Crepas</option>
+                            <option value="banderillas">🌭 Banderillas</option>
+                            <option value="pasteles">🍰 Pasteles</option>
+                            <option value="comida">🥪 Comida</option>
+                        </select>
+                    </div>
+                    <div class="sm:col-span-4">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Alerta de inventario</label>
+                        <select id="goods-filter-inv" onchange="goodsPage=0; renderGoodsTable()" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-bold text-[#5B3545] outline-none">
+                            <option value="all">Todos los artículos</option>
+                            <option value="low">⚠️ Stock bajo</option>
+                            <option value="out">🚫 Agotado (0)</option>
+                            <option value="composite">🧪 Artículos compuestos (Con receta)</option>
+                            <option value="tracked">📦 Con seguimiento de stock</option>
+                        </select>
+                    </div>
+                    <div class="sm:col-span-4">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Buscar artículo o SKU</label>
+                        <input type="text" id="goods-search" oninput="goodsPage=0; renderGoodsTable()" placeholder="🔍 Ej. Boba Taro, BH-1001..." class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-semibold outline-none focus:border-brand-pink">
+                    </div>
+                </div>
+
+                <!-- Tabla Estilo Loyverse -->
+                <div class="overflow-x-auto border border-[#E9D6C7] rounded-2xl">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-[#FFF8F2] text-[#5B3545] border-b border-[#E9D6C7] text-[11px] uppercase tracking-wide">
+                                <th class="p-3 w-10 text-center">
+                                    <input type="checkbox" id="goods-select-all" onchange="toggleSelectAllGoods(this)" class="w-4 h-4 accent-[#E88EAF] rounded">
+                                </th>
+                                <th class="p-3">Artículo</th>
+                                <th class="p-3">Categoría</th>
+                                <th class="p-3 text-right">Precio</th>
+                                <th class="p-3 text-right">Costo</th>
+                                <th class="p-3 text-right">Margen</th>
+                                <th class="p-3 text-center">En existencias</th>
+                                <th class="p-3 text-center w-16">Editar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="goods-tbody" class="divide-y divide-[#E9D6C7]/60 bg-white"></tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación Estilo Loyverse -->
+                <div class="flex flex-wrap items-center justify-between gap-3 pt-2 text-xs text-gray-600">
+                    <div class="flex items-center gap-2">
+                        <span>Filas por página:</span>
+                        <select id="goods-limit" onchange="goodsLimit=parseInt(this.value); goodsPage=0; renderGoodsTable()" class="p-1.5 border border-[#E9D6C7] rounded-lg bg-[#FFF8F2] font-bold text-[#5B3545] outline-none">
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span id="goods-page-info" class="font-semibold">0–0 de 0</span>
+                        <div class="flex gap-1">
+                            <button onclick="changeGoodsPage(-1)" id="goods-prev-btn" class="px-3 py-1.5 bg-[#FFF8F2] hover:bg-[#E9D6C7]/40 border border-[#E9D6C7] rounded-lg font-bold disabled:opacity-40">‹</button>
+                            <button onclick="changeGoodsPage(1)" id="goods-next-btn" class="px-3 py-1.5 bg-[#FFF8F2] hover:bg-[#E9D6C7]/40 border border-[#E9D6C7] rounded-lg font-bold disabled:opacity-40">›</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
+
+    <!-- MODAL: CREAR / EDITAR ARTÍCULO (ESTILO LOYVERSE) -->
+    <div id="goods-editor-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-[#E9D6C7] max-h-[92vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-[#E9D6C7] pb-3">
+                <h3 id="ge-modal-title" class="font-bold text-lg text-[#5B3545]">🏷️ Editar Artículo</h3>
+                <button onclick="closeGoodsEditorModal()" class="text-gray-400 hover:text-gray-700 font-bold text-lg">✕</button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div class="sm:col-span-2">
+                    <label class="font-bold text-gray-600 block mb-1">Nombre del artículo *</label>
+                    <input type="text" id="ge-name" placeholder="Ej. Boba Taro" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-bold text-[#5B3545] outline-none focus:border-brand-pink">
+                </div>
+                <div>
+                    <label class="font-bold text-gray-600 block mb-1">Categoría *</label>
+                    <select id="ge-category" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-bold text-[#5B3545] outline-none">
+                        <option value="temporada">Temporada</option>
+                        <option value="boba">Boba</option>
+                        <option value="matcha_mango">Matcha Mango</option>
+                        <option value="xolot">Xolot</option>
+                        <option value="fortuna">Fortuna</option>
+                        <option value="soda">Soda Italiana</option>
+                        <option value="frappe">Frappé</option>
+                        <option value="smoothie">Smoothie</option>
+                        <option value="cafe_frio">Café Frío</option>
+                        <option value="cafe_caliente">Café Caliente</option>
+                        <option value="tizana">Tizana</option>
+                        <option value="bowl">Bowl</option>
+                        <option value="crepas">Crepas</option>
+                        <option value="banderillas">Banderillas</option>
+                        <option value="pasteles">Pasteles</option>
+                        <option value="comida">Comida</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="font-bold text-gray-600 block mb-1">SKU / Código</label>
+                    <input type="text" id="ge-sku" placeholder="Auto (Ej. BH-1001)" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-mono outline-none">
+                </div>
+
+                <!-- Precio, Costo y Margen en Vivo -->
+                <div>
+                    <label class="font-bold text-gray-600 block mb-1">Precio de venta ($) *</label>
+                    <input type="number" step="0.50" id="ge-price" oninput="updateGoodsMarginPreview()" placeholder="70.00" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-white font-bold text-brand-pink text-sm outline-none focus:border-brand-pink">
+                </div>
+                <div>
+                    <label class="font-bold text-gray-600 block mb-1">Costo de elaboración ($)</label>
+                    <input type="number" step="0.50" id="ge-cost" oninput="updateGoodsMarginPreview()" placeholder="22.00" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-white font-bold text-[#5B3545] text-sm outline-none focus:border-brand-pink">
+                </div>
+                <div class="sm:col-span-2 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
+                    <span class="font-bold text-emerald-900">📊 Margen de ganancia estimado:</span>
+                    <span id="ge-margin-preview" class="text-sm font-bold text-emerald-700">—</span>
+                </div>
+            </div>
+
+            <!-- INVENTARIO / SEGUIMIENTO DE STOCK -->
+            <div class="p-4 rounded-2xl bg-[#FFF8F2] border border-[#E9D6C7] space-y-3 text-xs">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-bold text-[#5B3545]">📦 Seguir el inventario por pieza</p>
+                        <p class="text-[11px] text-gray-500">Ideal para pasteles, cervezas o productos empaquetados.</p>
+                    </div>
+                    <input type="checkbox" id="ge-track-stock" onchange="toggleGoodsStockFields()" class="w-5 h-5 accent-[#E88EAF]">
+                </div>
+                <div id="ge-stock-fields" class="grid grid-cols-2 gap-3 hidden pt-1">
+                    <div>
+                        <label class="font-bold text-gray-600 block mb-1">En existencias:</label>
+                        <input type="number" id="ge-stock" value="0" class="w-full p-2 border rounded-xl bg-white font-bold outline-none">
+                    </div>
+                    <div>
+                        <label class="font-bold text-gray-600 block mb-1">Alerta de stock bajo:</label>
+                        <input type="number" id="ge-min-stock" value="5" class="w-full p-2 border rounded-xl bg-white font-bold outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- ARTÍCULO COMPUESTO (RECETA / INGREDIENTES) -->
+            <div class="p-4 rounded-2xl bg-[#FFF8F2] border border-[#E9D6C7] space-y-3 text-xs">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-bold text-[#5B3545]">🧪 Artículo compuesto (Receta de insumos)</p>
+                        <p class="text-[11px] text-gray-500">Descuenta gramos, ml o piezas automáticamente del almacén al venderse.</p>
+                    </div>
+                    <button type="button" onclick="addGoodsRecipeRow()" class="px-2.5 py-1.5 bg-[#5B3545] hover:bg-[#422632] text-white rounded-xl font-bold text-[11px]">
+                        + Añadir insumo
+                    </button>
+                </div>
+                <div id="ge-recipe-rows" class="space-y-2"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-[#E9D6C7]">
+                <button onclick="saveGoodsItem()" class="py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition">
+                    💾 GUARDAR ARTÍCULO
+                </button>
+                <button onclick="closeGoodsEditorModal()" class="py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl text-xs transition">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script>
         const firebaseConfig = {
@@ -430,7 +639,7 @@
         }
 
         function boTab(id) {
-            ['dashboard', 'receipts', 'shifts', 'inventory', 'customers', 'posconfig', 'backups'].forEach(t => {
+            ['dashboard', 'receipts', 'shifts', 'goods', 'inventory', 'customers', 'posconfig', 'backups'].forEach(t => {
                 document.getElementById(`bo-tab-${t}`).classList.add('hidden');
                 const btn = document.getElementById(`bo-nav-${t}`);
                 btn.className = "px-4 py-2 rounded-xl bg-[#FFF8F2] text-[#5B3545] border border-[#E9D6C7] shrink-0";
@@ -549,6 +758,7 @@
             renderBoCustomers();
             loadPosConfigToBoUI();
             renderBoProducts();
+            renderGoodsTable();
         }
 
         // --- AUTO-BLOQUEO POR INACTIVIDAD (5 MINUTOS) ---
@@ -873,7 +1083,373 @@
             URL.revokeObjectURL(url);
         }
 
-        // --- PWA INDEPENDIENTE BACK OFFICE ---
+        // --- LISTA DE ARTÍCULOS ESTILO LOYVERSE (/goods/price) ---
+        let goodsPage = 0;
+        let goodsLimit = 10;
+        let selectedGoodsIndices = new Set();
+        let editingGoodsIdx = -1;
+        let tempRecipeList = [];
+
+        const categoryLabelsMap = {
+            temporada: 'Temporada', boba: 'Boba', matcha_mango: 'Matcha Mango', xolot: 'Xolot',
+            fortuna: 'Fortuna', soda: 'Soda Italiana', frappe: 'Frappé', smoothie: 'Smoothie',
+            cafe_frio: 'Café Frío', cafe_caliente: 'Café Caliente', tizana: 'Tizana', bowl: 'Bowl',
+            crepas: 'Crepas', banderillas: 'Banderillas', pasteles: 'Pasteles', comida: 'Comida'
+        };
+
+        const categoryColorsMap = {
+            temporada: '#D97706', boba: '#E88EAF', matcha_mango: '#059669', xolot: '#EC4899',
+            fortuna: '#B45309', soda: '#0EA5E9', frappe: '#8B5CF6', smoothie: '#F97316',
+            cafe_frio: '#3B82F6', cafe_caliente: '#78350F', tizana: '#DB2777', bowl: '#16A34A',
+            crepas: '#CA8A04', banderillas: '#EA580C', pasteles: '#BE185D', comida: '#5B3545'
+        };
+
+        function getFilteredGoods() {
+            const prods = Array.isArray(cloudData.productsDB) ? cloudData.productsDB : [];
+            const recipes = (cloudData.recipeMapping && typeof cloudData.recipeMapping === 'object') ? cloudData.recipeMapping : {};
+            const catFilter = document.getElementById('goods-filter-cat')?.value || 'all';
+            const invFilter = document.getElementById('goods-filter-inv')?.value || 'all';
+            const q = (document.getElementById('goods-search')?.value || '').toLowerCase().trim();
+
+            return prods.map((p, idx) => {
+                const sku = p.sku || `BH-${String(1001 + idx)}`;
+                const hasRecipe = Array.isArray(recipes[p.name]) && recipes[p.name].length > 0;
+                const price = Number(p.price || 0);
+                const cost = Number(p.cost || 0);
+                const margin = (price > 0 && cost > 0) ? (((price - cost) / price) * 100) : null;
+                return { ...p, _idx: idx, sku, hasRecipe, price, cost, margin };
+            }).filter(p => {
+                if (catFilter !== 'all' && p.category !== catFilter) return false;
+                if (invFilter === 'low' && !(p.trackStock && Number(p.stock || 0) <= Number(p.minStock || 5) && Number(p.stock || 0) > 0)) return false;
+                if (invFilter === 'out' && !(p.trackStock && Number(p.stock || 0) <= 0)) return false;
+                if (invFilter === 'composite' && !p.hasRecipe) return false;
+                if (invFilter === 'tracked' && !p.trackStock) return false;
+                if (q && !(p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q) || (categoryLabelsMap[p.category] || p.category).toLowerCase().includes(q))) return false;
+                return true;
+            });
+        }
+
+        function renderGoodsTable() {
+            const tbody = document.getElementById('goods-tbody');
+            if (!tbody) return;
+            const prods = Array.isArray(cloudData.productsDB) ? cloudData.productsDB : [];
+            const totalBadge = document.getElementById('goods-total-badge');
+            if (totalBadge) totalBadge.innerText = prods.length;
+
+            if (prods.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-gray-400 italic">Abre el Punto de Venta (POS) una vez para sincronizar automáticamente todo tu catálogo de artículos aquí.</td></tr>`;
+                updateGoodsPaginationUI(0, 0, 0);
+                return;
+            }
+
+            const filtered = getFilteredGoods();
+            const total = filtered.length;
+            const maxPage = Math.max(0, Math.ceil(total / goodsLimit) - 1);
+            if (goodsPage > maxPage) goodsPage = maxPage;
+
+            const start = goodsPage * goodsLimit;
+            const end = Math.min(start + goodsLimit, total);
+            const slice = filtered.slice(start, end);
+
+            if (slice.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-gray-400 italic">No hay artículos que coincidan con los filtros seleccionados.</td></tr>`;
+            } else {
+                tbody.innerHTML = slice.map(item => {
+                    const checked = selectedGoodsIndices.has(item._idx) ? 'checked' : '';
+                    const dotColor = categoryColorsMap[item.category] || '#E88EAF';
+                    const catName = categoryLabelsMap[item.category] || item.category;
+
+                    let marginHTML = `<span class="text-gray-400">—</span>`;
+                    if (item.margin !== null) {
+                        const mClass = item.margin >= 50 ? 'bg-emerald-100 text-emerald-700' : item.margin >= 25 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-700';
+                        marginHTML = `<span class="px-2 py-0.5 rounded-full font-bold text-[11px] ${mClass}">${item.margin.toFixed(1)}%</span>`;
+                    }
+
+                    let stockHTML = `<span class="text-gray-400">—</span>`;
+                    if (item.trackStock) {
+                        const st = Number(item.stock || 0);
+                        const minSt = Number(item.minStock || 5);
+                        if (st <= 0) stockHTML = `<span class="px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-bold text-[11px]">0 (Agotado)</span>`;
+                        else if (st <= minSt) stockHTML = `<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[11px]">${st} (Bajo)</span>`;
+                        else stockHTML = `<span class="font-bold text-emerald-700">${st}</span>`;
+                    } else if (item.hasRecipe) {
+                        stockHTML = `<span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-bold text-[10px]">🧪 Receta</span>`;
+                    }
+
+                    return `
+                        <tr class="hover:bg-[#FFF8F2]/80 transition">
+                            <td class="p-3 text-center">
+                                <input type="checkbox" ${checked} onchange="toggleSelectGoodsItem(${item._idx}, this.checked)" class="w-4 h-4 accent-[#E88EAF] rounded">
+                            </td>
+                            <td class="p-3 cursor-pointer" onclick="openGoodsEditorModal(${item._idx})">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="w-3.5 h-3.5 rounded-full shrink-0 shadow-sm" style="background:${dotColor}"></span>
+                                    <div>
+                                        <p class="font-bold text-[#5B3545] leading-tight">${item.name}</p>
+                                        <p class="text-[10px] text-gray-400 font-mono">${item.sku}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-3">
+                                <span class="px-2 py-0.5 rounded-lg bg-[#FFF8F2] border border-[#E9D6C7] text-[11px] font-semibold text-[#5B3545]">${catName}</span>
+                            </td>
+                            <td class="p-3 text-right font-bold text-brand-pink">$${item.price.toFixed(2)}</td>
+                            <td class="p-3 text-right font-semibold text-gray-600">${item.cost > 0 ? '$' + item.cost.toFixed(2) : '—'}</td>
+                            <td class="p-3 text-right">${marginHTML}</td>
+                            <td class="p-3 text-center">${stockHTML}</td>
+                            <td class="p-3 text-center">
+                                <button onclick="openGoodsEditorModal(${item._idx})" class="p-1.5 text-[#5B3545] hover:text-brand-pink bg-[#FFF8F2] border border-[#E9D6C7] rounded-lg" title="Editar artículo">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            updateGoodsPaginationUI(total === 0 ? 0 : start + 1, end, total);
+            updateBulkDeleteBtn();
+        }
+
+        function updateGoodsPaginationUI(from, to, total) {
+            const info = document.getElementById('goods-page-info');
+            const prev = document.getElementById('goods-prev-btn');
+            const next = document.getElementById('goods-next-btn');
+            if (info) info.innerText = `${from}–${to} de ${total}`;
+            if (prev) prev.disabled = goodsPage <= 0;
+            if (next) next.disabled = to >= total;
+        }
+
+        function changeGoodsPage(delta) {
+            goodsPage = Math.max(0, goodsPage + delta);
+            renderGoodsTable();
+        }
+
+        function toggleSelectGoodsItem(idx, isChecked) {
+            if (isChecked) selectedGoodsIndices.add(idx);
+            else selectedGoodsIndices.delete(idx);
+            updateBulkDeleteBtn();
+        }
+
+        function toggleSelectAllGoods(cb) {
+            const filtered = getFilteredGoods();
+            const start = goodsPage * goodsLimit;
+            const slice = filtered.slice(start, start + goodsLimit);
+            slice.forEach(item => {
+                if (cb.checked) selectedGoodsIndices.add(item._idx);
+                else selectedGoodsIndices.delete(item._idx);
+            });
+            renderGoodsTable();
+        }
+
+        function updateBulkDeleteBtn() {
+            const btn = document.getElementById('btn-goods-bulk-delete');
+            const cnt = document.getElementById('goods-selected-count');
+            if (!btn || !cnt) return;
+            if (selectedGoodsIndices.size > 0) {
+                cnt.innerText = selectedGoodsIndices.size;
+                btn.classList.remove('hidden');
+            } else {
+                btn.classList.add('hidden');
+            }
+        }
+
+        function deleteSelectedGoods() {
+            if (selectedGoodsIndices.size === 0) return;
+            if (!confirm(`¿Eliminar ${selectedGoodsIndices.size} artículo(s) seleccionado(s) del menú del POS?`)) return;
+            const prods = Array.isArray(cloudData.productsDB) ? [...cloudData.productsDB] : [];
+            const remaining = prods.filter((_, idx) => !selectedGoodsIndices.has(idx));
+            selectedGoodsIndices.clear();
+            const selAll = document.getElementById('goods-select-all');
+            if (selAll) selAll.checked = false;
+            fbDb.ref('boba_haus_pos/productsDB').set(remaining)
+                .then(() => alert('🗑️ Artículos eliminados del catálogo.'))
+                .catch(err => alert('Error: ' + err.message));
+        }
+
+        // --- MODAL EDITOR DE ARTÍCULO + RECETA ---
+        function openGoodsEditorModal(idx) {
+            editingGoodsIdx = idx;
+            const prods = Array.isArray(cloudData.productsDB) ? cloudData.productsDB : [];
+            const recipes = (cloudData.recipeMapping && typeof cloudData.recipeMapping === 'object') ? cloudData.recipeMapping : {};
+
+            if (idx === -1) {
+                document.getElementById('ge-modal-title').innerText = '➕ Añadir Nuevo Artículo';
+                document.getElementById('ge-name').value = '';
+                document.getElementById('ge-category').value = 'boba';
+                document.getElementById('ge-sku').value = `BH-${1001 + prods.length}`;
+                document.getElementById('ge-price').value = '';
+                document.getElementById('ge-cost').value = '';
+                document.getElementById('ge-track-stock').checked = false;
+                document.getElementById('ge-stock').value = 0;
+                document.getElementById('ge-min-stock').value = 5;
+                tempRecipeList = [];
+            } else {
+                const p = prods[idx];
+                if (!p) return;
+                document.getElementById('ge-modal-title').innerText = `✏️ Editar: ${p.name}`;
+                document.getElementById('ge-name').value = p.name || '';
+                document.getElementById('ge-category').value = p.category || 'boba';
+                document.getElementById('ge-sku').value = p.sku || `BH-${1001 + idx}`;
+                document.getElementById('ge-price').value = p.price ?? 0;
+                document.getElementById('ge-cost').value = p.cost ?? '';
+                document.getElementById('ge-track-stock').checked = !!p.trackStock;
+                document.getElementById('ge-stock').value = p.stock ?? 0;
+                document.getElementById('ge-min-stock').value = p.minStock ?? 5;
+                tempRecipeList = Array.isArray(recipes[p.name]) ? JSON.parse(JSON.stringify(recipes[p.name])) : [];
+            }
+
+            toggleGoodsStockFields();
+            updateGoodsMarginPreview();
+            renderGoodsRecipeRows();
+            document.getElementById('goods-editor-modal').classList.remove('hidden');
+        }
+
+        function closeGoodsEditorModal() {
+            document.getElementById('goods-editor-modal').classList.add('hidden');
+        }
+
+        function toggleGoodsStockFields() {
+            const on = document.getElementById('ge-track-stock').checked;
+            document.getElementById('ge-stock-fields').classList.toggle('hidden', !on);
+        }
+
+        function updateGoodsMarginPreview() {
+            const price = parseFloat(document.getElementById('ge-price').value) || 0;
+            const cost = parseFloat(document.getElementById('ge-cost').value) || 0;
+            const el = document.getElementById('ge-margin-preview');
+            if (!el) return;
+            if (price <= 0 || cost <= 0) {
+                el.innerText = 'Ingresa precio y costo para calcular';
+                return;
+            }
+            const profit = price - cost;
+            const pct = (profit / price) * 100;
+            el.innerText = `${pct.toFixed(1)}% (Ganancia: $${profit.toFixed(2)})`;
+        }
+
+        function renderGoodsRecipeRows() {
+            const cont = document.getElementById('ge-recipe-rows');
+            if (!cont) return;
+            const inv = Array.isArray(cloudData.inventoryDB) ? cloudData.inventoryDB : [];
+            if (tempRecipeList.length === 0) {
+                cont.innerHTML = `<p class="text-[11px] text-gray-400 italic">Sin insumos vinculados. Haz clic en "+ Añadir insumo" para crear su receta.</p>`;
+                return;
+            }
+            cont.innerHTML = tempRecipeList.map((r, i) => `
+                <div class="flex items-center gap-2 bg-white p-2 rounded-xl border border-[#E9D6C7]">
+                    <select onchange="tempRecipeList[${i}].key = this.value" class="flex-1 p-1.5 border rounded-lg bg-[#FFF8F2] font-semibold outline-none text-[11px]">
+                        ${inv.map(it => `<option value="${it.key}" ${it.key === r.key ? 'selected' : ''}>${it.name} (${it.unit})</option>`).join('')}
+                    </select>
+                    <input type="number" step="0.05" value="${r.qty}" onchange="tempRecipeList[${i}].qty = parseFloat(this.value) || 0" class="w-20 p-1.5 border rounded-lg text-center font-bold outline-none" placeholder="Cant.">
+                    <button type="button" onclick="tempRecipeList.splice(${i},1); renderGoodsRecipeRows();" class="px-2 py-1 bg-red-100 text-red-600 rounded-lg font-bold">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function addGoodsRecipeRow() {
+            const inv = Array.isArray(cloudData.inventoryDB) ? cloudData.inventoryDB : [];
+            const firstKey = inv.length > 0 ? inv[0].key : 'tapioca';
+            tempRecipeList.push({ key: firstKey, qty: 30 });
+            renderGoodsRecipeRows();
+        }
+
+        function saveGoodsItem() {
+            const name = document.getElementById('ge-name').value.trim();
+            const category = document.getElementById('ge-category').value;
+            const sku = document.getElementById('ge-sku').value.trim();
+            const price = parseFloat(document.getElementById('ge-price').value);
+            const cost = parseFloat(document.getElementById('ge-cost').value) || 0;
+            const trackStock = document.getElementById('ge-track-stock').checked;
+            const stock = parseFloat(document.getElementById('ge-stock').value) || 0;
+            const minStock = parseFloat(document.getElementById('ge-min-stock').value) || 5;
+
+            if (!name || isNaN(price) || price < 0) return alert('Por favor ingresa nombre y precio válidos.');
+
+            const prods = Array.isArray(cloudData.productsDB) ? [...cloudData.productsDB] : [];
+            const recipes = (cloudData.recipeMapping && typeof cloudData.recipeMapping === 'object') ? { ...cloudData.recipeMapping } : {};
+
+            const newObj = { name, category, sku, price, cost, trackStock, stock, minStock };
+
+            if (editingGoodsIdx === -1) {
+                prods.push(newObj);
+            } else {
+                const oldName = prods[editingGoodsIdx]?.name;
+                if (oldName && oldName !== name && recipes[oldName]) {
+                    delete recipes[oldName];
+                }
+                prods[editingGoodsIdx] = newObj;
+            }
+
+            const cleanRecipe = tempRecipeList.filter(r => r.key && Number(r.qty) > 0);
+            if (cleanRecipe.length > 0) recipes[name] = cleanRecipe;
+            else delete recipes[name];
+
+            Promise.all([
+                fbDb.ref('boba_haus_pos/productsDB').set(prods),
+                fbDb.ref('boba_haus_pos/recipeMapping').set(recipes)
+            ]).then(() => {
+                closeGoodsEditorModal();
+                alert(`✅ Artículo "${name}" guardado y sincronizado con el POS.`);
+            }).catch(err => alert('Error: ' + err.message));
+        }
+
+        function exportGoodsCSV() {
+            const list = getFilteredGoods();
+            const rows = list.map(p => [
+                `"${p.sku}"`,
+                `"${(p.name || '').replace(/"/g, '""')}"`,
+                `"${p.category}"`,
+                p.price.toFixed(2),
+                p.cost.toFixed(2),
+                p.margin !== null ? p.margin.toFixed(1) + '%' : '',
+                p.trackStock ? 'SI' : 'NO',
+                p.trackStock ? Number(p.stock || 0) : '',
+                p.trackStock ? Number(p.minStock || 5) : ''
+            ]);
+            const csv = "\uFEFF" + ['SKU,Nombre,Categoria,Precio,Costo,Margen,SeguirStock,Stock,Minimo', ...rows.map(r => r.join(','))].join('\n');
+            downloadCSV(csv, `lista_articulos_boba_haus_${new Date().toISOString().slice(0,10)}.csv`);
+        }
+
+        function importGoodsCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
+                    if (lines.length < 2) return alert('El archivo CSV está vacío.');
+                    const prods = Array.isArray(cloudData.productsDB) ? [...cloudData.productsDB] : [];
+                    let updated = 0, added = 0;
+
+                    for (let i = 1; i < lines.length; i++) {
+                        const cols = lines[i].split(',').map(c => c.replace(/^"|"$/g, '').trim());
+                        if (cols.length < 4) continue;
+                        const [sku, name, category, priceStr, costStr, , trackStr, stockStr, minStr] = cols;
+                        if (!name) continue;
+                        const price = parseFloat(priceStr) || 0;
+                        const cost = parseFloat(costStr) || 0;
+                        const trackStock = (trackStr || '').toUpperCase() === 'SI';
+                        const stock = parseFloat(stockStr) || 0;
+                        const minStock = parseFloat(minStr) || 5;
+                        const existingIdx = prods.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+                        const itemObj = { sku: sku || `BH-${1001 + prods.length}`, name, category: category || 'boba', price, cost, trackStock, stock, minStock };
+                        if (existingIdx >= 0) { prods[existingIdx] = itemObj; updated++; }
+                        else { prods.push(itemObj); added++; }
+                    }
+
+                    fbDb.ref('boba_haus_pos/productsDB').set(prods)
+                        .then(() => alert(`✅ Importación lista: ${added} agregados, ${updated} actualizados.`))
+                        .catch(err => alert('Error: ' + err.message));
+                } catch (err) {
+                    alert('❌ Error al leer el archivo CSV.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+                // --- PWA INDEPENDIENTE BACK OFFICE ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').catch(() => {});
