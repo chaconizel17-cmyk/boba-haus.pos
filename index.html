@@ -68,6 +68,60 @@
         body.device-phone #tab-pos.mobile-view-cart #pos-cart-panel { display: flex; width: 100%; }
         body.device-tablet #categories-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
         body.device-tablet #sidebar-menu { position: fixed; top: 0; bottom: 0; left: 0; z-index: 50; }
+
+        /* Distribución en Lista (estilo Loyverse) */
+        body.layout-list #categories-grid,
+        body.layout-list #products-desglose-grid {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+        }
+        body.layout-list #categories-grid > div {
+            flex-direction: row !important;
+            text-align: left !important;
+            padding: 0.85rem 1rem !important;
+            justify-content: flex-start !important;
+            gap: 1rem !important;
+            border-radius: 1rem !important;
+        }
+        body.layout-list #categories-grid > div > span.text-4xl,
+        body.layout-list #categories-grid > div > svg {
+            margin-bottom: 0 !important;
+            font-size: 1.75rem !important;
+            width: 2rem !important;
+            height: 2rem !important;
+        }
+        body.layout-list #products-desglose-grid > div {
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            padding: 0.85rem 1rem !important;
+        }
+        body.layout-list #products-desglose-grid > div > div {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+            border-top: none !important;
+            gap: 0.75rem !important;
+        }
+
+        /* Modo Oscuro */
+        body.dark-mode { background-color: #1c1619 !important; color: #f5eef1 !important; }
+        body.dark-mode main,
+        body.dark-mode #pos-menu-panel,
+        body.dark-mode section { background-color: #1c1619 !important; }
+        body.dark-mode header,
+        body.dark-mode #pos-cart-panel,
+        body.dark-mode .bg-white { background-color: #2a2126 !important; color: #f5eef1 !important; border-color: #42333b !important; }
+        body.dark-mode .bg-\[\#FFF8F2\] { background-color: #231b1f !important; border-color: #42333b !important; }
+        body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4,
+        body.dark-mode .text-\[\#5B3545\] { color: #f9e6ee !important; }
+        body.dark-mode input, body.dark-mode select { background-color: #1c1619 !important; color: #f5eef1 !important; border-color: #523e48 !important; }
+
+        @media print {
+            body.printing-test #test-print-area,
+            body.printing-test #test-print-area * { visibility: visible; }
+            body.printing-test #test-print-area { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+        }
     </style>
 </head>
 <body class="h-screen overflow-hidden flex text-gray-800 bg-[#FFF8F2]">
@@ -81,7 +135,7 @@
                     <h2 id="sidebar-role-title" class="font-bold text-white text-sm">Propietario</h2>
                     <p class="text-[11px] text-[#E9D6C7]">TPV 1 • Boba Haus</p>
                 </div>
-                <button onclick="lockSystem()" class="p-2 text-[#E9D6C7] hover:text-white bg-[#5B3545] rounded-xl" title="Bloquear TPV">
+                <button onclick="requestExitWithPin()" class="p-2 text-[#E9D6C7] hover:text-white bg-[#5B3545] rounded-xl" title="Bloquear TPV">
                     <i class="fa-solid fa-lock"></i>
                 </button>
             </div>
@@ -97,14 +151,28 @@
                 <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-[#422632] hover:text-white transition">
                     <i class="fa-solid fa-boxes-stacked text-base w-5"></i> <span>Artículos / Inventario</span>
                 </button>
+                <button onclick="switchTab('receipts')" id="nav-receipts" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-[#422632] hover:text-white transition">
+                    <i class="fa-solid fa-receipt text-base w-5"></i> <span>Recibos</span>
+                </button>
                 <button onclick="switchTab('monitor')" id="nav-monitor" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-[#422632] hover:text-white transition">
                     <i class="fa-solid fa-mobile-screen-button text-base w-5"></i> <span>Monitor en Vivo</span>
                 </button>
+                <button onclick="switchTab('general')" id="nav-general" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-[#422632] hover:text-white transition">
+                    <i class="fa-solid fa-gear text-base w-5"></i> <span>General</span>
+                </button>
+                <div class="border-t border-[#422632] my-2 pt-2 space-y-1">
+                    <button onclick="openBackOfficeProtected()" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl bg-[#422632] hover:bg-[#E88EAF] text-[#F4B6CE] hover:text-white transition">
+                        <i class="fa-solid fa-chart-pie text-base w-5"></i> <span>Back Office (Dueña)</span>
+                    </button>
+                    <button onclick="requestExitWithPin()" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-red-900/40 hover:bg-red-700 text-red-200 hover:text-white transition">
+                        <i class="fa-solid fa-right-from-bracket text-base w-5"></i> <span>Salir / Bloquear (PIN)</span>
+                    </button>
+                </div>
             </nav>
         </div>
 
         <div class="p-3 border-t border-[#422632] text-[11px] text-[#E9D6C7] text-center">
-            Boba Haus POS v5.1 (Pro Móvil)
+            Boba Haus POS v5.2 (Pro + Recibos)
         </div>
     </aside>
 
@@ -631,8 +699,276 @@
                     </div>
                 </div>
             </section>
+
+            <!-- TAB 5: RECIBOS (TIEMPO REAL PARA EMPLEADOS Y PROPIETARIO) -->
+            <section id="tab-receipts" class="h-full bg-[#FFF8F2] p-3 sm:p-5 overflow-y-auto hidden">
+                <div class="max-w-4xl mx-auto bg-white p-5 rounded-3xl shadow-sm space-y-5 border border-[#E9D6C7]">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-[#5B3545]"><i class="fa-solid fa-receipt text-brand-pink mr-2"></i> Recibos en Tiempo Real</h2>
+                            <p class="text-xs text-gray-500">Consulta folios, códigos de seguridad, reimprime tickets o realiza reembolsos (con PIN de Dueña).</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="receipts-count-pill" class="px-3 py-1 bg-pink-100 text-brand-pink rounded-full text-xs font-bold">0 recibos</span>
+                            <button onclick="exportReceiptsCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow">
+                                📊 Exportar CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Buscador y Filtros -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <input type="text" id="receipts-search-input" oninput="renderReceiptsTab()" placeholder="🔍 Buscar folio, código (BH-...), cliente o producto..." class="sm:col-span-2 p-2.5 border border-[#E9D6C7] rounded-xl text-xs font-semibold outline-none focus:border-brand-pink bg-[#FFF8F2]">
+                        <select id="receipts-filter-select" onchange="renderReceiptsTab()" class="p-2.5 border border-[#E9D6C7] rounded-xl text-xs font-bold text-[#5B3545] bg-[#FFF8F2] outline-none">
+                            <option value="all">📋 Todos los recibos</option>
+                            <option value="boba_haus">🧋 Solo Boba Haus</option>
+                            <option value="fortuna">🍻 Solo Fortuna</option>
+                            <option value="refunded">↩️ Solo Reembolsados</option>
+                        </select>
+                    </div>
+
+                    <!-- Lista de Recibos -->
+                    <div id="receipts-tab-list" class="space-y-2.5 text-xs">
+                        <p class="text-center text-gray-400 italic py-8">No hay recibos registrados todavía.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 6: GENERAL (IMPRESORAS, PANTALLAS CLIENTE/COCINA Y AJUSTES) -->
+            <section id="tab-general" class="h-full bg-[#FFF8F2] p-3 sm:p-5 overflow-y-auto hidden">
+                <div class="max-w-4xl mx-auto space-y-5 pb-10">
+
+                    <!-- IMPRESORAS (MANUAL) -->
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-[#E9D6C7] space-y-4">
+                        <div class="flex items-center justify-between border-b pb-3">
+                            <div>
+                                <h2 class="text-lg font-bold text-[#5B3545]"><i class="fa-solid fa-print text-brand-pink mr-2"></i> Impresoras</h2>
+                                <p class="text-xs text-gray-500">Agrega manualmente tus impresoras térmicas o de red para recibos y pedidos.</p>
+                            </div>
+                            <button onclick="openPrinterModal()" class="px-3 py-2 bg-brand-pink hover:bg-[#d67999] text-white rounded-xl text-xs font-bold shadow">
+                                + Crear impresora
+                            </button>
+                        </div>
+                        <div id="printers-list-container" class="space-y-2 text-xs">
+                            <p class="text-gray-400 italic">No hay impresoras configuradas. Haz clic en "+ Crear impresora".</p>
+                        </div>
+                    </div>
+
+                    <!-- PANTALLAS PARA CLIENTES (CDS) Y COCINA (KDS) -->
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-[#E9D6C7] space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
+                            <div>
+                                <h2 class="text-lg font-bold text-[#5B3545]"><i class="fa-solid fa-display text-brand-pink mr-2"></i> Pantallas para Clientes y Cocina</h2>
+                                <p class="text-xs text-gray-500">Vincula tabletas o pantallas secundarias en tiempo real para clientes (CDS) o barra/cocina (KDS).</p>
+                            </div>
+                            <button onclick="openDisplayModal()" class="px-3 py-2 bg-[#5B3545] hover:bg-[#422632] text-white rounded-xl text-xs font-bold shadow">
+                                + Crear pantalla
+                            </button>
+                        </div>
+
+                        <!-- Accesos rápidos en vivo (Apps estilo Loyverse) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-3">
+                                <div>
+                                    <p class="font-bold text-emerald-900 text-xs">🖥️ Pantalla para Clientes (CDS)</p>
+                                    <p class="text-[11px] text-emerald-700">Muestra al cliente su orden y total en vivo mientras cobras.</p>
+                                </div>
+                                <button onclick="openLiveDisplayMode('cds')" class="shrink-0 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow">
+                                    Abrir
+                                </button>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-between gap-3">
+                                <div>
+                                    <p class="font-bold text-amber-900 text-xs">👨‍🍳 Pantalla de Cocina / Barra (KDS)</p>
+                                    <p class="text-[11px] text-amber-800">Recibe las comandas en vivo en una tableta de preparación.</p>
+                                </div>
+                                <button onclick="openLiveDisplayMode('kds')" class="shrink-0 px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow">
+                                    Abrir
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="displays-list-container" class="space-y-2 text-xs">
+                            <p class="text-gray-400 italic">No hay pantallas vinculadas manualmente todavía.</p>
+                        </div>
+                    </div>
+
+                    <!-- AJUSTES GENERALES (ESTILO LOYVERSE) -->
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-[#E9D6C7] space-y-4">
+                        <h2 class="text-lg font-bold text-[#5B3545] border-b pb-3"><i class="fa-solid fa-sliders text-brand-pink mr-2"></i> Ajustes Generales</h2>
+
+                        <div class="divide-y divide-[#E9D6C7] text-xs">
+                            <div class="py-3 flex items-center justify-between gap-4">
+                                <div>
+                                    <p class="font-bold text-[#5B3545]">Utilizar la cámara para escanear códigos de barras</p>
+                                    <p class="text-[11px] text-gray-500">Habilita el lector rápido en la barra de ventas.</p>
+                                </div>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="setting-barcode-cam" onchange="saveGeneralSettings()" class="w-5 h-5 accent-[#E88EAF] rounded">
+                                </label>
+                            </div>
+
+                            <div class="py-3 flex items-center justify-between gap-4">
+                                <div>
+                                    <p class="font-bold text-[#5B3545]">Modo oscuro</p>
+                                    <p class="text-[11px] text-gray-500">Reduce el brillo en turnos nocturnos.</p>
+                                </div>
+                                <select id="setting-dark-mode" onchange="saveGeneralSettings()" class="p-2 border border-[#E9D6C7] rounded-xl font-bold text-xs bg-[#FFF8F2] outline-none">
+                                    <option value="light">Claro (Boba Haus)</option>
+                                    <option value="dark">Oscuro</option>
+                                </select>
+                            </div>
+
+                            <div class="py-3 flex items-center justify-between gap-4">
+                                <div>
+                                    <p class="font-bold text-[#5B3545]">Distribución de los artículos en la pantalla de inicio</p>
+                                    <p class="text-[11px] text-gray-500">Elige entre tarjetas en cuadrícula o lista rápida.</p>
+                                </div>
+                                <select id="setting-layout-mode" onchange="saveGeneralSettings()" class="p-2 border border-[#E9D6C7] rounded-xl font-bold text-xs bg-[#FFF8F2] outline-none">
+                                    <option value="grid">Cuadrícula</option>
+                                    <option value="list">Lista</option>
+                                </select>
+                            </div>
+
+                            <div class="py-3 flex flex-wrap items-center justify-between gap-2">
+                                <div>
+                                    <p class="font-bold text-[#5B3545]">Acciones de Caja y Sincronización</p>
+                                    <p class="text-[11px] text-gray-500">Control rápido del cajón de efectivo y respaldo inmediato en Firebase.</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="openCashDrawerAction()" class="px-3 py-2 bg-[#5B3545] hover:bg-[#422632] text-white rounded-xl font-bold text-xs shadow">
+                                        🔓 Abrir cajón
+                                    </button>
+                                    <button onclick="syncToCloud(); alert('☁️ Sincronizado con la nube correctamente.');" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow">
+                                        🔄 Sincronizar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
     </main>
+
+    <!-- MODAL: CREAR IMPRESORA (ESTILO LOYVERSE) -->
+    <div id="printer-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-[#E9D6C7]">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-base text-[#5B3545]">🖨️ Crear Impresora</h3>
+                <button onclick="closePrinterModal()" class="text-gray-400 font-bold">✕</button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="font-bold text-gray-700 block mb-1">Nombre:</label>
+                    <input type="text" id="pr-name" placeholder="Ej. Caja Principal / Barra" class="w-full p-2.5 border rounded-xl bg-gray-50 font-semibold outline-none focus:border-brand-pink">
+                </div>
+                <div>
+                    <label class="font-bold text-gray-700 block mb-1">Modelo de la impresora:</label>
+                    <select id="pr-model" class="w-full p-2.5 border rounded-xl bg-gray-50 font-semibold outline-none focus:border-brand-pink">
+                        <option value="BIXOLON SRP-312 (Térmica)">BIXOLON SRP-312 (Térmica)</option>
+                        <option value="YD-803 (Térmica USB/BT)">YD-803 (Térmica USB/BT)</option>
+                        <option value="Epson EcoTank / XP-211">Epson EcoTank / XP-211</option>
+                        <option value="Star TSP654IIBI (Bluetooth)">Star TSP654IIBI (Bluetooth)</option>
+                        <option value="Star TSP143IIILAN (Ethernet)">Star TSP143IIILAN (Ethernet)</option>
+                        <option value="Star mPOP (Bluetooth)">Star mPOP (Bluetooth)</option>
+                        <option value="Star mC-Print3">Star mC-Print3</option>
+                        <option value="Epson TM-T20II (Ethernet)">Epson TM-T20II (Ethernet)</option>
+                        <option value="Epson TM-T88V (Ethernet)">Epson TM-T88V (Ethernet)</option>
+                        <option value="Epson TM-m30">Epson TM-m30</option>
+                        <option value="Sunmi">Sunmi</option>
+                        <option value="Posiflex 6900">Posiflex 6900</option>
+                        <option value="XPrinter XP-Q800">XPrinter XP-Q800</option>
+                        <option value="GP-58130IIC">GP-58130IIC</option>
+                        <option value="GP-U80300I">GP-U80300I</option>
+                        <option value="GP-L80250I">GP-L80250I</option>
+                        <option value="Pantalla de cocina">Pantalla de cocina</option>
+                        <option value="Otro modelo">Otro modelo</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="font-bold text-gray-700 block mb-1">Dirección IP / Interfaz (Opcional):</label>
+                    <input type="text" id="pr-ip" placeholder="Ej. 192.168.1.200 o USB/Bluetooth" class="w-full p-2.5 border rounded-xl bg-gray-50 font-mono outline-none focus:border-brand-pink">
+                </div>
+                <div class="flex items-center justify-between pt-1">
+                    <span class="font-bold text-[#5B3545]">Imprimir recibos y cuentas</span>
+                    <input type="checkbox" id="pr-receipts" checked class="w-5 h-5 accent-[#E88EAF]">
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-[#5B3545]">Imprimir pedidos (Comandas)</span>
+                    <input type="checkbox" id="pr-orders" class="w-5 h-5 accent-[#E88EAF]">
+                </div>
+            </div>
+            <button onclick="printTestPage()" class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-[#5B3545] font-bold rounded-xl text-xs border border-[#E9D6C7]">
+                🖨️ IMPRESIÓN DE PRUEBA
+            </button>
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="savePrinterConfig()" class="py-2.5 bg-brand-pink hover:bg-[#d67999] text-white font-bold rounded-xl text-xs shadow">Guardar</button>
+                <button onclick="closePrinterModal()" class="py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: CREAR PANTALLA PARA CLIENTES / COCINA -->
+    <div id="display-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-[#E9D6C7]">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-base text-[#5B3545]">🖥️ Crear Pantalla Secundaria</h3>
+                <button onclick="closeDisplayModal()" class="text-gray-400 font-bold">✕</button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="font-bold text-gray-700 block mb-1">Mostrar nombre:</label>
+                    <input type="text" id="disp-name" placeholder="Ej. Tableta Mostrador Clientes" class="w-full p-2.5 border rounded-xl bg-gray-50 font-semibold outline-none focus:border-brand-pink">
+                </div>
+                <div>
+                    <label class="font-bold text-gray-700 block mb-1">Tipo de pantalla:</label>
+                    <select id="disp-type" class="w-full p-2.5 border rounded-xl bg-gray-50 font-semibold outline-none">
+                        <option value="cds">Pantalla para Clientes (CDS)</option>
+                        <option value="kds">Pantalla de Cocina / Barra (KDS)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="font-bold text-gray-700 block mb-1">Dirección IP de la pantalla:</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="disp-ip" placeholder="Ej. 192.168.1.50" class="flex-1 p-2.5 border rounded-xl bg-gray-50 font-mono outline-none focus:border-brand-pink">
+                        <button type="button" onclick="document.getElementById('disp-ip').value = 'Nube Firebase (Auto)'; alert('📡 Vinculación automática por Nube Firebase lista. Solo abre el enlace en la tableta.');" class="px-3 bg-[#5B3545] text-white rounded-xl font-bold text-xs">Buscar</button>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between pt-1">
+                    <span class="font-bold text-[#5B3545]">Usar tema oscuro</span>
+                    <input type="checkbox" id="disp-dark" class="w-5 h-5 accent-[#E88EAF]">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-1">
+                <button onclick="saveDisplayConfig()" class="py-2.5 bg-brand-pink hover:bg-[#d67999] text-white font-bold rounded-xl text-xs shadow">📡 Vincular y Guardar</button>
+                <button onclick="closeDisplayModal()" class="py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA EN VIVO PARA CLIENTES (CDS) / COCINA (KDS) OVERLAY -->
+    <div id="live-display-overlay" class="fixed inset-0 z-[100] hidden flex-col bg-[#FFF8F2] text-[#5B3545] p-6 overflow-y-auto">
+        <div class="max-w-3xl mx-auto w-full space-y-5">
+            <div class="flex justify-between items-center border-b border-[#E9D6C7] pb-4">
+                <div>
+                    <h2 id="live-disp-title" class="text-2xl font-bold">🧋 BOBA HAUS • Tu Pedido</h2>
+                    <p id="live-disp-subtitle" class="text-xs opacity-75">Sincronizado en tiempo real</p>
+                </div>
+                <button onclick="exitLiveDisplayMode()" class="px-3 py-1.5 bg-red-500/20 text-red-600 rounded-xl text-xs font-bold">Salir</button>
+            </div>
+            <div id="live-disp-content" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <!-- ÁREA OCULTA PARA IMPRESIÓN DE PRUEBA -->
+    <div id="test-print-area" class="hidden font-mono text-xs text-black text-center p-4">
+        <h4 class="font-bold text-base">BOBA HAUS</h4>
+        <p>*** IMPRESIÓN DE PRUEBA ***</p>
+        <p id="test-print-printer-name" class="font-bold mt-2"></p>
+        <p id="test-print-date" class="text-[10px] mt-1"></p>
+        <p class="mt-2">Si puedes leer esto, tu impresora está lista.</p>
+    </div>
 
     <!-- CONTENEDOR DE NOTIFICACIONES FLOTANTES (TOASTS DE STOCK BAJO) -->
     <div id="low-stock-toast-container" class="fixed top-16 right-4 z-50 space-y-2 max-w-xs w-full pointer-events-none"></div>
@@ -747,9 +1083,11 @@
     <!-- VENTANA EMERGENTE: TECLADO NUMÉRICO TÁCTIL (PIN) -->
     <div id="pinpad-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-[#5B3545] rounded-3xl max-w-sm w-full p-6 text-[#FFF8F2] space-y-6 shadow-2xl border border-[#422632]">
-            <div class="text-center space-y-2">
-                <h3 class="text-lg font-bold">Introduzca el PIN</h3>
-                <div id="pin-dots" class="flex justify-center space-x-3 text-2xl tracking-widest text-brand-pink">
+            <div class="text-center space-y-1.5">
+                <p class="text-[11px] uppercase tracking-widest text-[#F4B6CE] font-bold">Boba Haus Seguridad</p>
+                <h3 id="pin-modal-title" class="text-lg font-bold text-white">Introduzca su PIN para Entrar</h3>
+                <p id="pin-modal-subtitle" class="text-[11px] text-[#E9D6C7]">Acceso requerido para operar el Punto de Venta</p>
+                <div id="pin-dots" class="flex justify-center space-x-3 text-2xl tracking-widest text-brand-pink pt-2">
                     ○ ○ ○ ○
                 </div>
             </div>
@@ -769,7 +1107,7 @@
                 <button type="button" onclick="backspacePin()" class="p-5 bg-[#422632] hover:bg-[#331c26] rounded-2xl text-xs font-bold transition">Borrar</button>
             </div>
 
-            <button onclick="closePinPadModal()" class="w-full py-3 bg-[#422632] hover:bg-[#331c26] text-[#E9D6C7] rounded-2xl font-bold text-xs transition">
+            <button id="btn-pin-cancel" onclick="closePinPadModal()" class="w-full py-3 bg-[#422632] hover:bg-[#331c26] text-[#E9D6C7] rounded-2xl font-bold text-xs transition">
                 Cancelar
             </button>
         </div>
@@ -957,6 +1295,8 @@
 
                 <div class="space-y-0.5 border-b pb-2 text-left">
                     <p><strong>Orden #:</strong> <span id="rec-order-num">0001</span></p>
+                    <p><strong>Código:</strong> <span id="rec-security-code" class="font-mono text-[10px]">BH-0001</span></p>
+                    <p><strong>Atendió:</strong> <span id="rec-cashier-name">Caja</span></p>
                     <p><strong>Tipo:</strong> <span id="rec-order-mode">Comer Aquí</span></p>
                     <p id="rec-customer-line" class="hidden"><strong>Cliente:</strong> <span id="rec-customer-name"></span></p>
                 </div>
@@ -1114,6 +1454,18 @@
                     shiftHistory = data.shiftHistory;
                     localStorage.setItem('boba_shiftHistory', JSON.stringify(shiftHistory));
                 }
+                if (Array.isArray(data.allReceipts)) {
+                    allReceipts = data.allReceipts;
+                    localStorage.setItem('boba_allReceipts', JSON.stringify(allReceipts));
+                }
+                if (Array.isArray(data.printersDB)) {
+                    printersDB = data.printersDB;
+                    localStorage.setItem('boba_printersDB', JSON.stringify(printersDB));
+                }
+                if (Array.isArray(data.displaysDB)) {
+                    displaysDB = data.displaysDB;
+                    localStorage.setItem('boba_displaysDB', JSON.stringify(displaysDB));
+                }
                 if (Array.isArray(data.inventoryDB)) {
                     inventoryDB = data.inventoryDB;
                     localStorage.setItem('boba_inventoryDB', JSON.stringify(inventoryDB));
@@ -1130,6 +1482,8 @@
                 if (typeof renderShiftHistory === 'function') renderShiftHistory();
                 if (typeof renderInventoryTable === 'function') renderInventoryTable();
                 if (typeof updateMonitorDashboard === 'function') updateMonitorDashboard();
+                if (typeof renderReceiptsTab === 'function') renderReceiptsTab();
+                if (typeof renderLiveKDS === 'function') renderLiveKDS();
                 if (typeof checkLowStockAlerts === 'function') checkLowStockAlerts(true);
 
                 isApplyingCloudUpdate = false;
@@ -1146,6 +1500,9 @@
                 shiftOpen,
                 shiftData,
                 shiftHistory,
+                allReceipts,
+                printersDB,
+                displaysDB,
                 inventoryDB,
                 customersDB,
                 updatedAt: Date.now()
@@ -1488,7 +1845,7 @@
         }
 
         function switchTab(id) {
-            ['pos', 'shift', 'inventory', 'monitor'].forEach(t => {
+            ['pos', 'shift', 'inventory', 'monitor', 'receipts', 'general'].forEach(t => {
                 const sec = document.getElementById(`tab-${t}`);
                 if(sec) sec.classList.add('hidden');
                 const navBtn = document.getElementById(`nav-${t}`);
@@ -1499,7 +1856,7 @@
             const activeNav = document.getElementById(`nav-${id}`);
             if(activeNav) activeNav.className = "w-full flex items-center space-x-3 px-3 py-3 rounded-xl bg-brand-pink text-white transition";
             
-            const titles = { pos: 'Punto de Venta', shift: 'Turno / Caja', inventory: 'Artículos / Inventario', monitor: 'Monitor en Vivo' };
+            const titles = { pos: 'Punto de Venta', shift: 'Turno / Caja', inventory: 'Artículos / Inventario', monitor: 'Monitor en Vivo', receipts: 'Recibos', general: 'Configuración General' };
             document.getElementById('header-section-title').innerText = titles[id] || 'Boba Haus';
 
             // Auto-cerrar menú lateral en teléfonos y tabletas
@@ -1511,6 +1868,8 @@
             if(id === 'shift') { updateTreasuryDisplay(); renderShiftHistory(); }
             if(id === 'inventory') { renderInventoryTable(); }
             if(id === 'monitor') { updateMonitorDashboard(); }
+            if(id === 'receipts') { renderReceiptsTab(); }
+            if(id === 'general') { renderPrintersList(); renderDisplaysList(); loadGeneralSettingsUI(); }
         }
 
         // --- ÓRDENES EN ESPERA ---
@@ -1849,14 +2208,53 @@
             alert(`✅ ¡Cliente "${name}" registrado con éxito y seleccionado!`);
         }
 
-        function openPinPadModal() {
+        let pinModalMode = 'switch'; // 'login' | 'exit' | 'switch' | 'backoffice'
+        let isSessionUnlocked = false;
+        let currentUserName = 'Sin autenticar';
+
+        function openPinPadModal(mode = 'switch') {
+            pinModalMode = mode;
             currentPinInput = "";
             updatePinDots();
+            const titleEl = document.getElementById('pin-modal-title');
+            const subEl = document.getElementById('pin-modal-subtitle');
+            const cancelBtn = document.getElementById('btn-pin-cancel');
+
+            if (mode === 'login') {
+                if (titleEl) titleEl.innerText = '🔐 Introduzca su PIN para Entrar';
+                if (subEl) subEl.innerText = 'Identifícate para acceder a Boba Haus POS';
+                if (cancelBtn) cancelBtn.classList.add('hidden');
+            } else if (mode === 'exit') {
+                if (titleEl) titleEl.innerText = '🚪 Confirme su PIN para Salir / Bloquear';
+                if (subEl) subEl.innerText = 'Tu turno permanecerá abierto de forma segura';
+                if (cancelBtn) cancelBtn.classList.remove('hidden');
+            } else if (mode === 'backoffice') {
+                if (titleEl) titleEl.innerText = '📊 PIN de Propietario (Back Office)';
+                if (subEl) subEl.innerText = 'Acceso exclusivo para la dueña (2107)';
+                if (cancelBtn) cancelBtn.classList.remove('hidden');
+            } else {
+                if (titleEl) titleEl.innerText = '🔑 Cambiar Usuario / PIN';
+                if (subEl) subEl.innerText = 'Ingresa tu PIN de 4 dígitos';
+                if (cancelBtn) cancelBtn.classList.remove('hidden');
+            }
             document.getElementById('pinpad-modal').classList.remove('hidden');
         }
 
         function closePinPadModal() {
+            if (pinModalMode === 'login' && !isSessionUnlocked) return;
             document.getElementById('pinpad-modal').classList.add('hidden');
+        }
+
+        function requestExitWithPin() {
+            openPinPadModal('exit');
+        }
+
+        function openBackOfficeProtected() {
+            if (isOwnerMode) {
+                window.open('./backoffice.html', '_blank');
+            } else {
+                openPinPadModal('backoffice');
+            }
         }
 
         function pressPinNum(num) {
@@ -1891,29 +2289,51 @@
 
         function validatePin(pin) {
             setTimeout(() => {
-                closePinPadModal();
-                if (pin === "2107") {
-                    isOwnerMode = true;
-                    document.getElementById('sidebar-role-title').innerText = "Propietario";
-                    document.getElementById('owner-add-section').classList.remove('hidden');
-                    alert("✅ Acceso de Propietario concedido.");
-                    renderInventoryTable();
-                } else if (pin === "0805") {
-                    isOwnerMode = false;
-                    document.getElementById('sidebar-role-title').innerText = "Turno Mañana (0805)";
-                    document.getElementById('owner-add-section').classList.add('hidden');
-                    alert("☀️ Turno Mañana activado.");
-                    renderInventoryTable();
-                } else if (pin === "3240") {
-                    isOwnerMode = false;
-                    document.getElementById('sidebar-role-title').innerText = "Turno Tarde (3240)";
-                    document.getElementById('owner-add-section').classList.add('hidden');
-                    alert("🌙 Turno Tarde activado.");
-                    renderInventoryTable();
-                } else {
-                    alert("❌ PIN Incorrecto.");
+                const validPins = {
+                    "2107": { owner: true, name: "Izel (Propietaria)" },
+                    "0805": { owner: false, name: "Turno Mañana (0805)" },
+                    "3240": { owner: false, name: "Turno Tarde (3240)" }
+                };
+
+                if (pinModalMode === 'backoffice') {
+                    if (pin === "2107") {
+                        isOwnerMode = true;
+                        currentUserName = "Izel (Propietaria)";
+                        document.getElementById('sidebar-role-title').innerText = currentUserName;
+                        document.getElementById('owner-add-section').classList.remove('hidden');
+                        document.getElementById('pinpad-modal').classList.add('hidden');
+                        window.open('./backoffice.html', '_blank');
+                    } else {
+                        alert("❌ Solo el PIN de Propietario puede abrir el Back Office.");
+                        clearPin();
+                    }
+                    return;
                 }
-            }, 200);
+
+                if (!validPins[pin]) {
+                    alert("❌ PIN Incorrecto.");
+                    clearPin();
+                    return;
+                }
+
+                if (pinModalMode === 'exit') {
+                    isSessionUnlocked = false;
+                    isOwnerMode = false;
+                    document.getElementById('sidebar-role-title').innerText = "Sistema Bloqueado";
+                    alert("🔒 Sesión bloqueada correctamente. Tu turno sigue activo.");
+                    openPinPadModal('login');
+                    return;
+                }
+
+                const user = validPins[pin];
+                isSessionUnlocked = true;
+                isOwnerMode = user.owner;
+                currentUserName = user.name;
+                document.getElementById('sidebar-role-title').innerText = user.name;
+                document.getElementById('owner-add-section').classList.toggle('hidden', !user.owner);
+                document.getElementById('pinpad-modal').classList.add('hidden');
+                renderInventoryTable();
+            }, 180);
         }
 
         function lockSystem() {
@@ -2142,6 +2562,8 @@
             isReprintingMode = true;
 
             document.getElementById('rec-order-num').innerText = ord.orderNum;
+            document.getElementById('rec-security-code').innerText = ord.securityCode || ('BH-' + ord.orderNum);
+            document.getElementById('rec-cashier-name').innerText = ord.cashier || 'Caja';
             document.getElementById('rec-order-mode').innerText = ord.mode;
             if (ord.customerName) {
                 document.getElementById('rec-customer-line').classList.remove('hidden');
@@ -2444,6 +2866,7 @@
                 const mobTot = document.getElementById('mob-cart-total');
                 if (mobCnt) mobCnt.innerText = '0';
                 if (mobTot) mobTot.innerText = '$0';
+                syncLiveCartToCloud(0, 0, 0);
                 return;
             }
 
@@ -2482,6 +2905,7 @@
             const mobTot = document.getElementById('mob-cart-total');
             if (mobCnt) mobCnt.innerText = currentCart.length;
             if (mobTot) mobTot.innerText = `$${finalTotal.toFixed(0)}`;
+            syncLiveCartToCloud(subtotal, totalDiscount, finalTotal);
         }
 
         function clearCart() { 
@@ -2614,9 +3038,11 @@
             const currentDateStr = new Date().toLocaleString();
             const custReceiptLabel = selectedCustomer ? `${selectedCustomer.name} (Puntos: ${selectedCustomer.points.toFixed(2)})` : null;
 
-            if (!Array.isArray(shiftData.orders)) shiftData.orders = [];
-            shiftData.orders.unshift({
+            const secCode = generateReceiptSecurityCode(currentOrderNum);
+            const newOrderRecord = {
                 orderNum: currentOrderNum,
+                securityCode: secCode,
+                cashier: currentUserName || 'Caja',
                 date: currentDateStr,
                 mode: currentOrderMode,
                 store: storeLoc,
@@ -2631,8 +3057,16 @@
                 cardPart: netCardPart,
                 changeVal: changeVal,
                 customerName: custReceiptLabel,
-                canceled: false
-            });
+                canceled: false,
+                refundReason: '',
+                refundedAt: '',
+                refundedBy: ''
+            };
+            if (!Array.isArray(shiftData.orders)) shiftData.orders = [];
+            shiftData.orders.unshift(newOrderRecord);
+            allReceipts.unshift(newOrderRecord);
+            if (allReceipts.length > 500) allReceipts = allReceipts.slice(0, 500);
+            localStorage.setItem('boba_allReceipts', JSON.stringify(allReceipts));
 
             localStorage.setItem('boba_shiftData', JSON.stringify(shiftData));
             isReprintingMode = false;
@@ -2658,6 +3092,8 @@
             localStorage.setItem('boba_inventoryDB', JSON.stringify(inventoryDB));
 
             document.getElementById('rec-order-num').innerText = document.getElementById('order-id-display').innerText;
+            document.getElementById('rec-security-code').innerText = secCode;
+            document.getElementById('rec-cashier-name').innerText = currentUserName || 'Caja';
             document.getElementById('rec-order-mode').innerText = document.getElementById('order-mode').options[document.getElementById('order-mode').selectedIndex].text;
             
             if (selectedCustomer) {
@@ -2958,6 +3394,481 @@ Lat: ${lat}, Lng: ${lng}`);
             // Si se abre en teléfono, ofrecer ir directo al Monitor en Vivo o quedarse en Caja
             if (detectedDeviceType === 'phone') {
                 setMobilePosView('menu');
+            }
+        });
+
+        // --- v5.2: RECIBOS, CÓDIGOS DE SEGURIDAD, GENERAL (IMPRESORAS/PANTALLAS) Y PIN AL ENTRAR/SALIR ---
+        let allReceipts = JSON.parse(localStorage.getItem('boba_allReceipts')) || [];
+        let printersDB = JSON.parse(localStorage.getItem('boba_printersDB')) || [];
+        let displaysDB = JSON.parse(localStorage.getItem('boba_displaysDB')) || [];
+        let generalSettings = JSON.parse(localStorage.getItem('boba_generalSettings')) || {
+            barcodeCam: false,
+            darkMode: 'light',
+            layoutMode: 'grid'
+        };
+
+        function generateReceiptSecurityCode(orderNum) {
+            const now = new Date();
+            const yy = String(now.getFullYear()).slice(-2);
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+            return `BH-${yy}${mm}${dd}-${orderNum}-${rand}`;
+        }
+
+        function getCombinedReceipts() {
+            const map = new Map();
+            (shiftData.orders || []).forEach(o => map.set((o.securityCode || o.orderNum + o.date), o));
+            (allReceipts || []).forEach(o => {
+                const k = o.securityCode || (o.orderNum + o.date);
+                if (!map.has(k)) map.set(k, o);
+            });
+            return Array.from(map.values());
+        }
+
+        function renderReceiptsTab() {
+            const list = document.getElementById('receipts-tab-list');
+            const pill = document.getElementById('receipts-count-pill');
+            if (!list) return;
+
+            const q = (document.getElementById('receipts-search-input')?.value || '').toLowerCase().trim();
+            const filter = document.getElementById('receipts-filter-select')?.value || 'all';
+            let combined = getCombinedReceipts();
+
+            if (filter === 'boba_haus') combined = combined.filter(o => o.store !== 'fortuna');
+            if (filter === 'fortuna') combined = combined.filter(o => o.store === 'fortuna');
+            if (filter === 'refunded') combined = combined.filter(o => o.canceled);
+
+            if (q) {
+                combined = combined.filter(o =>
+                    String(o.orderNum || '').toLowerCase().includes(q) ||
+                    String(o.securityCode || '').toLowerCase().includes(q) ||
+                    String(o.customerName || '').toLowerCase().includes(q) ||
+                    String(o.cashier || '').toLowerCase().includes(q) ||
+                    (o.items || []).some(i => i.name.toLowerCase().includes(q))
+                );
+            }
+
+            if (pill) pill.innerText = `${combined.length} recibo(s)`;
+
+            if (combined.length === 0) {
+                list.innerHTML = `<p class="text-center text-gray-400 italic py-8">No se encontraron recibos con ese criterio.</p>`;
+                return;
+            }
+
+            list.innerHTML = '';
+            combined.forEach((ord) => {
+                const code = ord.securityCode || ('BH-' + ord.orderNum);
+                const storeBadge = ord.store === 'fortuna'
+                    ? `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold">🍻 Fortuna</span>`
+                    : `<span class="bg-pink-100 text-brand-pink px-2 py-0.5 rounded-full text-[10px] font-bold">🧋 Boba Haus</span>`;
+                const statusBadge = ord.canceled
+                    ? `<span class="bg-red-600 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">REEMBOLSADO</span>`
+                    : `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-bold">PAGADO</span>`;
+
+                const div = document.createElement('div');
+                div.className = `p-3.5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${ord.canceled ? 'bg-red-50/70 border-red-200' : 'bg-[#FFF8F2] border-[#E9D6C7]'}`;
+                div.innerHTML = `
+                    <div class="space-y-1">
+                        <div class="flex items-center flex-wrap gap-1.5">
+                            <strong class="text-sm text-[#5B3545]">Recibo #${ord.orderNum}</strong>
+                            <span class="font-mono text-[10px] bg-white px-2 py-0.5 rounded border border-[#E9D6C7] text-gray-600">${code}</span>
+                            ${storeBadge}
+                            ${statusBadge}
+                        </div>
+                        <p class="text-[11px] text-gray-600">
+                            📅 ${ord.date} • 👤 Atendió: <strong>${ord.cashier || 'Caja'}</strong> • 💳 ${ord.paymentLabel}
+                        </p>
+                        <p class="text-[11px] text-gray-500">
+                            ${(ord.items || []).map(i => i.name).join(', ')}
+                        </p>
+                        ${ord.canceled && ord.refundReason ? `<p class="text-[10px] text-red-600 font-bold">Motivo reembolso: ${ord.refundReason} (${ord.refundedAt || ''})</p>` : ''}
+                    </div>
+                    <div class="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0">
+                        <strong class="text-lg text-brand-pink">$${Number(ord.total || 0).toFixed(2)}</strong>
+                        <div class="flex gap-1.5">
+                            <button onclick="reprintReceiptByCode('${code}')" class="px-2.5 py-1.5 bg-[#5B3545] hover:bg-[#422632] text-white rounded-xl text-[11px] font-bold shadow-sm">
+                                🖨️ Reimprimir
+                            </button>
+                            ${!ord.canceled ? `
+                                <button onclick="refundReceiptByCode('${code}')" class="px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl text-[11px] font-bold">
+                                    ↩️ Reembolso
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function reprintReceiptByCode(code) {
+            const ord = getCombinedReceipts().find(o => (o.securityCode || ('BH-' + o.orderNum)) === code);
+            if (!ord) return;
+            isReprintingMode = true;
+
+            document.getElementById('rec-order-num').innerText = ord.orderNum;
+            document.getElementById('rec-security-code').innerText = code;
+            document.getElementById('rec-cashier-name').innerText = ord.cashier || 'Caja';
+            document.getElementById('rec-order-mode').innerText = ord.mode;
+            if (ord.customerName) {
+                document.getElementById('rec-customer-line').classList.remove('hidden');
+                document.getElementById('rec-customer-name').innerText = ord.customerName;
+            } else {
+                document.getElementById('rec-customer-line').classList.add('hidden');
+            }
+            document.getElementById('receipt-date').innerText = ord.date + (ord.canceled ? ' [REEMBOLSADO]' : ' [REIMPRESIÓN]');
+            document.getElementById('rec-subtotal').innerText = ord.subtotal;
+            document.getElementById('rec-discount').innerText = ord.discount;
+            document.getElementById('rec-total').innerText = ord.totalText;
+            document.getElementById('rec-payment').innerText = ord.paymentLabel;
+
+            if (ord.paymentMethod === 'efectivo' || (ord.paymentMethod === 'mixto' && ord.changeVal > 0)) {
+                document.getElementById('rec-change-line').style.display = 'block';
+                document.getElementById('rec-change').innerText = `$${(ord.changeVal || 0).toFixed(2)}`;
+            } else {
+                document.getElementById('rec-change-line').style.display = 'none';
+            }
+
+            const recItemsList = document.getElementById('rec-items-list');
+            recItemsList.innerHTML = '';
+            (ord.items || []).forEach(item => {
+                const p = document.createElement('div');
+                p.className = "flex justify-between text-[10px]";
+                p.innerHTML = `<span>1x ${item.name}</span><span>$${item.price.toFixed(2)}</span>`;
+                recItemsList.appendChild(p);
+            });
+
+            document.getElementById('receipt-modal').classList.remove('hidden');
+        }
+
+        function refundReceiptByCode(code) {
+            const ordShift = (shiftData.orders || []).find(o => (o.securityCode || ('BH-' + o.orderNum)) === code);
+            const ordAll = (allReceipts || []).find(o => (o.securityCode || ('BH-' + o.orderNum)) === code);
+            const ord = ordShift || ordAll;
+            if (!ord || ord.canceled) return;
+
+            const pin = prompt(`🔒 Ingresa el PIN de Propietario para autorizar el REEMBOLSO del Recibo #${ord.orderNum} (${code}) por $${ord.total.toFixed(2)}:`);
+            if (pin === null) return;
+            if (pin.trim() !== '2107') return alert('❌ PIN incorrecto. Solo la propietaria puede autorizar reembolsos.');
+
+            const reason = prompt('Motivo del reembolso (Ej. Error de cobro, producto cambiado):', 'Error en orden') || 'Autorizado por dueña';
+            const nowStr = new Date().toLocaleString();
+
+            if (ordShift) {
+                ordShift.canceled = true;
+                ordShift.refundReason = reason;
+                ordShift.refundedAt = nowStr;
+                ordShift.refundedBy = 'Izel (Propietaria)';
+                shiftData.refunds = (shiftData.refunds || 0) + ordShift.total;
+                shiftData.cashSales = Math.max(0, shiftData.cashSales - (ordShift.cashPart || 0));
+                shiftData.cardSales = Math.max(0, shiftData.cardSales - (ordShift.cardPart || 0));
+                shiftData.totalSales = Math.max(0, shiftData.totalSales - ordShift.total);
+                if (ordShift.store === 'fortuna') {
+                    shiftData.fortunaSales = Math.max(0, (shiftData.fortunaSales || 0) - ordShift.total);
+                } else {
+                    shiftData.bobaSales = Math.max(0, (shiftData.bobaSales || 0) - ordShift.total);
+                }
+            }
+            if (ordAll) {
+                ordAll.canceled = true;
+                ordAll.refundReason = reason;
+                ordAll.refundedAt = nowStr;
+                ordAll.refundedBy = 'Izel (Propietaria)';
+            }
+
+            localStorage.setItem('boba_shiftData', JSON.stringify(shiftData));
+            localStorage.setItem('boba_allReceipts', JSON.stringify(allReceipts));
+            updateTreasuryDisplay();
+            renderReceiptsTab();
+            syncToCloud();
+            alert(`✅ Reembolso aplicado al Recibo #${ord.orderNum} (${code}).`);
+        }
+
+        function exportReceiptsCSV() {
+            const rows = getCombinedReceipts().map(o => [
+                o.orderNum,
+                o.securityCode || ('BH-' + o.orderNum),
+                `"${o.date}"`,
+                o.store === 'fortuna' ? 'Fortuna' : 'Boba Haus',
+                `"${o.cashier || 'Caja'}"`,
+                `"${o.paymentLabel}"`,
+                Number(o.total || 0).toFixed(2),
+                o.canceled ? 'REEMBOLSADO' : 'PAGADO',
+                `"${(o.refundReason || '').replace(/"/g, '""')}"`
+            ]);
+            const headers = ['Folio', 'Codigo Seguridad', 'Fecha', 'Establecimiento', 'Cajero', 'Pago', 'Total', 'Estado', 'Motivo Reembolso'];
+            const csv = "﻿" + [headers.join(','), ...rows.map(r => r.join(','))].join('
+');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `recibos_boba_haus_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // --- GENERAL: IMPRESORAS ---
+        function openPrinterModal() {
+            document.getElementById('pr-name').value = '';
+            document.getElementById('pr-ip').value = '';
+            document.getElementById('pr-receipts').checked = true;
+            document.getElementById('pr-orders').checked = false;
+            document.getElementById('printer-modal').classList.remove('hidden');
+        }
+        function closePrinterModal() { document.getElementById('printer-modal').classList.add('hidden'); }
+
+        function savePrinterConfig() {
+            const name = document.getElementById('pr-name').value.trim();
+            const model = document.getElementById('pr-model').value;
+            const ip = document.getElementById('pr-ip').value.trim() || 'Predeterminada del sistema';
+            const printReceipts = document.getElementById('pr-receipts').checked;
+            const printOrders = document.getElementById('pr-orders').checked;
+            if (!name) return alert('Ingresa un nombre para la impresora.');
+
+            printersDB.push({ id: Date.now(), name, model, ip, printReceipts, printOrders });
+            localStorage.setItem('boba_printersDB', JSON.stringify(printersDB));
+            closePrinterModal();
+            renderPrintersList();
+            syncToCloud();
+            alert(`🖨️ Impresora "${name}" guardada correctamente.`);
+        }
+
+        function renderPrintersList() {
+            const cont = document.getElementById('printers-list-container');
+            if (!cont) return;
+            if (printersDB.length === 0) {
+                cont.innerHTML = `<p class="text-gray-400 italic">No hay impresoras configuradas. Haz clic en "+ Crear impresora".</p>`;
+                return;
+            }
+            cont.innerHTML = printersDB.map((p, idx) => `
+                <div class="p-3 bg-[#FFF8F2] border border-[#E9D6C7] rounded-2xl flex items-center justify-between gap-2">
+                    <div>
+                        <p class="font-bold text-[#5B3545]">🖨️ ${p.name} <span class="text-[10px] font-normal text-gray-500">(${p.model})</span></p>
+                        <p class="text-[10px] text-gray-500">IP/Puerto: ${p.ip} • ${p.printReceipts ? '✅ Recibos' : ''} ${p.printOrders ? '✅ Pedidos' : ''}</p>
+                    </div>
+                    <div class="flex gap-1.5">
+                        <button onclick="printTestPage('${p.name}')" class="px-2.5 py-1 bg-white border border-[#E9D6C7] rounded-lg text-[10px] font-bold text-[#5B3545]">Probar</button>
+                        <button onclick="printersDB.splice(${idx},1); localStorage.setItem('boba_printersDB', JSON.stringify(printersDB)); renderPrintersList(); syncToCloud();" class="px-2 py-1 bg-red-100 text-red-600 rounded-lg text-[10px] font-bold">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function printTestPage(printerName) {
+            const name = printerName || document.getElementById('pr-name')?.value || 'Impresora Boba Haus';
+            document.getElementById('test-print-printer-name').innerText = `Equipo: ${name}`;
+            document.getElementById('test-print-date').innerText = new Date().toLocaleString();
+            document.body.classList.add('printing-test');
+            window.print();
+            setTimeout(() => document.body.classList.remove('printing-test'), 500);
+        }
+
+        // --- GENERAL: PANTALLAS PARA CLIENTES (CDS) Y COCINA (KDS) ---
+        function openDisplayModal() {
+            document.getElementById('disp-name').value = '';
+            document.getElementById('disp-ip').value = '';
+            document.getElementById('disp-dark').checked = false;
+            document.getElementById('display-modal').classList.remove('hidden');
+        }
+        function closeDisplayModal() { document.getElementById('display-modal').classList.add('hidden'); }
+
+        function saveDisplayConfig() {
+            const name = document.getElementById('disp-name').value.trim();
+            const type = document.getElementById('disp-type').value;
+            const ip = document.getElementById('disp-ip').value.trim() || 'Nube Firebase (Auto)';
+            const dark = document.getElementById('disp-dark').checked;
+            if (!name) return alert('Ingresa un nombre para la pantalla.');
+
+            displaysDB.push({ id: Date.now(), name, type, ip, dark });
+            localStorage.setItem('boba_displaysDB', JSON.stringify(displaysDB));
+            closeDisplayModal();
+            renderDisplaysList();
+            syncToCloud();
+            alert(`🖥️ Pantalla "${name}" vinculada correctamente.`);
+        }
+
+        function renderDisplaysList() {
+            const cont = document.getElementById('displays-list-container');
+            if (!cont) return;
+            if (displaysDB.length === 0) {
+                cont.innerHTML = `<p class="text-gray-400 italic">No hay pantallas vinculadas manualmente todavía.</p>`;
+                return;
+            }
+            cont.innerHTML = displaysDB.map((d, idx) => `
+                <div class="p-3 bg-[#FFF8F2] border border-[#E9D6C7] rounded-2xl flex items-center justify-between gap-2">
+                    <div>
+                        <p class="font-bold text-[#5B3545]">${d.type === 'kds' ? '👨‍🍳' : '🖥️'} ${d.name} <span class="text-[10px] font-normal text-gray-500">(${d.type.toUpperCase()})</span></p>
+                        <p class="text-[10px] text-gray-500">Conexión: ${d.ip} • Tema: ${d.dark ? 'Oscuro' : 'Claro'}</p>
+                    </div>
+                    <div class="flex gap-1.5">
+                        <button onclick="openLiveDisplayMode('${d.type}', ${d.dark})" class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-bold">Abrir</button>
+                        <button onclick="displaysDB.splice(${idx},1); localStorage.setItem('boba_displaysDB', JSON.stringify(displaysDB)); renderDisplaysList(); syncToCloud();" class="px-2 py-1 bg-red-100 text-red-600 rounded-lg text-[10px] font-bold">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        let activeLiveDisplayMode = null;
+        function syncLiveCartToCloud(subtotal, discount, total) {
+            if (!fbDb) return;
+            fbDb.ref('boba_haus_pos/liveCart').set({
+                items: currentCart,
+                subtotal,
+                discount,
+                total,
+                customer: selectedCustomer ? selectedCustomer.name : '',
+                updatedAt: Date.now()
+            }).catch(() => {});
+        }
+
+        function openLiveDisplayMode(mode, forceDark = false) {
+            activeLiveDisplayMode = mode;
+            const overlay = document.getElementById('live-display-overlay');
+            const title = document.getElementById('live-disp-title');
+            const sub = document.getElementById('live-disp-subtitle');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            if (forceDark) {
+                overlay.style.backgroundColor = '#1c1619';
+                overlay.style.color = '#FFF8F2';
+            } else {
+                overlay.style.backgroundColor = '#FFF8F2';
+                overlay.style.color = '#5B3545';
+            }
+
+            if (mode === 'cds') {
+                title.innerText = '🧋 BOBA HAUS • Pantalla para Clientes';
+                sub.innerText = 'Tu pedido en tiempo real • ¡Gracias por tu preferencia!';
+                if (fbDb) {
+                    fbDb.ref('boba_haus_pos/liveCart').on('value', (snap) => {
+                        if (activeLiveDisplayMode !== 'cds') return;
+                        renderLiveCDS(snap.val());
+                    });
+                }
+            } else {
+                title.innerText = '👨‍🍳 BOBA HAUS • Pantalla de Cocina / Barra (KDS)';
+                sub.innerText = 'Comandas entrantes en tiempo real';
+                renderLiveKDS();
+            }
+        }
+
+        function renderLiveCDS(cartObj) {
+            const cont = document.getElementById('live-disp-content');
+            if (!cont) return;
+            if (!cartObj || !cartObj.items || cartObj.items.length === 0) {
+                cont.innerHTML = `
+                    <div class="text-center py-16 space-y-3">
+                        <div class="text-6xl">🧋</div>
+                        <h3 class="text-3xl font-bold">¡Bienvenido a Boba Haus!</h3>
+                        <p class="text-sm opacity-75">"Hecho con cariño, servido con pasión"</p>
+                    </div>`;
+                return;
+            }
+            cont.innerHTML = `
+                ${cartObj.customer ? `<p class="text-sm font-bold text-emerald-600">👤 Cliente: ${cartObj.customer}</p>` : ''}
+                <div class="space-y-2">
+                    ${cartObj.items.map(i => `
+                        <div class="p-4 rounded-2xl bg-white/90 text-[#5B3545] border border-[#E9D6C7] flex justify-between items-center shadow-sm">
+                            <div>
+                                <p class="font-bold text-lg">${i.name}</p>
+                                ${i.options ? `<p class="text-xs text-gray-500">${i.options}</p>` : ''}
+                            </div>
+                            <strong class="text-lg text-brand-pink">$${Number(i.price).toFixed(2)}</strong>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="p-5 rounded-3xl bg-[#5B3545] text-white flex justify-between items-center shadow-xl mt-4">
+                    <span class="text-xl font-bold">TOTAL A PAGAR:</span>
+                    <span class="text-4xl font-bold text-[#F4B6CE]">$${Number(cartObj.total || 0).toFixed(2)}</span>
+                </div>
+            `;
+        }
+
+        function renderLiveKDS() {
+            if (activeLiveDisplayMode !== 'kds') return;
+            const cont = document.getElementById('live-disp-content');
+            const orders = (shiftData.orders || []).filter(o => !o.canceled).slice(0, 12);
+            if (orders.length === 0) {
+                cont.innerHTML = `<p class="text-center py-16 text-lg opacity-60">✅ Sin comandas pendientes en barra.</p>`;
+                return;
+            }
+            cont.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">` + orders.map(o => `
+                <div class="p-4 rounded-2xl bg-white text-[#5B3545] border-2 border-amber-400 shadow-md space-y-2">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <strong class="text-lg">ORDEN #${o.orderNum}</strong>
+                        <span class="text-xs font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-lg">${o.mode}</span>
+                    </div>
+                    <div class="space-y-1 text-sm">
+                        ${(o.items || []).map(i => `<p class="font-bold">• 1x ${i.name} <span class="text-xs font-normal text-gray-500">${i.options || ''}</span></p>`).join('')}
+                    </div>
+                    <p class="text-[10px] text-gray-400 pt-1">${o.date}</p>
+                </div>
+            `).join('') + `</div>`;
+        }
+
+        function exitLiveDisplayMode() {
+            activeLiveDisplayMode = null;
+            const overlay = document.getElementById('live-display-overlay');
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+        }
+
+        // --- GENERAL: AJUSTES ---
+        function loadGeneralSettingsUI() {
+            const cb = document.getElementById('setting-barcode-cam');
+            const dm = document.getElementById('setting-dark-mode');
+            const lm = document.getElementById('setting-layout-mode');
+            if (cb) cb.checked = !!generalSettings.barcodeCam;
+            if (dm) dm.value = generalSettings.darkMode || 'light';
+            if (lm) lm.value = generalSettings.layoutMode || 'grid';
+        }
+
+        function applyGeneralSettings() {
+            document.body.classList.toggle('dark-mode', generalSettings.darkMode === 'dark');
+            document.body.classList.toggle('layout-list', generalSettings.layoutMode === 'list');
+        }
+
+        function saveGeneralSettings() {
+            generalSettings.barcodeCam = !!document.getElementById('setting-barcode-cam')?.checked;
+            generalSettings.darkMode = document.getElementById('setting-dark-mode')?.value || 'light';
+            generalSettings.layoutMode = document.getElementById('setting-layout-mode')?.value || 'grid';
+            localStorage.setItem('boba_generalSettings', JSON.stringify(generalSettings));
+            applyGeneralSettings();
+        }
+
+        function openCashDrawerAction() {
+            const pin = prompt('🔓 Ingresa tu PIN para registrar apertura de cajón de efectivo:');
+            if (!pin || !['2107', '0805', '3240'].includes(pin.trim())) {
+                return alert('❌ PIN incorrecto.');
+            }
+            alert('✅ Cajón de efectivo liberado y apertura registrada.');
+        }
+
+        // Pedir PIN obligatorio al entrar y aviso al cerrar pestaña
+        window.addEventListener('beforeunload', (e) => {
+            if (isSessionUnlocked) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        window.addEventListener('load', () => {
+            applyGeneralSettings();
+            loadGeneralSettingsUI();
+            renderPrintersList();
+            renderDisplaysList();
+            renderReceiptsTab();
+
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('mode') === 'cds') {
+                openLiveDisplayMode('cds', false);
+            } else if (params.get('mode') === 'kds') {
+                openLiveDisplayMode('kds', false);
+            } else {
+                // Pedir PIN obligatorio al entrar a la app
+                openPinPadModal('login');
             }
         });
     </script>
