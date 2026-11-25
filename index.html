@@ -176,7 +176,7 @@
         </div>
 
         <div class="p-3 border-t border-[#422632] text-[11px] text-[#E9D6C7] text-center">
-            Boba Haus POS v5.5 (Pro + Artículos)
+            Boba Haus POS v5.6 (Pro + Variantes)
         </div>
     </aside>
 
@@ -1209,6 +1209,16 @@
                     <input type="number" id="modal-qty-input" min="1" max="50" value="1" onchange="updateModalTotal()" onkeyup="updateModalTotal()" class="w-16 p-2 border border-[#E9D6C7] rounded-xl text-center font-bold text-brand-pink bg-white outline-none text-sm">
                     <button type="button" onclick="changeQty(1)" class="w-9 h-9 bg-white border border-brand-pink text-brand-pink rounded-xl font-bold hover:bg-pink-100 active:scale-95 transition flex items-center justify-center text-sm shadow-sm">+</button>
                 </div>
+            </div>
+
+            <div id="variable-price-section" style="display: none;" class="bg-amber-50 p-3 rounded-2xl border border-amber-200">
+                <label class="text-xs font-bold block mb-1 text-amber-900">💵 Precio Variable (Ingresa el precio de venta):</label>
+                <input type="number" step="0.50" id="modal-variable-price-input" oninput="updateModalTotal()" placeholder="Ej. 65.00" class="w-full p-2 border border-amber-300 rounded-xl bg-white font-bold text-brand-pink text-sm text-center outline-none">
+            </div>
+
+            <div id="variants-section" style="display: none;">
+                <label class="text-xs font-bold block mb-1 text-gray-700">Selecciona Variante:</label>
+                <select id="modal-variant-select" onchange="updateModalTotal()" class="w-full p-2 border rounded-xl text-xs bg-[#FFF8F2] font-bold text-[#5B3545] outline-none"></select>
             </div>
 
             <div id="base-topping-section" style="display: none;">
@@ -2902,15 +2912,28 @@
             const grid = document.getElementById('products-desglose-grid');
             grid.innerHTML = '';
             
-            const filtered = productsDB.filter(p => p.category === cat);
+            const filtered = productsDB.filter(p => p.category === cat && p.available !== false);
             filtered.forEach(p => {
                 const div = document.createElement('div');
                 div.className = "bg-white p-3 rounded-2xl border border-[#E9D6C7] shadow-sm hover:border-pink-300 transition cursor-pointer flex flex-col justify-between";
                 div.onclick = () => openCustomModal(p);
+
+                let visualHTML = '';
+                if (p.repType === 'image' && p.repImage) {
+                    visualHTML = `<img src="${p.repImage}" class="w-full h-20 object-cover rounded-xl mb-2 border border-[#E9D6C7]">`;
+                } else if (p.repColor) {
+                    const shapeCls = p.repShape === 'circle' ? 'rounded-full' : 'rounded-lg';
+                    visualHTML = `<div class="w-6 h-2.5 ${shapeCls} mb-1.5" style="background:${p.repColor}"></div>`;
+                }
+                const priceLabel = p.isVariable ? 'Variable' : `$${Number(p.price || 0).toFixed(2)}`;
+
                 div.innerHTML = `
-                    <h4 class="font-bold text-xs text-[#5B3545]">${p.name}</h4>
+                    <div>
+                        ${visualHTML}
+                        <h4 class="font-bold text-xs text-[#5B3545]">${p.name}</h4>
+                    </div>
                     <div class="mt-2 flex justify-between items-center pt-2 border-t border-[#E9D6C7]">
-                        <span class="font-bold text-brand-pink text-xs">$${p.price.toFixed(2)}</span>
+                        <span class="font-bold text-brand-pink text-xs">${priceLabel}</span>
                         <span class="w-5 h-5 rounded-full bg-pink-100 text-brand-pink font-bold flex items-center justify-center text-xs">+</span>
                     </div>
                 `;
@@ -2928,14 +2951,38 @@
         function openCustomModal(product) {
             activeProduct = product;
             document.getElementById('modal-product-name').innerText = product.name;
-            document.getElementById('modal-product-price-tag').innerText = `$${product.price.toFixed(2)}`;
+            document.getElementById('modal-product-price-tag').innerText = product.isVariable ? 'Precio Variable' : `$${Number(product.price || 0).toFixed(2)}`;
             document.getElementById('modal-qty-input').value = 1;
-            
+
+            const varPriceSec = document.getElementById('variable-price-section');
+            const varPriceInp = document.getElementById('modal-variable-price-input');
+            if (varPriceSec && varPriceInp) {
+                varPriceSec.style.display = product.isVariable ? 'block' : 'none';
+                varPriceInp.value = product.isVariable ? '' : (product.price || 0);
+            }
+
+            const varSec = document.getElementById('variants-section');
+            const varSel = document.getElementById('modal-variant-select');
+            if (varSec && varSel) {
+                if (Array.isArray(product.variants) && product.variants.length > 0) {
+                    varSec.style.display = 'block';
+                    varSel.innerHTML = product.variants.map((v, i) => `<option value="${i}" data-price="${v.price}">${v.name} — $${Number(v.price || 0).toFixed(2)}</option>`).join('');
+                } else {
+                    varSec.style.display = 'none';
+                    varSel.innerHTML = '';
+                }
+            }
+
             const cat = product.category;
-            document.getElementById('sugar-section').style.display = ['cafe_frio', 'cafe_caliente', 'temporada'].includes(cat) ? 'block' : 'none';
-            document.getElementById('ice-section').style.display = ['soda', 'cafe_frio', 'tizana', 'temporada'].includes(cat) ? 'block' : 'none';
+            const mods = product.modifiers || null;
+            const showSugar = mods ? !!mods.sugar : ['cafe_frio', 'cafe_caliente', 'temporada'].includes(cat);
+            const showIce = mods ? !!mods.ice : ['soda', 'cafe_frio', 'tizana', 'temporada'].includes(cat);
+            const showToppings = mods ? !!mods.toppings : ['boba', 'xolot', 'soda', 'frappe', 'smoothie', 'temporada'].includes(cat);
+
+            document.getElementById('sugar-section').style.display = showSugar ? 'block' : 'none';
+            document.getElementById('ice-section').style.display = showIce ? 'block' : 'none';
             document.getElementById('base-topping-section').style.display = ['boba', 'xolot', 'soda', 'temporada'].includes(cat) ? 'block' : 'none';
-            document.getElementById('extra-toppings-section').style.display = ['boba', 'xolot', 'soda', 'frappe', 'smoothie', 'temporada'].includes(cat) ? 'block' : 'none';
+            document.getElementById('extra-toppings-section').style.display = showToppings ? 'block' : 'none';
 
             document.querySelectorAll('.extra-cb').forEach(cb => cb.checked = false);
             updateModalTotal();
@@ -2963,7 +3010,13 @@
             if (qty > 50) qty = 50;
             document.getElementById('modal-qty-input').value = qty;
 
-            let unitTotal = activeProduct.price;
+            let unitTotal = Number(activeProduct.price || 0);
+            if (activeProduct.isVariable) {
+                unitTotal = parseFloat(document.getElementById('modal-variable-price-input')?.value) || 0;
+            } else if (Array.isArray(activeProduct.variants) && activeProduct.variants.length > 0) {
+                const vIdx = parseInt(document.getElementById('modal-variant-select')?.value) || 0;
+                if (activeProduct.variants[vIdx]) unitTotal = Number(activeProduct.variants[vIdx].price || 0);
+            }
             document.querySelectorAll('.extra-cb:checked').forEach(cb => unitTotal += parseFloat(cb.dataset.price));
             let total = unitTotal * qty;
             document.getElementById('modal-calculated-total').innerText = `$${total.toFixed(2)}`;
@@ -2974,8 +3027,20 @@
         function confirmCustomProductAdd() {
             if (!activeProduct) return;
             let qty = parseInt(document.getElementById('modal-qty-input').value) || 1;
-            let finalPrice = activeProduct.price;
+            let finalPrice = Number(activeProduct.price || 0);
             let optionsArr = [];
+            if (activeProduct.isVariable) {
+                const vp = parseFloat(document.getElementById('modal-variable-price-input')?.value);
+                if (isNaN(vp) || vp <= 0) return alert('Ingresa un precio válido para este artículo variable.');
+                finalPrice = vp;
+            } else if (Array.isArray(activeProduct.variants) && activeProduct.variants.length > 0) {
+                const vIdx = parseInt(document.getElementById('modal-variant-select')?.value) || 0;
+                const chosenVar = activeProduct.variants[vIdx];
+                if (chosenVar) {
+                    finalPrice = Number(chosenVar.price || 0);
+                    optionsArr.push(`Variante: ${chosenVar.name}`);
+                }
+            }
 
             if (['boba', 'xolot', 'soda', 'temporada'].includes(activeProduct.category)) {
                 optionsArr.push(`Topping: ${document.getElementById('modal-base-topping-select').value}`);

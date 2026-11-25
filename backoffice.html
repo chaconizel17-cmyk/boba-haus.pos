@@ -488,102 +488,227 @@
         </section>
     </main>
 
-    <!-- MODAL: CREAR / EDITAR ARTÍCULO (ESTILO LOYVERSE) -->
-    <div id="goods-editor-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-3 sm:p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-[#E9D6C7] max-h-[92vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b border-[#E9D6C7] pb-3">
-                <h3 id="ge-modal-title" class="font-bold text-lg text-[#5B3545]">🏷️ Editar Artículo</h3>
-                <button onclick="closeGoodsEditorModal()" class="text-gray-400 hover:text-gray-700 font-bold text-lg">✕</button>
+    <!-- MODAL: CREAR / EDITAR ARTÍCULO (ESTILO LOYVERSE COMPLETO) -->
+    <div id="goods-editor-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-2 sm:p-4 hidden">
+        <div class="bg-[#FFF8F2] rounded-3xl max-w-2xl w-full shadow-2xl border border-[#E9D6C7] max-h-[94vh] flex flex-col overflow-hidden">
+            <!-- Header -->
+            <div class="bg-[#5B3545] text-white px-5 py-3.5 flex justify-between items-center shrink-0">
+                <h3 id="ge-modal-title" class="font-bold text-base text-white">Editar artículo</h3>
+                <button onclick="closeGoodsEditorModal()" class="text-[#F4B6CE] hover:text-white font-bold text-lg">✕</button>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div class="sm:col-span-2">
-                    <label class="font-bold text-gray-600 block mb-1">Nombre del artículo *</label>
-                    <input type="text" id="ge-name" placeholder="Ej. Boba Taro" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-bold text-[#5B3545] outline-none focus:border-brand-pink">
-                </div>
-                <div>
-                    <label class="font-bold text-gray-600 block mb-1">Categoría *</label>
-                    <select id="ge-category" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-bold text-[#5B3545] outline-none">
-                        <option value="temporada">Temporada</option>
-                        <option value="boba">Boba</option>
-                        <option value="matcha_mango">Matcha Mango</option>
-                        <option value="xolot">Xolot</option>
-                        <option value="fortuna">Fortuna</option>
-                        <option value="soda">Soda Italiana</option>
-                        <option value="frappe">Frappé</option>
-                        <option value="smoothie">Smoothie</option>
-                        <option value="cafe_frio">Café Frío</option>
-                        <option value="cafe_caliente">Café Caliente</option>
-                        <option value="tizana">Tizana</option>
-                        <option value="bowl">Bowl</option>
-                        <option value="crepas">Crepas</option>
-                        <option value="banderillas">Banderillas</option>
-                        <option value="pasteles">Pasteles</option>
-                        <option value="comida">Comida</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="font-bold text-gray-600 block mb-1">SKU / Código</label>
-                    <input type="text" id="ge-sku" placeholder="Auto (Ej. BH-1001)" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] font-mono outline-none">
+            <!-- Scrollable Body -->
+            <div class="p-4 sm:p-5 space-y-4 overflow-y-auto text-xs flex-1">
+                <!-- Tarjeta 1: Datos principales -->
+                <div class="bg-white p-4 rounded-2xl border border-[#E9D6C7] space-y-3.5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="font-bold text-gray-500 block mb-1">Nombre *</label>
+                            <input type="text" id="ge-name" placeholder="Ej. BANDERILLAS COREANAS" class="w-full p-2 border-b-2 border-[#E9D6C7] focus:border-brand-pink bg-transparent font-bold text-[#5B3545] outline-none">
+                        </div>
+                        <div>
+                            <label class="font-bold text-gray-500 block mb-1">Categoría</label>
+                            <select id="ge-category" class="w-full p-2 border-b-2 border-[#E9D6C7] focus:border-brand-pink bg-transparent font-bold text-[#5B3545] outline-none">
+                                <option value="temporada">Temporada</option>
+                                <option value="boba">Boba</option>
+                                <option value="matcha_mango">Matcha Mango</option>
+                                <option value="xolot">Xolot</option>
+                                <option value="fortuna">Fortuna</option>
+                                <option value="soda">Soda Italiana</option>
+                                <option value="frappe">Frappé</option>
+                                <option value="smoothie">Smoothie</option>
+                                <option value="cafe_frio">Café Frío</option>
+                                <option value="cafe_caliente">Café Caliente</option>
+                                <option value="tizana">Tizana</option>
+                                <option value="bowl">Bowl</option>
+                                <option value="crepas">Crepas</option>
+                                <option value="banderillas">Banderillas</option>
+                                <option value="pasteles">Pasteles</option>
+                                <option value="comida">Comida</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="font-bold text-gray-500 block mb-1">Descripción</label>
+                        <textarea id="ge-desc" rows="2" placeholder="Descripción opcional del artículo..." class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-[#FFF8F2] outline-none focus:border-brand-pink"></textarea>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+                        <label class="flex items-center space-x-2 cursor-pointer font-bold text-[#5B3545]">
+                            <input type="checkbox" id="ge-available" checked class="w-4 h-4 accent-emerald-600 rounded">
+                            <span>El artículo está disponible para la venta</span>
+                        </label>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-gray-500 font-bold">Vendido por:</span>
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="radio" name="ge-soldby" value="unit" checked class="accent-emerald-600">
+                                <span class="font-semibold">Unidad</span>
+                            </label>
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="radio" name="ge-soldby" value="weight" class="accent-emerald-600">
+                                <span class="font-semibold">Peso/Volumen</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <div>
+                            <label class="font-bold text-gray-500 block mb-1">Precio ($)</label>
+                            <input type="number" step="0.50" id="ge-price" oninput="updateGoodsMarginPreview()" placeholder="Dejar en blanco = Variable" class="w-full p-2 border-b-2 border-[#E9D6C7] focus:border-brand-pink bg-transparent font-bold text-brand-pink text-sm outline-none">
+                            <p class="text-[10px] text-gray-400 mt-0.5">Para especificar el precio durante la venta, deje el campo en blanco.</p>
+                        </div>
+                        <div>
+                            <label class="font-bold text-gray-500 block mb-1">Coste ($)</label>
+                            <input type="number" step="0.50" id="ge-cost" oninput="updateGoodsMarginPreview()" placeholder="0.00" class="w-full p-2 border-b-2 border-[#E9D6C7] focus:border-brand-pink bg-transparent font-bold text-[#5B3545] text-sm outline-none">
+                            <p id="ge-margin-preview" class="text-[10px] font-bold text-emerald-700 mt-0.5">Margen: —</p>
+                        </div>
+                        <div>
+                            <label class="font-bold text-gray-500 block mb-1">REF (SKU)</label>
+                            <input type="text" id="ge-sku" placeholder="Ej. 10017" class="w-full p-2 border-b-2 border-[#E9D6C7] focus:border-brand-pink bg-transparent font-mono outline-none">
+                        </div>
+                        <div>
+                            <label class="font-bold text-gray-500 block mb-1">Código de barras</label>
+                            <input type="text" id="ge-barcode" placeholder="Opcional" class="w-full p-2 border-b-2 border-[#E9D6C7] focus:border-brand-pink bg-transparent font-mono outline-none">
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Precio, Costo y Margen en Vivo -->
-                <div>
-                    <label class="font-bold text-gray-600 block mb-1">Precio de venta ($) *</label>
-                    <input type="number" step="0.50" id="ge-price" oninput="updateGoodsMarginPreview()" placeholder="70.00" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-white font-bold text-brand-pink text-sm outline-none focus:border-brand-pink">
+                <!-- Tarjeta 2: Inventario -->
+                <div class="bg-white p-4 rounded-2xl border border-[#E9D6C7] space-y-3">
+                    <h4 class="font-bold text-sm text-[#5B3545]">Inventario</h4>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-bold text-[#5B3545]">Artículo compuesto</p>
+                            <p class="text-[10px] text-gray-400">Descuenta insumos del almacén según receta</p>
+                        </div>
+                        <input type="checkbox" id="ge-is-composite" onchange="toggleGoodsComposite()" class="w-5 h-5 accent-[#E88EAF]">
+                    </div>
+                    <div id="ge-composite-box" class="hidden p-3 bg-[#FFF8F2] rounded-xl border border-[#E9D6C7] space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-[#5B3545]">🧪 Ingredientes / Receta</span>
+                            <button type="button" onclick="addGoodsRecipeRow()" class="px-2.5 py-1 bg-[#5B3545] text-white rounded-lg font-bold text-[10px]">+ Añadir insumo</button>
+                        </div>
+                        <div id="ge-recipe-rows" class="space-y-1.5"></div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-[#E9D6C7]/60">
+                        <div>
+                            <p class="font-bold text-[#5B3545]">Seguir el Inventario</p>
+                            <p class="text-[10px] text-gray-400">Control por unidad/pieza en existencia</p>
+                        </div>
+                        <input type="checkbox" id="ge-track-stock" onchange="toggleGoodsStockFields()" class="w-5 h-5 accent-[#E88EAF]">
+                    </div>
+                    <div id="ge-stock-fields" class="grid grid-cols-2 gap-3 hidden pt-1">
+                        <div>
+                            <label class="font-bold text-gray-500 block mb-1">En stock:</label>
+                            <input type="number" id="ge-stock" value="0" class="w-full p-2 border rounded-xl bg-[#FFF8F2] font-bold outline-none">
+                        </div>
+                        <div>
+                            <label class="font-bold text-gray-500 block mb-1">Alerta stock bajo:</label>
+                            <input type="number" id="ge-min-stock" value="5" class="w-full p-2 border rounded-xl bg-[#FFF8F2] font-bold outline-none">
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="font-bold text-gray-600 block mb-1">Costo de elaboración ($)</label>
-                    <input type="number" step="0.50" id="ge-cost" oninput="updateGoodsMarginPreview()" placeholder="22.00" class="w-full p-2.5 border border-[#E9D6C7] rounded-xl bg-white font-bold text-[#5B3545] text-sm outline-none focus:border-brand-pink">
+
+                <!-- Tarjeta 3: Variantes -->
+                <div class="bg-white p-4 rounded-2xl border border-[#E9D6C7] space-y-3">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold text-sm text-[#5B3545]">Variantes</h4>
+                            <p class="text-[10px] text-gray-400">Usa variantes si el artículo tiene diferentes tamaños, sabores u opciones.</p>
+                        </div>
+                        <button type="button" onclick="addGoodsVariantRow()" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 rounded-xl font-bold text-[11px]">
+                            + AÑADIR VARIANTE
+                        </button>
+                    </div>
+                    <div id="ge-variants-rows" class="space-y-2"></div>
                 </div>
-                <div class="sm:col-span-2 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
-                    <span class="font-bold text-emerald-900">📊 Margen de ganancia estimado:</span>
-                    <span id="ge-margin-preview" class="text-sm font-bold text-emerald-700">—</span>
+
+                <!-- Tarjeta 4: Modificadores -->
+                <div class="bg-white p-4 rounded-2xl border border-[#E9D6C7] space-y-2.5">
+                    <h4 class="font-bold text-sm text-[#5B3545]">Modificadores en el TPV</h4>
+                    <div class="divide-y divide-[#E9D6C7]/60">
+                        <label class="py-2 flex items-center justify-between cursor-pointer">
+                            <span class="font-semibold text-[#5B3545]">Azúcar (100%, 75%, 50%, Sin azúcar)</span>
+                            <input type="checkbox" id="ge-mod-sugar" class="w-5 h-5 accent-[#E88EAF]">
+                        </label>
+                        <label class="py-2 flex items-center justify-between cursor-pointer">
+                            <span class="font-semibold text-[#5B3545]">Hielo (Normal, Poco, Sin hielo)</span>
+                            <input type="checkbox" id="ge-mod-ice" class="w-5 h-5 accent-[#E88EAF]">
+                        </label>
+                        <label class="py-2 flex items-center justify-between cursor-pointer">
+                            <span class="font-semibold text-[#5B3545]">Toppings Extras (+$10)</span>
+                            <input type="checkbox" id="ge-mod-toppings" class="w-5 h-5 accent-[#E88EAF]">
+                        </label>
+                        <label class="py-2 flex items-center justify-between cursor-pointer">
+                            <span class="font-semibold text-[#5B3545]">FORTUNA (Aplica Hora Feliz)</span>
+                            <input type="checkbox" id="ge-mod-fortuna" class="w-5 h-5 accent-[#E88EAF]">
+                        </label>
+                        <label class="py-2 flex items-center justify-between cursor-pointer">
+                            <span class="font-semibold text-[#5B3545]">Café extra</span>
+                            <input type="checkbox" id="ge-mod-extra-coffee" class="w-5 h-5 accent-[#E88EAF]">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 5: Representación en el TPV (Color/Forma o Imagen) -->
+                <div class="bg-white p-4 rounded-2xl border border-[#E9D6C7] space-y-3">
+                    <h4 class="font-bold text-sm text-[#5B3545]">Representación en el TPV</h4>
+                    <div class="flex items-center space-x-5">
+                        <label class="flex items-center space-x-1.5 cursor-pointer font-bold">
+                            <input type="radio" name="ge-rep" value="color" checked onchange="toggleGoodsRepMode()" class="accent-emerald-600">
+                            <span>Color y forma</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 cursor-pointer font-bold">
+                            <input type="radio" name="ge-rep" value="image" onchange="toggleGoodsRepMode()" class="accent-emerald-600">
+                            <span>Imagen</span>
+                        </label>
+                    </div>
+
+                    <div id="ge-rep-color-box" class="space-y-3 pt-1">
+                        <div class="flex flex-wrap gap-2" id="ge-color-swatches">
+                            <!-- Swatches generated via JS -->
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[11px] text-gray-500 font-bold">Forma:</span>
+                            <button type="button" onclick="selectGoodsShape('square')" data-shape="square" class="ge-shape-btn w-9 h-9 border-2 border-[#E9D6C7] rounded-lg flex items-center justify-center font-bold">▢</button>
+                            <button type="button" onclick="selectGoodsShape('circle')" data-shape="circle" class="ge-shape-btn w-9 h-9 border-2 border-[#E9D6C7] rounded-full flex items-center justify-center font-bold">○</button>
+                            <button type="button" onclick="selectGoodsShape('star')" data-shape="star" class="ge-shape-btn w-9 h-9 border-2 border-[#E9D6C7] rounded-xl flex items-center justify-center font-bold">✹</button>
+                            <button type="button" onclick="selectGoodsShape('hex')" data-shape="hex" class="ge-shape-btn w-9 h-9 border-2 border-[#E9D6C7] rounded-xl flex items-center justify-center font-bold">⬡</button>
+                        </div>
+                    </div>
+
+                    <div id="ge-rep-image-box" class="hidden flex items-center gap-4 pt-1">
+                        <div class="relative w-20 h-20 rounded-2xl border-2 border-dashed border-[#E9D6C7] bg-[#FFF8F2] overflow-hidden flex items-center justify-center shrink-0">
+                            <img id="ge-img-preview" src="" class="w-full h-full object-cover hidden">
+                            <span id="ge-img-placeholder" class="text-2xl text-gray-300">📷</span>
+                            <button type="button" id="ge-img-clear" onclick="clearGoodsImage()" class="hidden absolute top-0.5 right-0.5 w-5 h-5 bg-black/70 text-white rounded-full text-[10px] font-bold">✕</button>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="inline-block px-3 py-2 bg-[#5B3545] hover:bg-[#422632] text-white rounded-xl font-bold text-[11px] cursor-pointer shadow">
+                                📤 Subir foto del artículo
+                                <input type="file" accept="image/*" onchange="handleGoodsImageUpload(event)" class="hidden">
+                            </label>
+                            <p class="text-[10px] text-gray-400">Se comprime automáticamente para cargar rápido en el TPV.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- INVENTARIO / SEGUIMIENTO DE STOCK -->
-            <div class="p-4 rounded-2xl bg-[#FFF8F2] border border-[#E9D6C7] space-y-3 text-xs">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="font-bold text-[#5B3545]">📦 Seguir el inventario por pieza</p>
-                        <p class="text-[11px] text-gray-500">Ideal para pasteles, cervezas o productos empaquetados.</p>
-                    </div>
-                    <input type="checkbox" id="ge-track-stock" onchange="toggleGoodsStockFields()" class="w-5 h-5 accent-[#E88EAF]">
-                </div>
-                <div id="ge-stock-fields" class="grid grid-cols-2 gap-3 hidden pt-1">
-                    <div>
-                        <label class="font-bold text-gray-600 block mb-1">En existencias:</label>
-                        <input type="number" id="ge-stock" value="0" class="w-full p-2 border rounded-xl bg-white font-bold outline-none">
-                    </div>
-                    <div>
-                        <label class="font-bold text-gray-600 block mb-1">Alerta de stock bajo:</label>
-                        <input type="number" id="ge-min-stock" value="5" class="w-full p-2 border rounded-xl bg-white font-bold outline-none">
-                    </div>
-                </div>
-            </div>
-
-            <!-- ARTÍCULO COMPUESTO (RECETA / INGREDIENTES) -->
-            <div class="p-4 rounded-2xl bg-[#FFF8F2] border border-[#E9D6C7] space-y-3 text-xs">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="font-bold text-[#5B3545]">🧪 Artículo compuesto (Receta de insumos)</p>
-                        <p class="text-[11px] text-gray-500">Descuenta gramos, ml o piezas automáticamente del almacén al venderse.</p>
-                    </div>
-                    <button type="button" onclick="addGoodsRecipeRow()" class="px-2.5 py-1.5 bg-[#5B3545] hover:bg-[#422632] text-white rounded-xl font-bold text-[11px]">
-                        + Añadir insumo
+            <!-- Footer estilo Loyverse: RETIRAR | CANCELAR | GUARDAR -->
+            <div class="bg-white border-t border-[#E9D6C7] px-5 py-3 flex items-center justify-between gap-2 shrink-0">
+                <button id="ge-btn-delete" type="button" onclick="deleteCurrentGoodsItem()" class="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-xl text-xs transition">
+                    RETIRAR
+                </button>
+                <div class="flex gap-2">
+                    <button type="button" onclick="closeGoodsEditorModal()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition">
+                        CANCELAR
+                    </button>
+                    <button type="button" onclick="saveGoodsItem()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition">
+                        GUARDAR
                     </button>
                 </div>
-                <div id="ge-recipe-rows" class="space-y-2"></div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-[#E9D6C7]">
-                <button onclick="saveGoodsItem()" class="py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition">
-                    💾 GUARDAR ARTÍCULO
-                </button>
-                <button onclick="closeGoodsEditorModal()" class="py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl text-xs transition">
-                    Cancelar
-                </button>
             </div>
         </div>
     </div>
@@ -1089,6 +1214,12 @@
         let selectedGoodsIndices = new Set();
         let editingGoodsIdx = -1;
         let tempRecipeList = [];
+        let tempVariantsList = [];
+        let selectedRepColor = '#E88EAF';
+        let selectedRepShape = 'square';
+        let selectedRepImage = '';
+
+        const repColorsPalette = ['#E9D6C7', '#FCA5A5', '#F4B6CE', '#FDBA74', '#FDE047', '#86EFAC', '#93C5FD', '#D8B4FE'];
 
         const categoryLabelsMap = {
             temporada: 'Temporada', boba: 'Boba', matcha_mango: 'Matcha Mango', xolot: 'Xolot',
@@ -1112,12 +1243,13 @@
             const q = (document.getElementById('goods-search')?.value || '').toLowerCase().trim();
 
             return prods.map((p, idx) => {
-                const sku = p.sku || `BH-${String(1001 + idx)}`;
+                const sku = p.sku || String(10001 + idx);
                 const hasRecipe = Array.isArray(recipes[p.name]) && recipes[p.name].length > 0;
-                const price = Number(p.price || 0);
+                const isVariable = (p.price === null || p.price === '' || typeof p.price === 'undefined' || p.isVariable);
+                const price = isVariable ? null : Number(p.price);
                 const cost = Number(p.cost || 0);
-                const margin = (price > 0 && cost > 0) ? (((price - cost) / price) * 100) : null;
-                return { ...p, _idx: idx, sku, hasRecipe, price, cost, margin };
+                const margin = (!isVariable && price > 0) ? (((price - cost) / price) * 100) : null;
+                return { ...p, _idx: idx, sku, hasRecipe, isVariable, price, cost, margin };
             }).filter(p => {
                 if (catFilter !== 'all' && p.category !== catFilter) return false;
                 if (invFilter === 'low' && !(p.trackStock && Number(p.stock || 0) <= Number(p.minStock || 5) && Number(p.stock || 0) > 0)) return false;
@@ -1127,6 +1259,11 @@
                 if (q && !(p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q) || (categoryLabelsMap[p.category] || p.category).toLowerCase().includes(q))) return false;
                 return true;
             });
+        }
+
+        function quickChangeGoodsCategory(idx, newCat) {
+            fbDb.ref(`boba_haus_pos/productsDB/${idx}/category`).set(newCat)
+                .catch(err => alert('Error: ' + err.message));
         }
 
         function renderGoodsTable() {
@@ -1154,27 +1291,39 @@
             if (slice.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-gray-400 italic">No hay artículos que coincidan con los filtros seleccionados.</td></tr>`;
             } else {
+                const catOptions = Object.entries(categoryLabelsMap);
                 tbody.innerHTML = slice.map(item => {
                     const checked = selectedGoodsIndices.has(item._idx) ? 'checked' : '';
-                    const dotColor = categoryColorsMap[item.category] || '#E88EAF';
-                    const catName = categoryLabelsMap[item.category] || item.category;
+                    const dotColor = item.repColor || categoryColorsMap[item.category] || '#E88EAF';
+
+                    let thumbHTML = `<span class="w-4 h-4 rounded-full shrink-0 shadow-sm border border-black/10" style="background:${dotColor}"></span>`;
+                    if (item.repType === 'image' && item.repImage) {
+                        thumbHTML = `<img src="${item.repImage}" class="w-7 h-7 rounded-lg object-cover shrink-0 border border-[#E9D6C7]">`;
+                    }
+
+                    const priceHTML = item.isVariable
+                        ? `<span class="text-gray-500 font-semibold italic">Variable</span>`
+                        : `<span class="font-bold text-brand-pink">$${item.price.toFixed(2)}</span>`;
 
                     let marginHTML = `<span class="text-gray-400">—</span>`;
                     if (item.margin !== null) {
-                        const mClass = item.margin >= 50 ? 'bg-emerald-100 text-emerald-700' : item.margin >= 25 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-700';
-                        marginHTML = `<span class="px-2 py-0.5 rounded-full font-bold text-[11px] ${mClass}">${item.margin.toFixed(1)}%</span>`;
+                        const mClass = item.margin >= 50 ? 'text-emerald-700' : item.margin >= 25 ? 'text-amber-700' : 'text-red-600';
+                        marginHTML = `<span class="font-bold ${mClass}">${item.margin.toFixed(2)}%</span>`;
                     }
 
                     let stockHTML = `<span class="text-gray-400">—</span>`;
                     if (item.trackStock) {
                         const st = Number(item.stock || 0);
                         const minSt = Number(item.minStock || 5);
-                        if (st <= 0) stockHTML = `<span class="px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-bold text-[11px]">0 (Agotado)</span>`;
+                        if (st <= 0) stockHTML = `<span class="font-bold text-gray-700 mr-1">${st}</span><span class="text-[10px] font-bold text-red-600">No disponible en inventario</span>`;
                         else if (st <= minSt) stockHTML = `<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[11px]">${st} (Bajo)</span>`;
                         else stockHTML = `<span class="font-bold text-emerald-700">${st}</span>`;
                     } else if (item.hasRecipe) {
-                        stockHTML = `<span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-bold text-[10px]">🧪 Receta</span>`;
+                        stockHTML = `<span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-bold text-[10px]">🧪 Compuesto</span>`;
                     }
+
+                    const unavailTag = item.available === false ? `<span class="ml-1 text-[9px] bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded font-bold">Oculto</span>` : '';
+                    const varTag = (Array.isArray(item.variants) && item.variants.length > 0) ? `<span class="ml-1 text-[9px] bg-pink-100 text-brand-pink px-1.5 py-0.5 rounded font-bold">${item.variants.length} var.</span>` : '';
 
                     return `
                         <tr class="hover:bg-[#FFF8F2]/80 transition">
@@ -1183,18 +1332,20 @@
                             </td>
                             <td class="p-3 cursor-pointer" onclick="openGoodsEditorModal(${item._idx})">
                                 <div class="flex items-center gap-2.5">
-                                    <span class="w-3.5 h-3.5 rounded-full shrink-0 shadow-sm" style="background:${dotColor}"></span>
+                                    ${thumbHTML}
                                     <div>
-                                        <p class="font-bold text-[#5B3545] leading-tight">${item.name}</p>
-                                        <p class="text-[10px] text-gray-400 font-mono">${item.sku}</p>
+                                        <p class="font-bold text-[#5B3545] leading-tight">${item.name}${unavailTag}${varTag}</p>
+                                        <p class="text-[10px] text-gray-400 font-mono">REF ${item.sku}</p>
                                     </div>
                                 </div>
                             </td>
                             <td class="p-3">
-                                <span class="px-2 py-0.5 rounded-lg bg-[#FFF8F2] border border-[#E9D6C7] text-[11px] font-semibold text-[#5B3545]">${catName}</span>
+                                <select onchange="quickChangeGoodsCategory(${item._idx}, this.value)" class="p-1 bg-transparent border-b border-transparent hover:border-[#E9D6C7] text-[11px] font-semibold text-[#5B3545] outline-none cursor-pointer">
+                                    ${catOptions.map(([k, v]) => `<option value="${k}" ${k === item.category ? 'selected' : ''}>${v}</option>`).join('')}
+                                </select>
                             </td>
-                            <td class="p-3 text-right font-bold text-brand-pink">$${item.price.toFixed(2)}</td>
-                            <td class="p-3 text-right font-semibold text-gray-600">${item.cost > 0 ? '$' + item.cost.toFixed(2) : '—'}</td>
+                            <td class="p-3 text-right">${priceHTML}</td>
+                            <td class="p-3 text-right font-semibold text-gray-600">$${item.cost.toFixed(2)}</td>
                             <td class="p-3 text-right">${marginHTML}</td>
                             <td class="p-3 text-center">${stockHTML}</td>
                             <td class="p-3 text-center">
@@ -1267,46 +1418,163 @@
                 .catch(err => alert('Error: ' + err.message));
         }
 
-        // --- MODAL EDITOR DE ARTÍCULO + RECETA ---
+        // --- MODAL EDITOR DE ARTÍCULO COMPLETO ---
+        function renderColorSwatches() {
+            const cont = document.getElementById('ge-color-swatches');
+            if (!cont) return;
+            cont.innerHTML = repColorsPalette.map(c => `
+                <button type="button" onclick="selectGoodsColor('${c}')" class="w-9 h-9 rounded-lg border-2 flex items-center justify-center font-bold text-[#5B3545] transition ${selectedRepColor === c ? 'border-[#5B3545] scale-110 shadow' : 'border-transparent'}" style="background:${c}">
+                    ${selectedRepColor === c ? '✓' : ''}
+                </button>
+            `).join('');
+        }
+
+        function selectGoodsColor(c) { selectedRepColor = c; renderColorSwatches(); }
+
+        function selectGoodsShape(shape) {
+            selectedRepShape = shape;
+            document.querySelectorAll('.ge-shape-btn').forEach(b => {
+                const active = b.dataset.shape === shape;
+                b.classList.toggle('border-emerald-600', active);
+                b.classList.toggle('bg-emerald-50', active);
+                b.classList.toggle('text-emerald-700', active);
+            });
+        }
+
+        function toggleGoodsRepMode() {
+            const mode = document.querySelector('input[name="ge-rep"]:checked')?.value || 'color';
+            document.getElementById('ge-rep-color-box').classList.toggle('hidden', mode !== 'color');
+            document.getElementById('ge-rep-image-box').classList.toggle('hidden', mode !== 'image');
+        }
+
+        function handleGoodsImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 160;
+                    let w = img.width, h = img.height;
+                    if (w > h) { if (w > maxDim) { h *= maxDim / w; w = maxDim; } }
+                    else { if (h > maxDim) { w *= maxDim / h; h = maxDim; } }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    selectedRepImage = canvas.toDataURL('image/jpeg', 0.72);
+                    updateGoodsImagePreview();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+
+        function clearGoodsImage() { selectedRepImage = ''; updateGoodsImagePreview(); }
+
+        function updateGoodsImagePreview() {
+            const imgEl = document.getElementById('ge-img-preview');
+            const phEl = document.getElementById('ge-img-placeholder');
+            const clrEl = document.getElementById('ge-img-clear');
+            if (selectedRepImage) {
+                imgEl.src = selectedRepImage;
+                imgEl.classList.remove('hidden');
+                phEl.classList.add('hidden');
+                clrEl.classList.remove('hidden');
+            } else {
+                imgEl.src = '';
+                imgEl.classList.add('hidden');
+                phEl.classList.remove('hidden');
+                clrEl.classList.add('hidden');
+            }
+        }
+
         function openGoodsEditorModal(idx) {
             editingGoodsIdx = idx;
             const prods = Array.isArray(cloudData.productsDB) ? cloudData.productsDB : [];
             const recipes = (cloudData.recipeMapping && typeof cloudData.recipeMapping === 'object') ? cloudData.recipeMapping : {};
 
+            const delBtn = document.getElementById('ge-btn-delete');
+            if (delBtn) delBtn.classList.toggle('hidden', idx === -1);
+
             if (idx === -1) {
-                document.getElementById('ge-modal-title').innerText = '➕ Añadir Nuevo Artículo';
+                document.getElementById('ge-modal-title').innerText = 'Agregar artículo';
                 document.getElementById('ge-name').value = '';
                 document.getElementById('ge-category').value = 'boba';
-                document.getElementById('ge-sku').value = `BH-${1001 + prods.length}`;
+                document.getElementById('ge-desc').value = '';
+                document.getElementById('ge-available').checked = true;
+                document.querySelector('input[name="ge-soldby"][value="unit"]').checked = true;
                 document.getElementById('ge-price').value = '';
-                document.getElementById('ge-cost').value = '';
+                document.getElementById('ge-cost').value = '0.00';
+                document.getElementById('ge-sku').value = String(10001 + prods.length);
+                document.getElementById('ge-barcode').value = '';
+                document.getElementById('ge-is-composite').checked = false;
                 document.getElementById('ge-track-stock').checked = false;
                 document.getElementById('ge-stock').value = 0;
                 document.getElementById('ge-min-stock').value = 5;
+                document.getElementById('ge-mod-sugar').checked = false;
+                document.getElementById('ge-mod-ice').checked = false;
+                document.getElementById('ge-mod-toppings').checked = false;
+                document.getElementById('ge-mod-fortuna').checked = false;
+                document.getElementById('ge-mod-extra-coffee').checked = false;
                 tempRecipeList = [];
+                tempVariantsList = [];
+                selectedRepColor = '#F4B6CE';
+                selectedRepShape = 'square';
+                selectedRepImage = '';
+                document.querySelector('input[name="ge-rep"][value="color"]').checked = true;
             } else {
                 const p = prods[idx];
                 if (!p) return;
-                document.getElementById('ge-modal-title').innerText = `✏️ Editar: ${p.name}`;
+                document.getElementById('ge-modal-title').innerText = `Editar artículo`;
                 document.getElementById('ge-name').value = p.name || '';
                 document.getElementById('ge-category').value = p.category || 'boba';
-                document.getElementById('ge-sku').value = p.sku || `BH-${1001 + idx}`;
-                document.getElementById('ge-price').value = p.price ?? 0;
-                document.getElementById('ge-cost').value = p.cost ?? '';
+                document.getElementById('ge-desc').value = p.description || '';
+                document.getElementById('ge-available').checked = p.available !== false;
+                const sb = p.soldBy === 'weight' ? 'weight' : 'unit';
+                document.querySelector(`input[name="ge-soldby"][value="${sb}"]`).checked = true;
+                document.getElementById('ge-price').value = (p.price === null || p.price === '' || p.isVariable) ? '' : p.price;
+                document.getElementById('ge-cost').value = p.cost ?? 0;
+                document.getElementById('ge-sku').value = p.sku || String(10001 + idx);
+                document.getElementById('ge-barcode').value = p.barcode || '';
+                tempRecipeList = Array.isArray(recipes[p.name]) ? JSON.parse(JSON.stringify(recipes[p.name])) : [];
+                document.getElementById('ge-is-composite').checked = tempRecipeList.length > 0;
                 document.getElementById('ge-track-stock').checked = !!p.trackStock;
                 document.getElementById('ge-stock').value = p.stock ?? 0;
                 document.getElementById('ge-min-stock').value = p.minStock ?? 5;
-                tempRecipeList = Array.isArray(recipes[p.name]) ? JSON.parse(JSON.stringify(recipes[p.name])) : [];
+                const mods = p.modifiers || {};
+                document.getElementById('ge-mod-sugar').checked = !!mods.sugar;
+                document.getElementById('ge-mod-ice').checked = !!mods.ice;
+                document.getElementById('ge-mod-toppings').checked = !!mods.toppings;
+                document.getElementById('ge-mod-fortuna').checked = !!mods.fortuna;
+                document.getElementById('ge-mod-extra-coffee').checked = !!mods.extraCoffee;
+                tempVariantsList = Array.isArray(p.variants) ? JSON.parse(JSON.stringify(p.variants)) : [];
+                selectedRepColor = p.repColor || '#F4B6CE';
+                selectedRepShape = p.repShape || 'square';
+                selectedRepImage = p.repImage || '';
+                const rType = p.repType === 'image' ? 'image' : 'color';
+                document.querySelector(`input[name="ge-rep"][value="${rType}"]`).checked = true;
             }
 
+            toggleGoodsComposite();
             toggleGoodsStockFields();
+            toggleGoodsRepMode();
+            renderColorSwatches();
+            selectGoodsShape(selectedRepShape);
+            updateGoodsImagePreview();
             updateGoodsMarginPreview();
             renderGoodsRecipeRows();
+            renderGoodsVariantRows();
             document.getElementById('goods-editor-modal').classList.remove('hidden');
         }
 
         function closeGoodsEditorModal() {
             document.getElementById('goods-editor-modal').classList.add('hidden');
+        }
+
+        function toggleGoodsComposite() {
+            const on = document.getElementById('ge-is-composite').checked;
+            document.getElementById('ge-composite-box').classList.toggle('hidden', !on);
         }
 
         function toggleGoodsStockFields() {
@@ -1315,17 +1583,19 @@
         }
 
         function updateGoodsMarginPreview() {
-            const price = parseFloat(document.getElementById('ge-price').value) || 0;
-            const cost = parseFloat(document.getElementById('ge-cost').value) || 0;
+            const rawPrice = document.getElementById('ge-price').value.trim();
             const el = document.getElementById('ge-margin-preview');
             if (!el) return;
-            if (price <= 0 || cost <= 0) {
-                el.innerText = 'Ingresa precio y costo para calcular';
+            if (rawPrice === '') {
+                el.innerText = 'Precio Variable (se ingresa al cobrar)';
                 return;
             }
+            const price = parseFloat(rawPrice) || 0;
+            const cost = parseFloat(document.getElementById('ge-cost').value) || 0;
+            if (price <= 0) { el.innerText = 'Margen: —'; return; }
             const profit = price - cost;
             const pct = (profit / price) * 100;
-            el.innerText = `${pct.toFixed(1)}% (Ganancia: $${profit.toFixed(2)})`;
+            el.innerText = `Margen: ${pct.toFixed(2)}% (Ganancia: $${profit.toFixed(2)})`;
         }
 
         function renderGoodsRecipeRows() {
@@ -1333,11 +1603,11 @@
             if (!cont) return;
             const inv = Array.isArray(cloudData.inventoryDB) ? cloudData.inventoryDB : [];
             if (tempRecipeList.length === 0) {
-                cont.innerHTML = `<p class="text-[11px] text-gray-400 italic">Sin insumos vinculados. Haz clic en "+ Añadir insumo" para crear su receta.</p>`;
+                cont.innerHTML = `<p class="text-[11px] text-gray-400 italic">Sin insumos. Haz clic en "+ Añadir insumo".</p>`;
                 return;
             }
             cont.innerHTML = tempRecipeList.map((r, i) => `
-                <div class="flex items-center gap-2 bg-white p-2 rounded-xl border border-[#E9D6C7]">
+                <div class="flex items-center gap-2 bg-white p-1.5 rounded-xl border border-[#E9D6C7]">
                     <select onchange="tempRecipeList[${i}].key = this.value" class="flex-1 p-1.5 border rounded-lg bg-[#FFF8F2] font-semibold outline-none text-[11px]">
                         ${inv.map(it => `<option value="${it.key}" ${it.key === r.key ? 'selected' : ''}>${it.name} (${it.unit})</option>`).join('')}
                     </select>
@@ -1349,39 +1619,89 @@
 
         function addGoodsRecipeRow() {
             const inv = Array.isArray(cloudData.inventoryDB) ? cloudData.inventoryDB : [];
-            const firstKey = inv.length > 0 ? inv[0].key : 'tapioca';
-            tempRecipeList.push({ key: firstKey, qty: 30 });
+            tempRecipeList.push({ key: inv.length > 0 ? inv[0].key : 'tapioca', qty: 30 });
             renderGoodsRecipeRows();
+        }
+
+        function renderGoodsVariantRows() {
+            const cont = document.getElementById('ge-variants-rows');
+            if (!cont) return;
+            if (tempVariantsList.length === 0) {
+                cont.innerHTML = `<p class="text-[11px] text-gray-400 italic">Sin variantes configuradas.</p>`;
+                return;
+            }
+            cont.innerHTML = tempVariantsList.map((v, i) => `
+                <div class="grid grid-cols-12 gap-1.5 items-center bg-[#FFF8F2] p-2 rounded-xl border border-[#E9D6C7]">
+                    <input type="text" value="${v.name || ''}" oninput="tempVariantsList[${i}].name = this.value" placeholder="Ej. Grande / Queso" class="col-span-6 p-1.5 border rounded-lg bg-white font-semibold outline-none">
+                    <input type="number" step="0.50" value="${v.price ?? ''}" oninput="tempVariantsList[${i}].price = parseFloat(this.value) || 0" placeholder="Precio $" class="col-span-4 p-1.5 border rounded-lg bg-white text-center font-bold text-brand-pink outline-none">
+                    <button type="button" onclick="tempVariantsList.splice(${i},1); renderGoodsVariantRows();" class="col-span-2 py-1.5 bg-red-100 text-red-600 rounded-lg font-bold">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function addGoodsVariantRow() {
+            const basePrice = parseFloat(document.getElementById('ge-price').value) || 0;
+            tempVariantsList.push({ name: '', price: basePrice });
+            renderGoodsVariantRows();
+        }
+
+        function deleteCurrentGoodsItem() {
+            if (editingGoodsIdx < 0) return;
+            if (!confirm('¿Retirar este artículo del menú del POS?')) return;
+            const prods = Array.isArray(cloudData.productsDB) ? [...cloudData.productsDB] : [];
+            prods.splice(editingGoodsIdx, 1);
+            fbDb.ref('boba_haus_pos/productsDB').set(prods)
+                .then(() => { closeGoodsEditorModal(); alert('🗑️ Artículo retirado.'); })
+                .catch(err => alert('Error: ' + err.message));
         }
 
         function saveGoodsItem() {
             const name = document.getElementById('ge-name').value.trim();
+            if (!name) return alert('Por favor ingresa el nombre del artículo.');
+
             const category = document.getElementById('ge-category').value;
-            const sku = document.getElementById('ge-sku').value.trim();
-            const price = parseFloat(document.getElementById('ge-price').value);
+            const description = document.getElementById('ge-desc').value.trim();
+            const available = document.getElementById('ge-available').checked;
+            const soldBy = document.querySelector('input[name="ge-soldby"]:checked')?.value || 'unit';
+            const rawPrice = document.getElementById('ge-price').value.trim();
+            const isVariable = rawPrice === '';
+            const price = isVariable ? 0 : (parseFloat(rawPrice) || 0);
             const cost = parseFloat(document.getElementById('ge-cost').value) || 0;
+            const sku = document.getElementById('ge-sku').value.trim();
+            const barcode = document.getElementById('ge-barcode').value.trim();
+            const isComposite = document.getElementById('ge-is-composite').checked;
             const trackStock = document.getElementById('ge-track-stock').checked;
             const stock = parseFloat(document.getElementById('ge-stock').value) || 0;
             const minStock = parseFloat(document.getElementById('ge-min-stock').value) || 5;
-
-            if (!name || isNaN(price) || price < 0) return alert('Por favor ingresa nombre y precio válidos.');
+            const modifiers = {
+                sugar: document.getElementById('ge-mod-sugar').checked,
+                ice: document.getElementById('ge-mod-ice').checked,
+                toppings: document.getElementById('ge-mod-toppings').checked,
+                fortuna: document.getElementById('ge-mod-fortuna').checked,
+                extraCoffee: document.getElementById('ge-mod-extra-coffee').checked
+            };
+            const variants = tempVariantsList.filter(v => (v.name || '').trim() !== '');
+            const repType = document.querySelector('input[name="ge-rep"]:checked')?.value || 'color';
 
             const prods = Array.isArray(cloudData.productsDB) ? [...cloudData.productsDB] : [];
             const recipes = (cloudData.recipeMapping && typeof cloudData.recipeMapping === 'object') ? { ...cloudData.recipeMapping } : {};
 
-            const newObj = { name, category, sku, price, cost, trackStock, stock, minStock };
+            const newObj = {
+                name, category, description, available, soldBy,
+                isVariable, price, cost, sku, barcode,
+                trackStock, stock, minStock, modifiers, variants,
+                repType, repColor: selectedRepColor, repShape: selectedRepShape, repImage: selectedRepImage
+            };
 
             if (editingGoodsIdx === -1) {
                 prods.push(newObj);
             } else {
                 const oldName = prods[editingGoodsIdx]?.name;
-                if (oldName && oldName !== name && recipes[oldName]) {
-                    delete recipes[oldName];
-                }
+                if (oldName && oldName !== name && recipes[oldName]) delete recipes[oldName];
                 prods[editingGoodsIdx] = newObj;
             }
 
-            const cleanRecipe = tempRecipeList.filter(r => r.key && Number(r.qty) > 0);
+            const cleanRecipe = isComposite ? tempRecipeList.filter(r => r.key && Number(r.qty) > 0) : [];
             if (cleanRecipe.length > 0) recipes[name] = cleanRecipe;
             else delete recipes[name];
 
@@ -1390,7 +1710,7 @@
                 fbDb.ref('boba_haus_pos/recipeMapping').set(recipes)
             ]).then(() => {
                 closeGoodsEditorModal();
-                alert(`✅ Artículo "${name}" guardado y sincronizado con el POS.`);
+                alert(`✅ Artículo "${name}" guardado y sincronizado con el TPV.`);
             }).catch(err => alert('Error: ' + err.message));
         }
 
@@ -1400,14 +1720,14 @@
                 `"${p.sku}"`,
                 `"${(p.name || '').replace(/"/g, '""')}"`,
                 `"${p.category}"`,
-                p.price.toFixed(2),
+                p.isVariable ? '' : p.price.toFixed(2),
                 p.cost.toFixed(2),
-                p.margin !== null ? p.margin.toFixed(1) + '%' : '',
+                p.margin !== null ? p.margin.toFixed(2) + '%' : '',
                 p.trackStock ? 'SI' : 'NO',
                 p.trackStock ? Number(p.stock || 0) : '',
                 p.trackStock ? Number(p.minStock || 5) : ''
             ]);
-            const csv = "\uFEFF" + ['SKU,Nombre,Categoria,Precio,Costo,Margen,SeguirStock,Stock,Minimo', ...rows.map(r => r.join(','))].join('\n');
+            const csv = "\uFEFF" + ['REF,Nombre,Categoria,Precio,Coste,Margen,SeguirStock,EnStock,Minimo', ...rows.map(r => r.join(','))].join('\n');
             downloadCSV(csv, `lista_articulos_boba_haus_${new Date().toISOString().slice(0,10)}.csv`);
         }
 
@@ -1427,14 +1747,15 @@
                         if (cols.length < 4) continue;
                         const [sku, name, category, priceStr, costStr, , trackStr, stockStr, minStr] = cols;
                         if (!name) continue;
-                        const price = parseFloat(priceStr) || 0;
+                        const isVariable = priceStr === '' || priceStr.toLowerCase() === 'variable';
+                        const price = isVariable ? 0 : (parseFloat(priceStr) || 0);
                         const cost = parseFloat(costStr) || 0;
                         const trackStock = (trackStr || '').toUpperCase() === 'SI';
                         const stock = parseFloat(stockStr) || 0;
                         const minStock = parseFloat(minStr) || 5;
                         const existingIdx = prods.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
-                        const itemObj = { sku: sku || `BH-${1001 + prods.length}`, name, category: category || 'boba', price, cost, trackStock, stock, minStock };
-                        if (existingIdx >= 0) { prods[existingIdx] = itemObj; updated++; }
+                        const itemObj = { sku: sku || String(10001 + prods.length), name, category: category || 'boba', isVariable, price, cost, available: true, trackStock, stock, minStock };
+                        if (existingIdx >= 0) { prods[existingIdx] = Object.assign({}, prods[existingIdx], itemObj); updated++; }
                         else { prods.push(itemObj); added++; }
                     }
 
@@ -1449,7 +1770,7 @@
             event.target.value = '';
         }
 
-                // --- PWA INDEPENDIENTE BACK OFFICE ---
+        // --- PWA INDEPENDIENTE BACK OFFICE ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').catch(() => {});
